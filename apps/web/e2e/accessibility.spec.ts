@@ -1,0 +1,40 @@
+import { AxeBuilder } from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
+import { createTask, signUpWithWorkspace } from './helpers';
+
+const serious = (
+  violations: {
+    impact?: string | null;
+    id: string;
+    nodes: { target: unknown; failureSummary?: string }[];
+  }[],
+) =>
+  violations
+    .filter((v) => v.impact === 'serious' || v.impact === 'critical')
+    .map(
+      (v) =>
+        `${v.id}: ${v.nodes.map((n) => `${JSON.stringify(n.target)} ${n.failureSummary ?? ''}`).join(' | ')}`,
+    );
+
+test('sign-in page has no serious accessibility violations', async ({ page }) => {
+  await page.goto('/login');
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag22aa'])
+    .analyze();
+  expect(serious(results.violations)).toEqual([]);
+});
+
+test('task list and task page have no serious accessibility violations', async ({ page }) => {
+  await signUpWithWorkspace(page);
+  await createTask(page, 'Accessible task');
+  let results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag22aa'])
+    .analyze();
+  expect(serious(results.violations)).toEqual([]);
+
+  await page.getByRole('row').filter({ hasText: 'Accessible task' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByLabel('Title')).toHaveValue('Accessible task');
+  results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag22aa']).analyze();
+  expect(serious(results.violations)).toEqual([]);
+});
