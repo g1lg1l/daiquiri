@@ -1,6 +1,6 @@
 import { cn } from '@daiq/ui';
 
-/** The Daiq wordmark: expanded Mona Sans with a lime "drop" over the i. */
+/** The Daiq lockup: app icon plus expanded Mona Sans with a lime "drop" over the i. */
 export function Wordmark({ className }: { className?: string }) {
   return (
     <span
@@ -9,6 +9,11 @@ export function Wordmark({ className }: { className?: string }) {
         className,
       )}
     >
+      <img
+        src={`${import.meta.env.BASE_URL}favicon.svg`}
+        alt=""
+        className="mr-[0.4em] size-[1.3em] self-center"
+      />
       <span className="sr-only">Daiq</span>
       <span aria-hidden>da</span>
       <span aria-hidden className="relative">
