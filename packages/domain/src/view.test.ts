@@ -4,7 +4,9 @@ import {
   groupTasks,
   hasActiveFilters,
   nestSubtasks,
+  sameViewConfig,
   sortTasks,
+  toViewConfig,
   viewSearchSchema,
   type GroupContext,
 } from './view';
@@ -142,5 +144,34 @@ describe('view engine', () => {
     expect(
       nestSubtasks([grandchild, loose, child, parent]).map((n) => `${n.task.title}:${n.depth}`),
     ).toEqual(['Loose:0', 'Parent:0', 'Child:1', 'Grandchild:2']);
+  });
+});
+
+describe('saved view configs', () => {
+  it('drops per-visit params, empty filters and defaults', () => {
+    expect(
+      toViewConfig({
+        layout: 'list',
+        group: 'priority',
+        peek: 'ENG-1',
+        view: '5f0c9b3e-2d4a-4c8e-9a51-0b6f1e2d3c4b',
+        status: [],
+        q: '',
+      }),
+    ).toEqual({ group: 'priority' });
+  });
+
+  it('treats id lists as sets', () => {
+    expect(sameViewConfig({ label: ['b', 'a'] }, { label: ['a', 'b'] })).toBe(true);
+    expect(sameViewConfig({ label: ['a'] }, { label: ['a', 'b'] })).toBe(false);
+  });
+
+  it('notices a changed display option', () => {
+    expect(sameViewConfig({ layout: 'board' }, {})).toBe(false);
+    expect(sameViewConfig({ layout: 'list' }, {})).toBe(true);
+  });
+
+  it('accepts a saved view id in the URL and rejects anything else', () => {
+    expect(viewSearchSchema.parse({ view: 'not-a-uuid' }).view).toBeUndefined();
   });
 });

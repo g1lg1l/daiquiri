@@ -22,6 +22,7 @@ import {
 } from '../../../features/projects/project-status';
 import { DateField } from '../../../features/tasks/task-actions';
 import { TaskView } from '../../../features/tasks/task-view';
+import { FavoriteButton } from '../../../features/views/favorite-button';
 import { useSetSearch } from '../../../features/views/use-set-search';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
 
@@ -176,6 +177,7 @@ function ProjectPage() {
       composerDefaults={composerDefaults}
       allowedGroups={GROUP_BY.filter((g) => g !== 'project')}
       subheader={summary}
+      headerExtra={<FavoriteButton kind="project" id={project.id} />}
     />
   );
 }

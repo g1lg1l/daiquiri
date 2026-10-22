@@ -41,7 +41,7 @@ export {
 } from './teams';
 export type { ProjectInput } from './teams';
 export { useFavorites, useSavedViewActions, useSavedViews, useToggleFavorite } from './views';
-export type { Favorite, SavedView } from './views';
+export type { Favorite, FavoriteKind, NewSavedView, SavedView, SavedViewPatch } from './views';
 export {
   useAcceptInvitation,
   useCreateDemoWorkspace,

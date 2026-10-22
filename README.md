@@ -63,7 +63,7 @@ ClickUp, Asana and Linear each do a lot. Most teams use a small part of it, ever
 | Area          | Included today                                                                                                                             |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Work          | Teams with their own workflows, projects, tasks with identifiers (`ENG-42`), sub-tasks, relations, labels, priorities, due and start dates |
-| Views         | List and board, filters, grouping and ordering in the URL, My tasks grouped by due date, undo for every change                             |
+| Views         | List and board, filters, grouping and ordering in the URL, saved views and favorites, My tasks grouped by due date, undo for every change  |
 | Collaboration | Comments with @mentions and reactions, activity history, inbox notifications, subscriptions, realtime updates                              |
 | Workspace     | Invitations with roles (owner, admin, member, guest), private teams, team templates, labels, theme preferences                             |
 | Quality       | Light, dark and system themes, reduced motion, WCAG 2.2 AA contrast, screen-reader labels, full keyboard support                           |
@@ -145,7 +145,7 @@ Start with [ARCHITECTURE.md](ARCHITECTURE.md), then [docs/plan.md](docs/plan.md)
 - [x] Foundation: auth, workspaces, invitations and roles, RLS with tests, app shell, palette, themes
 - [x] Core: teams and workflows, projects, tasks, list and board, task page, comments, inbox, search, realtime
 - [x] Delivery: Docker self-hosting, CI, GitHub Pages demo build, end-to-end tests
-- [ ] Saved views and favorites in the sidebar
+- [x] Saved views (personal or shared) and favorites in the sidebar
 - [ ] Calendar and timeline views
 - [ ] Cycles, milestones and project updates
 - [ ] Custom fields, estimates and time tracking

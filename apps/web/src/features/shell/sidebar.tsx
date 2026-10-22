@@ -1,4 +1,11 @@
-import { useAuthActions, useNotifications, useWorkspaces } from '@daiq/data';
+import {
+  useAuthActions,
+  useFavorites,
+  useNotifications,
+  useSavedViews,
+  useWorkspaces,
+  type SavedView,
+} from '@daiq/data';
 import type { Notification, Team } from '@daiq/domain';
 import {
   Avatar,
@@ -18,7 +25,7 @@ import {
   Tooltip,
   useTheme,
 } from '@daiq/ui';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -26,6 +33,7 @@ import {
   FolderIcon,
   InboxIcon,
   KeyboardIcon,
+  LayersIcon,
   ListTodoIcon,
   LogOutIcon,
   PanelLeftIcon,
@@ -34,6 +42,7 @@ import {
   SettingsIcon,
   SparklesIcon,
   UserPlusIcon,
+  UsersIcon,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Wordmark } from '../../components/wordmark';
@@ -55,6 +64,7 @@ function NavLink({
   children,
   trailing,
   depth = 0,
+  excludeSavedViews = false,
 }: {
   to: string;
   params: Record<string, string>;
@@ -62,6 +72,8 @@ function NavLink({
   children: ReactNode;
   trailing?: ReactNode;
   depth?: number;
+  /** Not current while a saved view of the same list is open. */
+  excludeSavedViews?: boolean;
 }) {
   const { closeSidebarOnMobile } = useShell();
   return (
@@ -69,7 +81,12 @@ function NavLink({
       to={to}
       params={params}
       className={cn(navItem, depth > 0 && 'pl-7')}
-      activeProps={{ className: activeNavItem, 'aria-current': 'page' }}
+      // An explicit `view: undefined` only matches URLs without a saved view.
+      {...(excludeSavedViews && {
+        search: { view: undefined },
+        activeOptions: { includeSearch: true, explicitUndefined: true },
+      })}
+      activeProps={{ className: activeNavItem }}
       onClick={closeSidebarOnMobile}
     >
       {icon}
@@ -150,6 +167,7 @@ function TeamSection({
               params={{ workspace: ws, teamKey: team.key }}
               icon={<ListTodoIcon />}
               depth={1}
+              excludeSavedViews
             >
               Tasks
             </NavLink>
@@ -167,6 +185,30 @@ function TeamSection({
         </ul>
       )}
     </li>
+  );
+}
+
+/** Opens a team task list with the saved view's params; current while that view is open. */
+function SavedViewLink({ view, ws, icon }: { view: SavedView; ws: string; icon: ReactNode }) {
+  const data = useWorkspaceData();
+  const { closeSidebarOnMobile } = useShell();
+  const viewId = useSearch({ strict: false, select: (search) => search.view });
+  const team = view.teamId ? data.teamsById.get(view.teamId) : undefined;
+  if (!team) return null;
+  const current = viewId === view.id;
+  return (
+    <Link
+      to="/$workspace/team/$teamKey/tasks"
+      params={{ workspace: ws, teamKey: team.key }}
+      search={{ ...view.config, view: view.id }}
+      className={cn(navItem, current && activeNavItem)}
+      aria-current={current ? 'page' : undefined}
+      activeProps={{}}
+      onClick={closeSidebarOnMobile}
+    >
+      {icon}
+      <span className="min-w-0 flex-1 truncate">{view.name}</span>
+    </Link>
   );
 }
 
@@ -264,6 +306,35 @@ export function Sidebar() {
   const ws = workspace.slug;
   const unread = useUnreadCount(notifications.data);
   const otherTeams = data.teams.filter((team) => !team.memberIds.includes(userId));
+  const views = useSavedViews(workspace.id).data ?? [];
+  const favorites = useFavorites(workspace.id).data ?? [];
+  const viewsById = new Map(views.map((view) => [view.id, view]));
+  const favoriteItems = favorites.flatMap((favorite) => {
+    if (favorite.entityKind === 'project') {
+      const project = data.projectsById.get(favorite.entityId);
+      return project
+        ? [
+            <li key={project.id}>
+              <NavLink
+                to="/$workspace/project/$projectId"
+                params={{ workspace: ws, projectId: project.id }}
+                icon={<FolderIcon />}
+              >
+                {project.name}
+              </NavLink>
+            </li>,
+          ]
+        : [];
+    }
+    const view = favorite.entityKind === 'view' ? viewsById.get(favorite.entityId) : undefined;
+    return view
+      ? [
+          <li key={view.id}>
+            <SavedViewLink view={view} ws={ws} icon={<LayersIcon />} />
+          </li>,
+        ]
+      : [];
+  });
 
   return (
     <nav
@@ -334,6 +405,28 @@ export function Sidebar() {
       </ul>
 
       <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
+        {favoriteItems.length > 0 && (
+          <>
+            <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">Favorites</h2>
+            <ul className="flex flex-col gap-px">{favoriteItems}</ul>
+          </>
+        )}
+        {views.length > 0 && (
+          <>
+            <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">Views</h2>
+            <ul className="flex flex-col gap-px">
+              {views.map((view) => (
+                <li key={view.id}>
+                  <SavedViewLink
+                    view={view}
+                    ws={ws}
+                    icon={view.isShared ? <UsersIcon /> : <LayersIcon />}
+                  />
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
         <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">Your teams</h2>
         <ul className="flex flex-col gap-0.5">
           {data.myTeams.map((team, index) => (

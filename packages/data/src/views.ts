@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { JsonValue } from '@daiq/domain';
+import { viewConfigSchema, type ViewConfig } from '@daiq/domain';
 import { useDaiqClient } from './context';
+import type { TablesUpdate } from './database.types';
 import { ensureOk, unwrap } from './errors';
 import { keys } from './keys';
 
@@ -11,9 +12,11 @@ export interface SavedView {
   ownerId: string | null;
   name: string;
   isShared: boolean;
-  /** Validated with viewConfigSchema (@daiq/domain) by the caller. */
-  config: JsonValue;
+  config: ViewConfig;
 }
+
+export type NewSavedView = Pick<SavedView, 'id' | 'teamId' | 'name' | 'isShared' | 'config'>;
+export type SavedViewPatch = Partial<Pick<SavedView, 'name' | 'isShared' | 'config'>>;
 
 export function useSavedViews(workspaceId: string) {
   const client = useDaiqClient();
@@ -29,38 +32,76 @@ export function useSavedViews(workspaceId: string) {
         ownerId: row.owner_id,
         name: row.name,
         isShared: row.is_shared,
-        config: row.config,
+        config: viewConfigSchema.parse(row.config),
       })),
   });
 }
 
-export function useSavedViewActions(workspaceId: string) {
+/** Create, update and delete saved views, optimistically. */
+export function useSavedViewActions(workspaceId: string, userId: string) {
   const client = useDaiqClient();
   const queryClient = useQueryClient();
-  const refresh = () => queryClient.invalidateQueries({ queryKey: keys.views(workspaceId) });
-  const save = useMutation({
-    mutationFn: async (view: Omit<SavedView, 'ownerId' | 'workspaceId'>) =>
+  const key = keys.views(workspaceId);
+  const refresh = () => queryClient.invalidateQueries({ queryKey: key });
+  const optimistic = (change: (views: SavedView[]) => SavedView[]) => {
+    const previous = queryClient.getQueryData<SavedView[]>(key);
+    void queryClient.cancelQueries({ queryKey: key });
+    queryClient.setQueryData<SavedView[]>(key, (views = []) =>
+      change(views).toSorted((a, b) => a.name.localeCompare(b.name)),
+    );
+    return { previous };
+  };
+  const rollback = (_error: unknown, _input: unknown, context?: { previous?: SavedView[] }) =>
+    queryClient.setQueryData(key, context?.previous);
+
+  const create = useMutation({
+    mutationFn: async (view: NewSavedView) =>
       ensureOk(
-        await client.from('views').upsert({
+        await client.from('views').insert({
           id: view.id,
           workspace_id: workspaceId,
           team_id: view.teamId,
           name: view.name,
           is_shared: view.isShared,
-          config: view.config ?? {},
+          config: view.config,
         }),
       ),
+    onMutate: (view) =>
+      optimistic((views) => [...views, { ...view, workspaceId, ownerId: userId }]),
+    onError: rollback,
     onSettled: refresh,
   });
+
+  const update = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: SavedViewPatch }) => {
+      const columns: TablesUpdate<'views'> = {};
+      if (patch.name !== undefined) columns.name = patch.name;
+      if (patch.isShared !== undefined) columns.is_shared = patch.isShared;
+      if (patch.config !== undefined) columns.config = patch.config;
+      return ensureOk(await client.from('views').update(columns).eq('id', id));
+    },
+    onMutate: ({ id, patch }) =>
+      optimistic((views) => views.map((view) => (view.id === id ? { ...view, ...patch } : view))),
+    onError: rollback,
+    onSettled: refresh,
+  });
+
   const remove = useMutation({
     mutationFn: async (id: string) => ensureOk(await client.from('views').delete().eq('id', id)),
-    onSettled: refresh,
+    onMutate: (id) => optimistic((views) => views.filter((view) => view.id !== id)),
+    onError: rollback,
+    onSettled: () => {
+      void refresh();
+      // Deleting a view also drops it from everyone's favorites (trigger).
+      void queryClient.invalidateQueries({ queryKey: keys.favorites(workspaceId) });
+    },
   });
-  return { save, remove };
+
+  return { create, update, remove };
 }
 
 const FAVORITE_KINDS = ['project', 'view', 'task', 'team'] as const;
-type FavoriteKind = (typeof FAVORITE_KINDS)[number];
+export type FavoriteKind = (typeof FAVORITE_KINDS)[number];
 const isFavoriteKind = (value: string): value is FavoriteKind =>
   (FAVORITE_KINDS as readonly string[]).includes(value);
 

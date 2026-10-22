@@ -84,7 +84,10 @@ export {
   nestSubtasks,
   NONE,
   ORDER_BY,
+  sameViewConfig,
   sortTasks,
+  toViewConfig,
+  viewConfigSchema,
   viewSearchSchema,
 } from './view';
 export type {
@@ -95,6 +98,7 @@ export type {
   Layout,
   OrderBy,
   TaskGroup,
+  ViewConfig,
   ViewContext,
   ViewDefaults,
   ViewSearch,

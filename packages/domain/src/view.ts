@@ -55,9 +55,15 @@ export const viewSearchSchema = z.object({
   due: z.enum(DUE_FILTERS).optional().catch(undefined),
   q: z.string().max(200).optional().catch(undefined),
   peek: z.string().max(20).optional().catch(undefined),
+  /** Saved view this URL started from; the rest of the params may have drifted from it. */
+  view: z.uuid().optional().catch(undefined),
 });
 
 export type ViewSearch = z.infer<typeof viewSearchSchema>;
+
+/** What a saved view stores: the view params without per-visit state. */
+export const viewConfigSchema = viewSearchSchema.omit({ peek: true, view: true }).catch({});
+export type ViewConfig = z.infer<typeof viewConfigSchema>;
 
 export interface ViewDefaults {
   layout: Layout;
@@ -72,6 +78,34 @@ export const DEFAULT_VIEW: ViewDefaults = {
   order: 'manual',
   completed: 'week',
 };
+
+const DEFAULTS = new Map<string, string>(Object.entries(DEFAULT_VIEW));
+
+function isEmpty(key: string, value: unknown): boolean {
+  if (value === undefined || value === '') return true;
+  if (Array.isArray(value)) return value.length === 0;
+  return DEFAULTS.get(key) === value;
+}
+
+/**
+ * Canonical form of a view config: drops per-visit params, empty filters and
+ * values equal to the defaults, and sorts keys and id lists, so two URLs that
+ * show the same view produce the same config.
+ */
+export function toViewConfig(search: ViewSearch | ViewConfig): ViewConfig {
+  const entries = Object.entries(viewConfigSchema.parse(search))
+    .filter(([key, value]) => !isEmpty(key, value))
+    .map(([key, value]): [string, unknown] => [
+      key,
+      Array.isArray(value) ? value.toSorted((a, b) => String(a).localeCompare(String(b))) : value,
+    ])
+    .toSorted(([a], [b]) => a.localeCompare(b));
+  return viewConfigSchema.parse(Object.fromEntries(entries));
+}
+
+export function sameViewConfig(a: ViewSearch | ViewConfig, b: ViewSearch | ViewConfig): boolean {
+  return JSON.stringify(toViewConfig(a)) === JSON.stringify(toViewConfig(b));
+}
 
 export interface ViewContext {
   userId: string;

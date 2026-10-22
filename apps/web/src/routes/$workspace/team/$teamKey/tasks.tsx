@@ -1,10 +1,12 @@
 import { useTasks } from '@daiq/data';
 import { DEFAULT_VIEW, GROUP_BY, viewSearchSchema } from '@daiq/domain';
 import { createFileRoute } from '@tanstack/react-router';
+import { ChevronRightIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import { NotFoundPanel } from '../../../../components/not-found-panel';
 import { TeamBadge } from '../../../../components/team-badge';
 import { TaskView } from '../../../../features/tasks/task-view';
+import { SavedViewControls, useActiveSavedView } from '../../../../features/views/saved-views';
 import { useSetSearch } from '../../../../features/views/use-set-search';
 import { useWorkspaceData } from '../../../../features/workspace/workspace-context';
 
@@ -22,6 +24,7 @@ function TeamTasks() {
   const tasks = useTasks(team ? { kind: 'team', id: team.id } : null);
   const teamIds = useMemo(() => (team ? [team.id] : []), [team]);
   const composerDefaults = useMemo(() => (team ? { teamId: team.id } : {}), [team]);
+  const view = useActiveSavedView(search.view);
 
   if (!team)
     return (
@@ -32,8 +35,21 @@ function TeamTasks() {
     );
   return (
     <TaskView
-      title={team.name}
+      title={
+        view ? (
+          <>
+            <span className="text-fg-muted">{team.name}</span>
+            <ChevronRightIcon aria-hidden className="size-3.5 text-fg-subtle" />
+            <span className="truncate">{view.name}</span>
+          </>
+        ) : (
+          team.name
+        )
+      }
       icon={<TeamBadge teamKey={team.key} />}
+      headerExtra={
+        <SavedViewControls team={team} search={search} setSearch={setSearch} view={view} />
+      }
       tasks={tasks.data}
       search={search}
       setSearch={setSearch}
