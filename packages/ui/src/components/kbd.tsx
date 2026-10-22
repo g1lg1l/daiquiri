@@ -18,11 +18,18 @@ export function Kbd({ className, ...props }: ComponentProps<'kbd'>) {
 export function Shortcut({ keys, className }: { keys: string; className?: string }) {
   return (
     <span className={cn('inline-flex items-center gap-0.5', className)} aria-hidden>
-      {formatShortcut(keys).map((key, index) => (
-        // Static, never reordered list where keys can repeat ("G G"): the index is the identity.
-        // oxlint-disable-next-line react/no-array-index-key
-        <Kbd key={index}>{key}</Kbd>
-      ))}
+      {formatShortcut(keys).map((key, index) =>
+        key === 'then' ? (
+          // oxlint-disable-next-line react/no-array-index-key
+          <span key={index} className="px-0.5 text-[10px] text-fg-subtle">
+            then
+          </span>
+        ) : (
+          // Static, never reordered list where keys can repeat ("G G"): the index is the identity.
+          // oxlint-disable-next-line react/no-array-index-key
+          <Kbd key={index}>{key}</Kbd>
+        ),
+      )}
     </span>
   );
 }

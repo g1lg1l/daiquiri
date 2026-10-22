@@ -64,7 +64,7 @@ export function TaskView({
   const navigate = useNavigate();
   const composer = useComposer();
   const identifier = useIdentifier();
-  const { isMobile } = useShell();
+  const { canPeek } = useShell();
   const today = useToday();
   const layout = search.layout ?? defaults.layout;
   const requestedGroup = search.group ?? defaults.group;
@@ -99,7 +99,7 @@ export function TaskView({
     (task: Task, mode: 'peek' | 'page') => {
       if (task.number === null) return;
       const ident = identifier(task);
-      if (mode === 'page' || isMobile) {
+      if (mode === 'page' || !canPeek) {
         void navigate({
           to: '/$workspace/task/$identifier',
           params: { workspace: workspace.slug, identifier: ident },
@@ -108,7 +108,7 @@ export function TaskView({
         setSearch({ peek: search.peek === ident ? undefined : ident });
       }
     },
-    [identifier, isMobile, navigate, workspace.slug, setSearch, search.peek],
+    [identifier, canPeek, navigate, workspace.slug, setSearch, search.peek],
   );
 
   const groupDefaults = useCallback(
@@ -171,7 +171,7 @@ export function TaskView({
           />
         )}
       </div>
-      {peekTask && !isMobile && (
+      {peekTask && canPeek && (
         <TaskPeek task={peekTask} onClose={() => setSearch({ peek: undefined })} />
       )}
     </div>

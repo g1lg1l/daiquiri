@@ -11,6 +11,8 @@ import {
 interface ShellState {
   sidebarOpen: boolean;
   isMobile: boolean;
+  /** Wide enough for a side peek next to the list (information-architecture.md §2). */
+  canPeek: boolean;
   toggleSidebar: () => void;
   closeSidebarOnMobile: () => void;
 }
@@ -18,6 +20,18 @@ interface ShellState {
 const ShellContext = createContext<ShellState | null>(null);
 const KEY = 'daiq-sidebar-collapsed';
 const MOBILE_QUERY = '(max-width: 767px)';
+const PEEK_QUERY = '(min-width: 1200px)';
+
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const onChange = () => setMatches(media.matches);
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, [query]);
+  return matches;
+}
 
 function readCollapsed(): boolean {
   try {
@@ -28,16 +42,10 @@ function readCollapsed(): boolean {
 }
 
 export function ShellProvider({ children }: { children: ReactNode }) {
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia(MOBILE_QUERY).matches);
+  const isMobile = useMediaQuery(MOBILE_QUERY);
+  const canPeek = useMediaQuery(PEEK_QUERY);
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia(MOBILE_QUERY);
-    const onChange = () => setIsMobile(media.matches);
-    media.addEventListener('change', onChange);
-    return () => media.removeEventListener('change', onChange);
-  }, []);
 
   const toggleSidebar = useCallback(() => {
     if (isMobile) {
@@ -57,8 +65,8 @@ export function ShellProvider({ children }: { children: ReactNode }) {
   const closeSidebarOnMobile = useCallback(() => setMobileOpen(false), []);
   const sidebarOpen = isMobile ? mobileOpen : !collapsed;
   const value = useMemo(
-    () => ({ sidebarOpen, isMobile, toggleSidebar, closeSidebarOnMobile }),
-    [sidebarOpen, isMobile, toggleSidebar, closeSidebarOnMobile],
+    () => ({ sidebarOpen, isMobile, canPeek, toggleSidebar, closeSidebarOnMobile }),
+    [sidebarOpen, isMobile, canPeek, toggleSidebar, closeSidebarOnMobile],
   );
   return <ShellContext.Provider value={value}>{children}</ShellContext.Provider>;
 }

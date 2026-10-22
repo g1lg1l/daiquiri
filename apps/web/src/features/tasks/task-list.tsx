@@ -256,7 +256,7 @@ export function TaskList({
             if (first) focusTask(first);
           }
         }}
-        className="min-h-0 flex-1 overflow-y-auto pb-24 outline-none scrollbar-thin"
+        className="@container/list min-h-0 flex-1 overflow-y-auto pb-24 outline-none scrollbar-thin"
         onKeyDown={(event) => {
           if (event.key === 'Escape' && selected.size > 0) {
             event.stopPropagation();
@@ -463,7 +463,10 @@ const TaskRow = memo(function TaskRow({
           }}
         />
       </div>
-      <div role="gridcell" className="hidden w-16 shrink-0 text-xs text-fg-subtle tabular sm:block">
+      <div
+        role="gridcell"
+        className="hidden w-16 shrink-0 text-xs text-fg-subtle tabular @md/list:block"
+      >
         {identifier}
       </div>
       <div role="gridcell" className="flex items-center" style={{ marginLeft: depth * 20 }}>
@@ -485,8 +488,8 @@ const TaskRow = memo(function TaskRow({
         />
       </div>
       <div role="gridcell" className="flex min-w-0 flex-1 items-center gap-2">
-        <span className={cn('truncate', closed && 'text-fg-muted')}>{task.title}</span>
-        <span className="hidden min-w-0 items-center gap-1 md:flex">
+        <span className={cn('min-w-0 truncate', closed && 'text-fg-muted')}>{task.title}</span>
+        <span className="hidden shrink-0 items-center gap-1 @3xl/list:flex">
           {task.labelIds.slice(0, 3).map((id) => {
             const labelData = data.labelsById.get(id);
             return labelData ? (
@@ -505,7 +508,10 @@ const TaskRow = memo(function TaskRow({
         </span>
       </div>
       {project && (
-        <div role="gridcell" className="hidden max-w-40 truncate text-xs text-fg-subtle lg:block">
+        <div
+          role="gridcell"
+          className="hidden max-w-40 shrink-0 truncate text-xs text-fg-subtle @4xl/list:block"
+        >
           {project.name}
         </div>
       )}

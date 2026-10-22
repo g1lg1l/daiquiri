@@ -254,6 +254,7 @@ function Palette({
       params: { workspace: ws, identifier: ident },
     });
   const firstTeam = data.myTeams[0]?.key ?? data.teams[0]?.key;
+  const hasServerResults = (search.data?.length ?? 0) > 0 && deferredQuery.trim().length >= 2;
 
   return (
     <Command loop>
@@ -264,9 +265,11 @@ function Palette({
         autoFocus
       />
       <CommandList>
-        <CommandEmpty>{search.isFetching ? 'Searching…' : 'No results'}</CommandEmpty>
+        {!hasServerResults && !identifier && (
+          <CommandEmpty>{search.isFetching ? 'Searching…' : 'No results'}</CommandEmpty>
+        )}
         {identifier && (
-          <CommandGroup heading="Open">
+          <CommandGroup heading="Open" forceMount>
             <CommandItem
               forceMount
               value={`open ${query}`}
@@ -301,8 +304,8 @@ function Palette({
             ))}
           </CommandGroup>
         )}
-        {(search.data?.length ?? 0) > 0 && deferredQuery.trim().length >= 2 && (
-          <CommandGroup heading="Search results">
+        {hasServerResults && (
+          <CommandGroup heading="Search results" forceMount>
             {search.data?.map((result) => (
               <CommandItem
                 key={`${result.kind}-${result.id}`}

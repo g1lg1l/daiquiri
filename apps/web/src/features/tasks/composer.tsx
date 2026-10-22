@@ -11,7 +11,7 @@ import {
 import { Avatar, Button, Dialog, DialogContent, DialogTitle, Shortcut, toast } from '@daiq/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { CalendarIcon, FolderIcon, TagIcon, UserIcon } from 'lucide-react';
+import { FolderIcon, TagIcon, UserIcon } from 'lucide-react';
 import {
   createContext,
   useCallback,
@@ -34,6 +34,7 @@ import { PickerPopover } from '../pickers/picker-popover';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { PriorityIcon, StatusIcon } from './icons';
 import { LABEL_COLOR } from './label-colors';
+import { DateField } from './task-actions';
 import { useIdentifier } from './use-identifier';
 
 export interface ComposerDefaults {
@@ -78,7 +79,10 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     <ComposerContext.Provider value={open}>
       {children}
       <Dialog open={state !== null} onOpenChange={(next) => !next && setState(null)}>
-        <DialogContent className="top-[12vh] w-[min(100%-2rem,40rem)] gap-0 p-0">
+        <DialogContent
+          className="top-[12vh] w-[min(100%-2rem,40rem)] gap-0 p-0"
+          initialFocus={() => document.getElementById('composer-title')}
+        >
           {state && (
             <Composer key={state.key} defaults={state.defaults} onClose={() => setState(null)} />
           )}
@@ -372,16 +376,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
             onSelect={([id]) => setProjectId(id && id !== NO_VALUE ? id : null)}
           />
         )}
-        <label className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2 text-[13px] font-medium text-fg shadow-xs focus-within:border-focus">
-          <CalendarIcon className="size-4 text-fg-muted" aria-hidden />
-          <span className="sr-only">Due date</span>
-          <input
-            type="date"
-            value={dueDate ?? ''}
-            onChange={(event) => setDueDate(event.target.value || null)}
-            className="bg-transparent text-[13px] outline-none focus-visible:outline-none"
-          />
-        </label>
+        <DateField label="Due date" value={dueDate} onChange={setDueDate} variant="secondary" />
       </div>
 
       <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">

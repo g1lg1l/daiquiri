@@ -9,6 +9,7 @@ import {
 import {
   addDays,
   firstStatusOf,
+  formatDueDate,
   isPriority,
   LABEL_COLORS,
   startOfWeek,
@@ -16,8 +17,17 @@ import {
   type TaskDetail,
   type TaskPatch,
 } from '@daiq/domain';
-import { Button, CommandDialog, Input, toast } from '@daiq/ui';
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { Button, cn, CommandDialog, toast } from '@daiq/ui';
+import { CalendarIcon, XIcon } from 'lucide-react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { newId } from '../../lib/ids';
 import { useToday } from '../../lib/use-today';
 import {
@@ -367,35 +377,61 @@ function DueDatePicker({
   );
 }
 
-/** Inline calendar input used by the task detail sidebar (native control, no date library). */
+/**
+ * Date property: a button showing the formatted date that opens the browser's
+ * native date picker (no date-picker library; keyboard accessible via the button).
+ */
 export function DateField({
   label,
   value,
   onChange,
+  variant = 'ghost',
 }: {
   label: string;
   value: string | null;
   onChange: (value: string | null) => void;
+  variant?: 'ghost' | 'secondary';
 }) {
+  const today = useToday();
+  const input = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex items-center gap-1">
-      <Input
+    <span className="relative inline-flex items-center gap-0.5">
+      <Button
+        type="button"
+        variant={variant}
+        size="sm"
+        className={cn(variant === 'ghost' && 'h-7 px-1.5 font-normal', !value && 'text-fg-subtle')}
+        onClick={() => {
+          const element = input.current;
+          if (!element) return;
+          if (typeof element.showPicker === 'function') element.showPicker();
+          else element.focus();
+        }}
+      >
+        <CalendarIcon />
+        {value ? formatDueDate(value, today) : label}
+      </Button>
+      <input
+        ref={input}
         type="date"
+        tabIndex={-1}
         aria-label={label}
-        className="h-7 w-auto border-transparent bg-transparent px-1.5 shadow-none hover:bg-surface-muted"
+        className="pointer-events-none absolute inset-0 size-full opacity-0"
         value={value ?? ''}
         onChange={(event) => onChange(event.target.value || null)}
       />
       {value && (
         <Button
+          type="button"
           variant="ghost"
           size="icon-sm"
+          className="size-6"
           aria-label={`Clear ${label.toLowerCase()}`}
           onClick={() => onChange(null)}
         >
-          ×
+          <XIcon className="size-3.5" />
         </Button>
       )}
-    </div>
+    </span>
   );
 }

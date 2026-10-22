@@ -132,7 +132,8 @@ export function RichTextEditor({
 
   // External updates (realtime, undo) replace the content when not editing.
   useEffect(() => {
-    if (!editor || editor.isFocused) return;
+    // StrictMode and fast refresh can hand us an instance that was already destroyed.
+    if (!editor || editor.isDestroyed || editor.isFocused) return;
     const current = JSON.stringify(editor.getJSON());
     if (value && JSON.stringify(value) !== current)
       editor.commands.setContent(toJsonContent(value), { emitUpdate: false });
