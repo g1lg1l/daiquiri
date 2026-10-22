@@ -47,10 +47,17 @@ jobs:
         run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta,storage-api,kong,postgrest
       - run: supabase db lint --local --level error --fail-on error
       - run: supabase test db
+      # Prettier needs the repo's config and plugins to format like the committed file.
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Generated types are up to date
         run: |
           supabase gen types typescript --local --schema public > /tmp/types.ts
-          npx --yes prettier@3 --stdin-filepath packages/data/src/database.types.ts < /tmp/types.ts > /tmp/types.formatted.ts
+          pnpm exec prettier --stdin-filepath packages/data/src/database.types.ts < /tmp/types.ts > /tmp/types.formatted.ts
           diff -u packages/data/src/database.types.ts /tmp/types.formatted.ts
 
   e2e:
