@@ -20,7 +20,7 @@ Daiq has one web app, a database project, Docker assets and a few shared librari
 - **TypeScript 7** (`tsc` native), `strict` plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`. If a tool needs the TS compiler API before TS 7.1, use the documented alias (`typescript` → `@typescript/typescript6`).
 - **Internal packages are source-only** (`exports` point at `.ts`), consumed by Vite and Vitest directly: no per-package build step, no stale `dist`.
 - **oxlint** (type-aware, react, jsx-a11y, import, vitest plugins) + **Prettier** (+ Tailwind class sorting).
-- Boundaries: pnpm strictness for package direction; `no-restricted-imports` rules forbid `@supabase/supabase-js` outside `packages/data` and forbid `packages/domain` from importing anything but `zod`.
+- Boundaries: pnpm strictness for package direction; `no-restricted-imports` rules forbid `@supabase/supabase-js` outside `packages/data` and keep `packages/domain` free of I/O (only `zod` and `fractional-indexing`).
 
 ### Layout
 

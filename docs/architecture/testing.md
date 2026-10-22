@@ -26,6 +26,14 @@
 11. Editor: Markdown shortcuts, slash command, code block, paste HTML.
 12. Command palette keyboard navigation.
 
+## Running the suites
+
+| Suite            | Command                                 | Current size                                                 |
+| ---------------- | --------------------------------------- | ------------------------------------------------------------ |
+| Unit + component | `pnpm test`                             | 142 tests (domain 50, ui 32, editor 26, data 4, web 3 files) |
+| Database         | `pnpm db:test`                          | 86 pgTAP assertions in 5 files                               |
+| E2E              | `pnpm test:e2e` (needs `pnpm db:start`) | 11 Playwright flows incl. axe checks                         |
+
 ## Rules
 
 - Every bug fix adds the test that would have caught it.
