@@ -171,7 +171,7 @@ Priority tags match [implementation-priorities.md](../product/implementation-pri
 | `time_entries (id, workspace_id, task_id, user_id, started_at, ended_at, duration_seconds, note)` | Time tracking |
 | `templates (id, workspace_id, team_id, kind, name, payload jsonb)` | Task / project templates |
 | `forms (id, workspace_id, team_id, slug, config jsonb, is_public)` | Intake forms → triage |
-| `automations (id, workspace_id, team_id, name, trigger jsonb, conditions jsonb, actions jsonb, enabled)` + `automation_runs` | Rule engine ([ADR-0009](../adr/0009-automations.md)) |
+| `automations (id, workspace_id, team_id, name, trigger jsonb, conditions jsonb, actions jsonb, enabled)` + `automation_runs` | Rule engine ([ADR-0009](../adr/0009-automations-and-jobs.md)) |
 | `webhooks (id, workspace_id, url, secret_hash, events text[], enabled)` + `webhook_deliveries` | Outbound webhooks via `pg_net` |
 | `recurrences (task_id, rule jsonb, next_run_at)` | Recurring tasks via `pg_cron` |
 
