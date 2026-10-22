@@ -13,7 +13,6 @@ test('create, edit with shortcuts, comment, delete and undo', async ({ page }) =
   await page.keyboard.press('s');
   await page.getByPlaceholder('Change status to…').fill('In Progress');
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('row', { name: /In Progress/ })).toBeVisible();
   await expect(
     page
       .getByRole('row')

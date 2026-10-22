@@ -42,7 +42,8 @@ export function CommandList({ className, ...props }: ComponentProps<typeof Comma
     <CommandPrimitive.List
       className={cn(
         'max-h-[min(60vh,420px)] scroll-py-2 scrollbar-thin overflow-y-auto overscroll-contain p-1.5',
-        'h-(--cmdk-list-height) transition-[height] duration-120 ease-standard',
+        // cmdk measures content only; add the p-1.5 padding back or the last item is clipped.
+        'h-[calc(var(--cmdk-list-height)+--spacing(3))] transition-[height] duration-120 ease-standard',
         className,
       )}
       {...props}
