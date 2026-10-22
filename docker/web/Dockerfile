@@ -17,7 +17,7 @@ COPY apps/web apps/web
 ARG DAIQ_BUILD_ID=docker
 RUN VITE_BUILD_ID="$DAIQ_BUILD_ID" pnpm --filter @daiq/web build
 
-FROM nginxinc/nginx-unprivileged:1.29-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 COPY docker/web/default.conf.template /etc/nginx/templates/default.conf.template
 COPY docker/web/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY docker/web/05-daiq.envsh /docker-entrypoint.d/05-daiq.envsh
