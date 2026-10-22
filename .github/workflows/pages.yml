@@ -1,0 +1,55 @@
+name: Demo (GitHub Pages)
+
+# Publishes the static app to GitHub Pages, backed by the hosted demo Supabase
+# project. Configure repository variables DEMO_SUPABASE_URL and DEMO_SUPABASE_KEY
+# (the publishable/anon key only) to enable it (ADR-0012).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: vars.DEMO_SUPABASE_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build for /${{ github.event.repository.name }}/
+        run: pnpm --filter @daiq/web build
+        env:
+          DAIQ_BASE: /${{ github.event.repository.name }}/
+          DAIQ_SUPABASE_URL: ${{ vars.DEMO_SUPABASE_URL }}
+          DAIQ_SUPABASE_KEY: ${{ vars.DEMO_SUPABASE_KEY }}
+          DAIQ_DEMO: 'true'
+          VITE_BUILD_ID: ${{ github.sha }}
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: apps/web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

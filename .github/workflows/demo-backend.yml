@@ -1,0 +1,43 @@
+name: Demo backend
+
+# Applies migrations to the hosted demo Supabase project (manual), and keeps the
+# Free-tier project from pausing (weekly). Requires secrets SUPABASE_ACCESS_TOKEN
+# and SUPABASE_DB_PASSWORD, and variables SUPABASE_PROJECT_REF, DEMO_SUPABASE_URL,
+# DEMO_SUPABASE_KEY.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: demo
+    steps:
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.121.0
+      - run: supabase link --project-ref "${{ vars.SUPABASE_PROJECT_REF }}"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      - run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+  keep-alive:
+    if: github.event_name == 'schedule' && vars.DEMO_SUPABASE_URL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping the demo API
+        run: |
+          curl -fsS "${{ vars.DEMO_SUPABASE_URL }}/auth/v1/health" -H "apikey: ${{ vars.DEMO_SUPABASE_KEY }}"
