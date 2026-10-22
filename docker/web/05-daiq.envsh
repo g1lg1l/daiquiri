@@ -1,0 +1,34 @@
+#!/bin/sh
+# Sourced by the nginx entrypoint before templates are rendered.
+# Writes the runtime config.json (ADR-0012) and exports values for the CSP.
+# No `set -eu`: this file is sourced, and shell options would leak into the
+# entrypoint's other scripts. Failures exit explicitly instead.
+
+: "${DAIQ_PUBLIC_URL:?DAIQ_PUBLIC_URL is required (e.g. https://daiq.example.com)}"
+: "${DAIQ_SUPABASE_KEY:?DAIQ_SUPABASE_KEY (the anon/publishable key) is required}"
+SUPABASE_URL="${DAIQ_SUPABASE_URL:-$DAIQ_PUBLIC_URL}"
+
+# Never serve a privileged key to browsers (threat model T13).
+case "$DAIQ_SUPABASE_KEY" in
+  sb_secret_*) echo "Refusing to start: DAIQ_SUPABASE_KEY is a secret key" >&2; exit 1 ;;
+esac
+payload=$(printf '%s' "$DAIQ_SUPABASE_KEY" | cut -d. -f2 | tr '_-' '/+')
+while [ $(( ${#payload} % 4 )) -ne 0 ]; do payload="${payload}="; done
+if printf '%s' "$payload" | base64 -d 2>/dev/null | grep -q '"role" *: *"service_role"'; then
+  echo "Refusing to start: DAIQ_SUPABASE_KEY is a service_role key" >&2
+  exit 1
+fi
+
+mkdir -p /tmp/daiq
+printf '{"supabaseUrl":"%s","supabaseKey":"%s","demo":%s}\n' \
+  "$SUPABASE_URL" "$DAIQ_SUPABASE_KEY" "${DAIQ_DEMO:-false}" > /tmp/daiq/config.json
+
+# CSP: hash of the inline theme script (emitted by the build) and the API origin.
+DAIQ_SCRIPT_HASH=$(sed -n 's/.*"\(sha256-[^"]*\)".*/\1/p' /usr/share/nginx/html/csp-hashes.json)
+if [ "$SUPABASE_URL" = "$DAIQ_PUBLIC_URL" ]; then
+  DAIQ_CONNECT_SRC=""
+else
+  DAIQ_CONNECT_SRC="$SUPABASE_URL $(printf '%s' "$SUPABASE_URL" | sed 's|^http|ws|')"
+fi
+export DAIQ_SCRIPT_HASH DAIQ_CONNECT_SRC
+export NGINX_ENVSUBST_FILTER="^DAIQ_"

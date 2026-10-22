@@ -1,0 +1,59 @@
+# Rendered by the nginx entrypoint (envsubst, DAIQ_* variables only).
+map $http_upgrade $connection_upgrade {
+  default upgrade;
+  ''      close;
+}
+
+server {
+  listen 8080;
+  server_name _;
+  root /usr/share/nginx/html;
+  server_tokens off;
+  client_max_body_size 30m;
+
+  gzip on;
+  gzip_types text/css application/javascript application/json image/svg+xml;
+  gzip_min_length 1024;
+
+  set $csp "default-src 'self'; script-src 'self' '${DAIQ_SCRIPT_HASH}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' ${DAIQ_CONNECT_SRC}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
+
+  location = /healthz {
+    access_log off;
+    default_type text/plain;
+    return 200 "ok";
+  }
+
+  location = /config.json {
+    alias /tmp/daiq/config.json;
+    default_type application/json;
+    add_header Cache-Control "no-store" always;
+    include /etc/nginx/snippets/security-headers.conf;
+  }
+
+  # Supabase APIs on the same origin (auth, PostgREST, realtime websockets, storage).
+  location ~ ^/(auth|rest|realtime|storage)/v1/ {
+    proxy_pass http://api-gw:8000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+  }
+
+  location /assets/ {
+    add_header Cache-Control "public, max-age=31536000, immutable" always;
+    include /etc/nginx/snippets/security-headers.conf;
+    try_files $uri =404;
+  }
+
+  location / {
+    add_header Cache-Control "no-cache" always;
+    add_header Content-Security-Policy $csp always;
+    include /etc/nginx/snippets/security-headers.conf;
+    try_files $uri /index.html;
+  }
+}

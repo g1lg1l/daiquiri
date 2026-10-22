@@ -1,0 +1,9 @@
+Files under docker/supabase/ are copied unmodified from the official Supabase
+self-hosting stack:
+
+  repository: https://github.com/supabase/supabase/tree/master/docker
+  commit:     831d6302c7361c0a5115a91e953bdf084eb85330 (2026-10-22)
+  license:    Apache-2.0
+
+Image versions in docker/docker-compose.yml match docker/versions.md at that commit.
+To upgrade, see "Upgrading" in docker/README.md.
