@@ -1,0 +1,367 @@
+import { useAuthActions, useNotifications, useWorkspaces } from '@daiq/data';
+import type { Notification, Team } from '@daiq/domain';
+import {
+  Avatar,
+  Button,
+  cn,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuLabel,
+  MenuRadioGroup,
+  MenuRadioItem,
+  MenuSeparator,
+  MenuSub,
+  MenuSubTrigger,
+  MenuTrigger,
+  Shortcut,
+  Tooltip,
+  useTheme,
+} from '@daiq/ui';
+import { Link, useNavigate } from '@tanstack/react-router';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  CircleUserIcon,
+  FolderIcon,
+  InboxIcon,
+  KeyboardIcon,
+  ListTodoIcon,
+  LogOutIcon,
+  PanelLeftIcon,
+  PlusIcon,
+  SearchIcon,
+  SettingsIcon,
+  SparklesIcon,
+  UserPlusIcon,
+} from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { nowIso } from '../../lib/use-today';
+import { usePalette } from '../command-palette/palette';
+import { SHORTCUTS } from '../shortcuts/registry';
+import { useComposer } from '../tasks/composer';
+import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
+import { useShell } from './shell-context';
+
+const navItem =
+  'flex h-7 items-center gap-2 rounded-md px-2 text-[13px] text-fg-muted transition-colors hover:bg-surface-muted hover:text-fg [&_svg]:size-4 [&_svg]:shrink-0';
+const activeNavItem = 'bg-surface-emphasis text-fg font-medium hover:bg-surface-emphasis';
+
+function NavLink({
+  to,
+  params,
+  icon,
+  children,
+  trailing,
+  depth = 0,
+}: {
+  to: string;
+  params: Record<string, string>;
+  icon: ReactNode;
+  children: ReactNode;
+  trailing?: ReactNode;
+  depth?: number;
+}) {
+  const { closeSidebarOnMobile } = useShell();
+  return (
+    <Link
+      to={to}
+      params={params}
+      className={cn(navItem, depth > 0 && 'pl-7')}
+      activeProps={{ className: activeNavItem, 'aria-current': 'page' }}
+      onClick={closeSidebarOnMobile}
+    >
+      {icon}
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      {trailing}
+    </Link>
+  );
+}
+
+/** Unread, unarchived, not currently snoozed. Snoozes expire on the next minute tick. */
+function useUnreadCount(notifications: readonly Notification[] | undefined): number {
+  const [now, setNow] = useState(nowIso);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(nowIso()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    notifications?.filter(
+      (n) => !n.readAt && !n.archivedAt && (!n.snoozedUntil || n.snoozedUntil <= now),
+    ).length ?? 0
+  );
+}
+
+function readExpanded(teamId: string, fallback: boolean): boolean {
+  try {
+    const value = localStorage.getItem(`daiq-team-expanded:${teamId}`);
+    return value === null ? fallback : value === '1';
+  } catch {
+    return fallback;
+  }
+}
+
+function TeamSection({
+  team,
+  ws,
+  defaultExpanded,
+}: {
+  team: Team;
+  ws: string;
+  defaultExpanded: boolean;
+}) {
+  const [expanded, setExpanded] = useState(() => readExpanded(team.id, defaultExpanded));
+  const toggle = () =>
+    setExpanded((value) => {
+      try {
+        localStorage.setItem(`daiq-team-expanded:${team.id}`, value ? '0' : '1');
+      } catch {
+        // Expansion is only remembered when storage is available.
+      }
+      return !value;
+    });
+  return (
+    <li>
+      <button
+        type="button"
+        className={cn(navItem, 'w-full')}
+        aria-expanded={expanded}
+        onClick={toggle}
+      >
+        <span
+          aria-hidden
+          className="flex size-4 items-center justify-center rounded-[4px] bg-surface-emphasis text-[9px] font-semibold text-fg-muted"
+        >
+          {team.key.slice(0, 2)}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-left">{team.name}</span>
+        {expanded ? (
+          <ChevronDownIcon className="!size-3.5" />
+        ) : (
+          <ChevronRightIcon className="!size-3.5" />
+        )}
+      </button>
+      {expanded && (
+        <ul className="mt-0.5 flex flex-col gap-px">
+          <li>
+            <NavLink
+              to="/$workspace/team/$teamKey/tasks"
+              params={{ workspace: ws, teamKey: team.key }}
+              icon={<ListTodoIcon />}
+              depth={1}
+            >
+              Tasks
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/$workspace/team/$teamKey/projects"
+              params={{ workspace: ws, teamKey: team.key }}
+              icon={<FolderIcon />}
+              depth={1}
+            >
+              Projects
+            </NavLink>
+          </li>
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function WorkspaceMenu() {
+  const { workspace, userId } = useWorkspace();
+  const workspaces = useWorkspaces(userId);
+  const navigate = useNavigate();
+  const { preference, setPreference } = useTheme();
+  const { signOut } = useAuthActions();
+  const palette = usePalette();
+  return (
+    <Menu>
+      <MenuTrigger
+        render={
+          <button
+            type="button"
+            aria-label={`Workspace menu: ${workspace.name}`}
+            className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 text-left hover:bg-surface-muted aria-expanded:bg-surface-muted"
+          />
+        }
+      >
+        <Avatar name={workspace.name} size="sm" className="rounded-[5px]" />
+        <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">{workspace.name}</span>
+        <ChevronDownIcon className="size-3.5 text-fg-subtle" />
+      </MenuTrigger>
+      <MenuContent className="w-60">
+        <MenuLabel>Workspaces</MenuLabel>
+        <MenuRadioGroup
+          value={workspace.slug}
+          onValueChange={(slug: string) =>
+            void navigate({ to: '/$workspace', params: { workspace: slug } })
+          }
+        >
+          {workspaces.data?.map((w) => (
+            <MenuRadioItem key={w.id} value={w.slug}>
+              <Avatar name={w.name} size="xs" className="rounded-[4px]" />
+              {w.name}
+            </MenuRadioItem>
+          ))}
+        </MenuRadioGroup>
+        <MenuItem onClick={() => void navigate({ to: '/onboarding' })}>
+          <PlusIcon /> Create workspace
+        </MenuItem>
+        <MenuSeparator />
+        <MenuItem
+          onClick={() =>
+            void navigate({
+              to: '/$workspace/settings/members',
+              params: { workspace: workspace.slug },
+            })
+          }
+        >
+          <UserPlusIcon /> Invite people
+        </MenuItem>
+        <MenuItem
+          shortcut={SHORTCUTS.goSettings.keys}
+          onClick={() =>
+            void navigate({ to: '/$workspace/settings', params: { workspace: workspace.slug } })
+          }
+        >
+          <SettingsIcon /> Settings
+        </MenuItem>
+        <MenuSub>
+          <MenuSubTrigger>Theme</MenuSubTrigger>
+          <MenuContent side="right" align="start" sideOffset={4} className="min-w-36">
+            <MenuRadioGroup
+              value={preference}
+              onValueChange={(value: 'light' | 'dark' | 'system') => setPreference(value)}
+            >
+              <MenuRadioItem value="system">System</MenuRadioItem>
+              <MenuRadioItem value="light">Light</MenuRadioItem>
+              <MenuRadioItem value="dark">Dark</MenuRadioItem>
+            </MenuRadioGroup>
+          </MenuContent>
+        </MenuSub>
+        <MenuItem shortcut={SHORTCUTS.help.keys} onClick={palette.showShortcuts}>
+          <KeyboardIcon /> Keyboard shortcuts
+        </MenuItem>
+        <MenuSeparator />
+        <MenuItem onClick={() => void signOut()}>
+          <LogOutIcon /> Sign out
+        </MenuItem>
+      </MenuContent>
+    </Menu>
+  );
+}
+
+export function Sidebar() {
+  const { workspace, userId } = useWorkspace();
+  const data = useWorkspaceData();
+  const notifications = useNotifications(workspace.id);
+  const composer = useComposer();
+  const palette = usePalette();
+  const { toggleSidebar, isMobile } = useShell();
+  const ws = workspace.slug;
+  const unread = useUnreadCount(notifications.data);
+  const otherTeams = data.teams.filter((team) => !team.memberIds.includes(userId));
+
+  return (
+    <nav
+      aria-label="Workspace"
+      className="flex h-full w-60 flex-col gap-3 border-r border-border bg-surface-subtle px-2 py-2"
+    >
+      <div className="flex items-center gap-1">
+        <WorkspaceMenu />
+        {!isMobile && (
+          <Tooltip label="Hide sidebar" shortcut={SHORTCUTS.toggleSidebar.keys}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Hide sidebar"
+              onClick={toggleSidebar}
+            >
+              <PanelLeftIcon />
+            </Button>
+          </Tooltip>
+        )}
+      </div>
+
+      <div className="flex gap-1">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="flex-1 justify-start"
+          onClick={() => composer()}
+        >
+          <PlusIcon /> New task
+          <Shortcut keys={SHORTCUTS.create.keys} className="ml-auto" />
+        </Button>
+        <Tooltip label="Search" shortcut={SHORTCUTS.palette.keys}>
+          <Button
+            variant="secondary"
+            size="icon-sm"
+            aria-label="Search"
+            onClick={() => palette.open()}
+          >
+            <SearchIcon />
+          </Button>
+        </Tooltip>
+      </div>
+
+      <ul className="flex flex-col gap-px">
+        <li>
+          <NavLink
+            to="/$workspace/inbox"
+            params={{ workspace: ws }}
+            icon={<InboxIcon />}
+            trailing={
+              unread > 0 ? (
+                <span className="rounded-full bg-accent px-1.5 text-[11px] leading-[18px] font-semibold text-accent-fg tabular">
+                  {unread}
+                  <span className="sr-only"> unread</span>
+                </span>
+              ) : null
+            }
+          >
+            Inbox
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/$workspace/my-tasks" params={{ workspace: ws }} icon={<CircleUserIcon />}>
+            My tasks
+          </NavLink>
+        </li>
+      </ul>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
+        <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">Your teams</h2>
+        <ul className="flex flex-col gap-0.5">
+          {data.myTeams.map((team, index) => (
+            <TeamSection key={team.id} team={team} ws={ws} defaultExpanded={index < 3} />
+          ))}
+        </ul>
+        {otherTeams.length > 0 && (
+          <Link
+            to="/$workspace/settings/teams"
+            params={{ workspace: ws }}
+            className="px-2 py-1 text-xs text-fg-subtle hover:text-fg"
+          >
+            Browse {otherTeams.length} more {otherTeams.length === 1 ? 'team' : 'teams'}
+          </Link>
+        )}
+      </div>
+
+      {workspace.isDemo && (
+        <div className="rounded-lg border border-border bg-surface p-3 text-xs text-fg-muted">
+          <p className="mb-2 flex items-center gap-1.5 font-medium text-fg">
+            <SparklesIcon className="size-3.5 text-accent-text" /> You’re in a demo
+          </p>
+          This sandbox resets after 24 hours.{' '}
+          <Link to="/signup" className="text-accent-text hover:underline">
+            Create an account
+          </Link>{' '}
+          to keep your work.
+        </div>
+      )}
+    </nav>
+  );
+}

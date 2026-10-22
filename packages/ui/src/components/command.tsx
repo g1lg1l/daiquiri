@@ -76,8 +76,13 @@ export function CommandItem({
   children,
   icon,
   shortcut,
+  trailing,
   ...props
-}: ComponentProps<typeof CommandPrimitive.Item> & { icon?: ReactNode; shortcut?: string }) {
+}: ComponentProps<typeof CommandPrimitive.Item> & {
+  icon?: ReactNode;
+  shortcut?: string;
+  trailing?: ReactNode;
+}) {
   return (
     <CommandPrimitive.Item
       className={cn(
@@ -88,6 +93,7 @@ export function CommandItem({
     >
       {icon}
       <span className="min-w-0 flex-1 truncate">{children}</span>
+      {trailing}
       {shortcut && <Shortcut keys={shortcut} />}
     </CommandPrimitive.Item>
   );

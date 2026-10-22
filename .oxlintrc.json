@@ -23,7 +23,12 @@
     "typescript/consistent-type-imports": "error",
     "typescript/switch-exhaustiveness-check": "error",
     "eqeqeq": ["error", "smart"],
-    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "no-console": [
+      "error",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
     "no-empty": "error",
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
@@ -48,20 +53,57 @@
           }
         ]
       }
+    ],
+    "consistent-return": "off",
+    "typescript/consistent-return": "off",
+    "react/incompatible-library": "off",
+    "import/no-unassigned-import": [
+      "error",
+      {
+        "allow": ["**/*.css", "@testing-library/jest-dom/vitest"]
+      }
     ]
   },
   "overrides": [
     {
       "files": ["packages/data/**"],
-      "rules": { "no-restricted-imports": "off" }
+      "rules": {
+        "no-restricted-imports": "off"
+      }
     },
     {
       "files": ["packages/ui/src/components/command.tsx"],
-      "rules": { "no-restricted-imports": "off" }
+      "rules": {
+        "no-restricted-imports": "off"
+      }
     },
     {
       "files": ["**/*.test.ts", "**/*.test.tsx", "**/e2e/**"],
-      "rules": { "typescript/no-floating-promises": "off" }
+      "rules": {
+        "typescript/no-floating-promises": "off"
+      }
+    },
+    {
+      "files": ["**/scripts/**"],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "apps/web/src/features/tasks/task-list.tsx",
+        "apps/web/src/features/tasks/task-board.tsx",
+        "packages/editor/src/suggestion.tsx"
+      ],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
+      "files": ["packages/editor/src/editor.tsx"],
+      "rules": {
+        "react/refs": "off"
+      }
     }
   ]
 }

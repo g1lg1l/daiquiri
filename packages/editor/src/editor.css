@@ -1,0 +1,147 @@
+/* Prose styles for editor content and read-only documents. Tokens only. */
+.daiq-prose {
+  outline: none;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg);
+  word-break: break-word;
+}
+.daiq-prose > * + * {
+  margin-top: 0.55em;
+}
+.daiq-prose h1,
+.daiq-prose h2,
+.daiq-prose h3 {
+  font-stretch: 112%;
+  font-weight: 620;
+  line-height: 1.25;
+  margin-top: 1.1em;
+}
+.daiq-prose h1 {
+  font-size: 1.35rem;
+}
+.daiq-prose h2 {
+  font-size: 1.15rem;
+}
+.daiq-prose h3 {
+  font-size: 1rem;
+}
+.daiq-prose a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.daiq-prose ul,
+.daiq-prose ol {
+  padding-left: 1.4em;
+}
+.daiq-prose ul {
+  list-style: disc;
+}
+.daiq-prose ol {
+  list-style: decimal;
+}
+.daiq-prose ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0.2em;
+}
+.daiq-prose ul[data-type='taskList'] li {
+  display: flex;
+  gap: 0.5em;
+  align-items: flex-start;
+}
+.daiq-prose ul[data-type='taskList'] li > label {
+  margin-top: 0.3em;
+}
+.daiq-prose ul[data-type='taskList'] li[data-checked='true'] > div {
+  color: var(--fg-subtle);
+  text-decoration: line-through;
+}
+.daiq-prose input[type='checkbox'] {
+  accent-color: var(--accent);
+}
+.daiq-prose blockquote {
+  border-left: 2px solid var(--border-strong);
+  padding-left: 0.9em;
+  color: var(--fg-muted);
+}
+.daiq-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--surface-muted);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+}
+.daiq-prose pre {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.8em 1em;
+  overflow-x: auto;
+}
+.daiq-prose pre code {
+  background: none;
+  padding: 0;
+}
+.daiq-prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 1.2em 0;
+}
+.daiq-prose table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.daiq-prose th,
+.daiq-prose td {
+  border: 1px solid var(--border);
+  padding: 0.35em 0.6em;
+  text-align: left;
+  vertical-align: top;
+}
+.daiq-prose th {
+  background: var(--surface-subtle);
+  font-weight: 600;
+}
+.daiq-prose .mention {
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+  border-radius: 4px;
+  padding: 0 0.2em;
+  font-weight: 500;
+}
+.daiq-prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--fg-subtle);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+/* Syntax highlighting (highlight.js classes), tuned to the token palette. */
+.daiq-prose .hljs-comment,
+.daiq-prose .hljs-quote {
+  color: var(--fg-subtle);
+  font-style: italic;
+}
+.daiq-prose .hljs-keyword,
+.daiq-prose .hljs-selector-tag,
+.daiq-prose .hljs-built_in {
+  color: var(--accent-text);
+}
+.daiq-prose .hljs-string,
+.daiq-prose .hljs-attr {
+  color: var(--status-started);
+}
+.daiq-prose .hljs-number,
+.daiq-prose .hljs-literal {
+  color: var(--priority-urgent);
+}
+.daiq-prose .hljs-title,
+.daiq-prose .hljs-section {
+  color: var(--fg);
+  font-weight: 600;
+}

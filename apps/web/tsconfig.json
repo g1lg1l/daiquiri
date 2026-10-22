@@ -1,0 +1,7 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom/vitest", "node"]
+  },
+  "include": ["src", "e2e", "scripts", "vite.config.ts", "playwright.config.ts"]
+}

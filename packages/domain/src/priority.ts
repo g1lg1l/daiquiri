@@ -20,6 +20,10 @@ export const PRIORITY_LABEL: Record<Priority, string> = {
   4: 'Low',
 };
 
+export function isPriority(value: number): value is Priority {
+  return (PRIORITIES as readonly number[]).includes(value);
+}
+
 /** Sort key where urgent comes first and "no priority" last. */
 export function prioritySortKey(priority: Priority): number {
   return priority === 0 ? 5 : priority;

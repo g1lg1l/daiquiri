@@ -9,11 +9,17 @@
     "typecheck": "tsc -p .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "size": "node scripts/size.mjs"
+    "size": "node scripts/size.mjs",
+    "predev": "node scripts/dev-config.mjs"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "catalog:",
+    "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "catalog:",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "catalog:",
+    "@atlaskit/pragmatic-drag-and-drop-live-region": "catalog:",
     "@daiq/data": "workspace:*",
     "@daiq/domain": "workspace:*",
+    "@daiq/editor": "workspace:*",
     "@daiq/ui": "workspace:*",
     "@tanstack/query-async-storage-persister": "catalog:",
     "@tanstack/react-query": "catalog:",

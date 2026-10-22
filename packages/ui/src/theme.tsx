@@ -1,12 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { DARK_QUERY as darkQuery, THEME_STORAGE_KEY } from './theme-boot';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
-
-export const THEME_STORAGE_KEY = 'daiq-theme';
-
-const darkQuery = '(prefers-color-scheme: dark)';
 
 function readPreference(): ThemePreference {
   try {
@@ -69,9 +66,3 @@ export function useTheme(): ThemeContextValue {
   if (!context) throw new Error('useTheme must be used inside <ThemeProvider>');
   return context;
 }
-
-/**
- * Inline script for index.html: applies the theme before first paint so there
- * is no light flash in dark mode. Must stay dependency-free.
- */
-export const themeBootScript = `(function(){try{var p=localStorage.getItem('${THEME_STORAGE_KEY}');var d=p==='dark'||(p!=='light'&&matchMedia('${darkQuery}').matches);document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}})()`;

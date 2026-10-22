@@ -50,7 +50,7 @@ Daiq shortcuts follow four rules so users can predict them:
 | Keys                          | Action                                                                |
 | ----------------------------- | --------------------------------------------------------------------- |
 | `J` / `K` or `↓` / `↑`        | Move focus (board: within column)                                     |
-| `H` / `L` or `←` / `→`        | Board: move focus between columns                                     |
+| `←` / `→`                     | Board: move focus between columns (`H` and `L` are snooze and labels) |
 | `Enter`                       | Open focused task                                                     |
 | `Space`                       | Peek focused task (side preview)                                      |
 | `X`                           | Toggle selection of focused row                                       |

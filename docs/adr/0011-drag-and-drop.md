@@ -14,7 +14,7 @@ Boards and lists need smooth drag and drop across columns, compatible with virtu
 
 ## Decision
 
-- **Pragmatic DnD** (`@atlaskit/pragmatic-drag-and-drop` + `-hitbox` + `-auto-scroll` + `-live-region`) wrapped in two small hooks in `packages/ui` (`useDraggableItem`, `useDropTarget`).
+- **Pragmatic DnD** (`@atlaskit/pragmatic-drag-and-drop` + `-hitbox` + `-auto-scroll` + `-live-region`), used only by the board view (`apps/web/src/features/tasks/task-board.tsx`); extracted into shared hooks when a second surface needs drag and drop.
 - **Keyboard path is first-class**, not a fallback: `Mod ↑/↓` reorders, `Mod Shift ↑/↓` moves to top/bottom, `S`/`P`/`A` move between board columns by changing the property, plus a _Move to…_ item in every item menu. Every move (drag or keyboard) is announced via the live region.
 - A drop computes the new fractional `sort_key` with `fractional-indexing` (+ jitter) between neighbours and, when the target group differs, the property change; both are applied as one optimistic mutation.
 - Motion's layout animations animate the reflow after drop; reduced motion disables them.

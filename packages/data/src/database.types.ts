@@ -1056,6 +1056,53 @@ export type Database = {
         };
         Returns: string;
       };
+      create_task: {
+        Args: {
+          assignee_ids?: string[];
+          description?: Json;
+          due_date?: string;
+          id: string;
+          label_ids?: string[];
+          parent_id?: string;
+          priority?: number;
+          project_id?: string;
+          sort_key?: string;
+          start_date?: string;
+          status_id?: string;
+          team_id: string;
+          title: string;
+        };
+        Returns: {
+          canceled_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+          creator_id: string | null;
+          deleted_at: string | null;
+          description: Json | null;
+          description_text: string;
+          due_date: string | null;
+          estimate: number | null;
+          id: string;
+          number: number;
+          parent_id: string | null;
+          priority: number;
+          project_id: string | null;
+          search: unknown;
+          sort_key: string;
+          start_date: string | null;
+          status_id: string;
+          team_id: string;
+          title: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'tasks';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       create_team: {
         Args: {
           is_private?: boolean;
@@ -1139,6 +1186,8 @@ export type Database = {
         };
         Returns: undefined;
       };
+      set_task_assignees: { Args: { task_id: string; user_ids: string[] }; Returns: undefined };
+      set_task_labels: { Args: { label_ids: string[]; task_id: string }; Returns: undefined };
       workspace_member_emails: {
         Args: { workspace_id: string };
         Returns: {

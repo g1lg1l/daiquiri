@@ -1,7 +1,7 @@
 export { cn } from './cn';
 export { duration, ease, transitions } from './motion';
 export { formatShortcut } from './shortcut-format';
-export { ThemeProvider, useTheme, themeBootScript } from './theme';
+export { ThemeProvider, useTheme } from './theme';
 export type { ThemePreference, ResolvedTheme } from './theme';
 export { Avatar } from './components/avatar';
 export { Button, buttonVariants } from './components/button';
