@@ -12,7 +12,7 @@ A new member must understand a Daiq workspace within minutes.
 - One obvious way to do common things. Two ways only when one is a keyboard accelerator.
 - Sensible defaults ship enabled. Nothing important hides behind a feature toggle ("ClickApps"-style switches are explicitly rejected).
 - Hierarchy is shallow: **Workspace → Team → Project → Task**. No spaces/folders/lists maze.
-- Vocabulary is plain: *task*, *project*, *team*, *status*. Scrum words (sprint, story points) are optional labels, never required concepts.
+- Vocabulary is plain: _task_, _project_, _team_, _status_. Scrum words (sprint, story points) are optional labels, never required concepts.
 
 ## 2. Speed is a feature
 
@@ -41,7 +41,7 @@ Power exists, but it appears when it is needed.
 
 ## 5. One model, many views
 
-List, board, calendar, timeline and table are *lenses* over the same task model and the same filter engine. Business logic never lives in a view.
+List, board, calendar, timeline and table are _lenses_ over the same task model and the same filter engine. Business logic never lives in a view.
 
 ## 6. Calm, not loud
 

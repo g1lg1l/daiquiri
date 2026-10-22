@@ -5,17 +5,17 @@
 
 ## A. Executive product summary
 
-**Daiq** is an open-source, self-hostable work-management platform for teams. Tagline: *Everything your team needs. Nothing it doesn't.*
+**Daiq** is an open-source, self-hostable work-management platform for teams. Tagline: _Everything your team needs. Nothing it doesn't._
 
 ClickUp, Asana and Linear have each proven a different part of the market. ClickUp offers breadth, Asana approachability, and Linear speed and focus. Each pays for it: ClickUp with configuration sprawl, Asana with tier-gated primitives and object overload, Linear with software-only opinions. Daiq combines Linear's speed and keyboard grammar, Asana's editor-like list and My Tasks/Inbox split, and the flexibility non-software teams need: custom fields, multiple assignees, calendar and timeline. It does this on a deliberately shallow model with no feature toggles or plan gating. It runs as a public demo on GitHub Pages + Supabase, and self-hosted with `docker compose up -d`.
 
 ## B. Competitor findings — the strongest parts
 
-| From | Keep |
-|---|---|
-| **Linear** | Team-scoped identifiers (`ENG-142`). Fixed status categories with custom names. Fixed priorities. Keyboard grammar: single-key verbs on the focused item, `G`-chords, `⌘K`, `?`. Type-to-filter pickers. Space-to-peek. Optimistic, local-first feel. Triage. Calm design discipline. |
-| **Asana** | The list behaves like a text editor (`Enter`, paste lines). My Tasks (actions) is kept separate from the Inbox (information). Dependencies notify the next assignee once. Forms that create tasks. Fixed project status values. Approachable UI. |
-| **ClickUp** | Many layouts over one query. Multiple assignees. Assigned comments (deferred). Rich custom fields (capped in Daiq). Automations with a visible run log. Signed webhooks with before/after values. Bulk action bar. |
+| From        | Keep                                                                                                                                                                                                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Linear**  | Team-scoped identifiers (`ENG-142`). Fixed status categories with custom names. Fixed priorities. Keyboard grammar: single-key verbs on the focused item, `G`-chords, `⌘K`, `?`. Type-to-filter pickers. Space-to-peek. Optimistic, local-first feel. Triage. Calm design discipline. |
+| **Asana**   | The list behaves like a text editor (`Enter`, paste lines). My Tasks (actions) is kept separate from the Inbox (information). Dependencies notify the next assignee once. Forms that create tasks. Fixed project status values. Approachable UI.                                      |
+| **ClickUp** | Many layouts over one query. Multiple assignees. Assigned comments (deferred). Rich custom fields (capped in Daiq). Automations with a visible run log. Signed webhooks with before/after values. Bulk action bar.                                                                    |
 
 Details: [clickup-analysis.md](research/clickup-analysis.md), [asana-analysis.md](research/asana-analysis.md), [linear-analysis.md](research/linear-analysis.md).
 
@@ -68,21 +68,21 @@ Details: [information-architecture.md](product/information-architecture.md), [ke
 
 ## G. Technical stack (versions verified 2026-10-22)
 
-| Concern | Choice | Alternatives considered | ADR |
-|---|---|---|---|
-| Runtime / package manager / tasks | Node 24 LTS (CI also on 26), pnpm 12, Turborepo 2 | npm, yarn, bun; Nx | [0002](adr/0002-monorepo-and-tooling.md) |
-| Language | TypeScript 7 (strict) | TS 6 | 0002 |
-| UI framework | React 19.3, Vite 8, TanStack Router | Next.js, React Router 7, Solid, Svelte | [0001](adr/0001-frontend-framework.md) |
-| Data | TanStack Query 5 (later TanStack DB), supabase-js 2 | Electric, PowerSync, Zero, Redux | [0004](adr/0004-client-state-and-sync.md) |
-| Backend | Supabase: Postgres 17 + PostgREST + RLS + RPC + triggers | Separate API, Edge Functions | [0003](adr/0003-backend-and-data-access.md) |
-| UI system | Tailwind 4, shadcn (Base UI), lucide, sonner, cmdk | Radix, Mantine | [0008](adr/0008-ui-system-and-motion.md) |
-| Motion | CSS + View Transitions + Motion 14 | GSAP, react-spring | 0008 |
-| Editor | Tiptap 3 (ProseMirror JSON) + DOMPurify | BlockNote, Lexical | [0005](adr/0005-editor.md) |
-| Drag and drop | Pragmatic DnD 4 + keyboard moves | dnd-kit (classic and react) | [0011](adr/0011-drag-and-drop.md) |
-| Validation | Zod 4 (Standard Schema at the boundaries) | Valibot, ArkType | [0013](adr/0013-validation.md) |
-| Tables / virtualisation | TanStack Table 9, TanStack Virtual 3 | AG Grid | — |
-| Lint / format | oxlint + tsgolint, Prettier | ESLint 10, Biome | 0002 |
-| Tests | Vitest 5, Testing Library, Playwright 1.64, pgTAP | Jest, Cypress | [testing.md](architecture/testing.md) |
+| Concern                           | Choice                                                   | Alternatives considered                | ADR                                         |
+| --------------------------------- | -------------------------------------------------------- | -------------------------------------- | ------------------------------------------- |
+| Runtime / package manager / tasks | Node 24 LTS (CI also on 26), pnpm 12, Turborepo 2        | npm, yarn, bun; Nx                     | [0002](adr/0002-monorepo-and-tooling.md)    |
+| Language                          | TypeScript 7 (strict)                                    | TS 6                                   | 0002                                        |
+| UI framework                      | React 19.3, Vite 8, TanStack Router                      | Next.js, React Router 7, Solid, Svelte | [0001](adr/0001-frontend-framework.md)      |
+| Data                              | TanStack Query 5 (later TanStack DB), supabase-js 2      | Electric, PowerSync, Zero, Redux       | [0004](adr/0004-client-state-and-sync.md)   |
+| Backend                           | Supabase: Postgres 17 + PostgREST + RLS + RPC + triggers | Separate API, Edge Functions           | [0003](adr/0003-backend-and-data-access.md) |
+| UI system                         | Tailwind 4, shadcn (Base UI), lucide, sonner, cmdk       | Radix, Mantine                         | [0008](adr/0008-ui-system-and-motion.md)    |
+| Motion                            | CSS + View Transitions + Motion 14                       | GSAP, react-spring                     | 0008                                        |
+| Editor                            | Tiptap 3 (ProseMirror JSON) + DOMPurify                  | BlockNote, Lexical                     | [0005](adr/0005-editor.md)                  |
+| Drag and drop                     | Pragmatic DnD 4 + keyboard moves                         | dnd-kit (classic and react)            | [0011](adr/0011-drag-and-drop.md)           |
+| Validation                        | Zod 4 (Standard Schema at the boundaries)                | Valibot, ArkType                       | [0013](adr/0013-validation.md)              |
+| Tables / virtualisation           | TanStack Table 9, TanStack Virtual 3                     | AG Grid                                | —                                           |
+| Lint / format                     | oxlint + tsgolint, Prettier                              | ESLint 10, Biome                       | 0002                                        |
+| Tests                             | Vitest 5, Testing Library, Playwright 1.64, pgTAP        | Jest, Cypress                          | [testing.md](architecture/testing.md)       |
 
 Full research: [tech-stack-research.md](research/tech-stack-research.md).
 
@@ -116,6 +116,7 @@ See [ADR-0006](adr/0006-auth-and-authorization.md) and [threat-model.md](archite
 The same migrations, RPCs and policies run everywhere. The demo is GitHub Pages plus a hosted Supabase project, with migrations pushed from CI.
 
 The self-hosted setup is a trimmed official compose stack:
+
 - Supabase services: db, auth, rest, realtime, storage, meta and the gateway.
 - Daiq services: a `migrate` job and the nginx `web` container.
 
@@ -144,6 +145,7 @@ See [ADR-0005](adr/0005-editor.md).
 ## N. Performance strategy
 
 Budgets:
+
 - ≤ 200 kB gzip of initial JS.
 - INP ≤ 100 ms.
 - 5k-row lists at 60 fps.
@@ -184,17 +186,17 @@ Vertical slices 0–10 (skeleton → identity → teams → tasks/list → board
 
 ## S. Risks
 
-| Risk | Impact | Mitigation |
-|---|---|---|
-| TypeScript 7 has no compiler API until 7.1 | Tools that need the TS API break | Our toolchain (oxlint-tsgolint, Vite/Oxc, Vitest, Prettier) does not need it; documented alias fallback to TS 6 |
-| Pre-1.0 dependencies (TanStack DB, `@dnd-kit/react`, oxfmt) | API churn | Not adopted yet; isolated behind our own hooks/components |
-| cmdk unmaintained since 2025-03 | Breakage on a future React | Wrapped in `CommandPalette`; Base UI Autocomplete fallback |
-| Supabase self-host compose changes monthly | Upgrade friction | Pinned snapshot, documented upgrade path |
-| RLS mistakes | Data leak | Set-returning helpers, column grants, pgTAP suite plus meta-test, threat model checklist |
-| Realtime refetch-per-event cost under heavy activity | Load | Coalescing; thin events; move to TanStack DB direct writes later |
-| Free-tier demo pause / abuse | Demo outage | Keep-alive workflow, sandbox limits, 24 h cleanup, uploads disabled in demo |
-| Scope creep toward "everything app" | Complexity | Principles + REJECT list; every new feature needs a matrix entry |
-| Motion majors twice a year | Upgrade churn | Pinned major; motion used through `packages/ui` presets |
+| Risk                                                        | Impact                           | Mitigation                                                                                                      |
+| ----------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| TypeScript 7 has no compiler API until 7.1                  | Tools that need the TS API break | Our toolchain (oxlint-tsgolint, Vite/Oxc, Vitest, Prettier) does not need it; documented alias fallback to TS 6 |
+| Pre-1.0 dependencies (TanStack DB, `@dnd-kit/react`, oxfmt) | API churn                        | Not adopted yet; isolated behind our own hooks/components                                                       |
+| cmdk unmaintained since 2025-03                             | Breakage on a future React       | Wrapped in `CommandPalette`; Base UI Autocomplete fallback                                                      |
+| Supabase self-host compose changes monthly                  | Upgrade friction                 | Pinned snapshot, documented upgrade path                                                                        |
+| RLS mistakes                                                | Data leak                        | Set-returning helpers, column grants, pgTAP suite plus meta-test, threat model checklist                        |
+| Realtime refetch-per-event cost under heavy activity        | Load                             | Coalescing; thin events; move to TanStack DB direct writes later                                                |
+| Free-tier demo pause / abuse                                | Demo outage                      | Keep-alive workflow, sandbox limits, 24 h cleanup, uploads disabled in demo                                     |
+| Scope creep toward "everything app"                         | Complexity                       | Principles + REJECT list; every new feature needs a matrix entry                                                |
+| Motion majors twice a year                                  | Upgrade churn                    | Pinned major; motion used through `packages/ui` presets                                                         |
 
 ## T. Open architectural questions
 

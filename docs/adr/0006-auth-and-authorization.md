@@ -22,15 +22,15 @@ We need sign-up/sign-in that works from a static SPA, invitations, a safe public
 - **RLS is the only enforcement layer** ([ADR-0003](0003-backend-and-data-access.md)). Helpers in schema `app` (`accessible_team_ids()`, `workspace_role()`, `can_admin_workspace()`) are `security definer`, `stable`, `search_path = ''`, and read `auth.uid()` once per statement.
 - The UI mirrors permissions only to hide impossible actions; the domain package exposes `can(role, action)` for that purpose and pgTAP tests assert the database agrees.
 
-| Action | owner | admin | member | guest |
-|---|---|---|---|---|
-| Read public team content | ✅ | ✅ | ✅ | only teams joined |
-| Read private team content | if member | if member | if member | if member |
-| Create/edit tasks, comments | ✅ | ✅ | ✅ | in joined teams |
-| Create teams, projects | ✅ | ✅ | ✅ | ❌ |
-| Manage labels, fields, templates, automations | ✅ | ✅ | ❌ | ❌ |
-| Invite members / change roles | ✅ | ✅ (not owners) | ❌ | ❌ |
-| Delete workspace, manage owners | ✅ | ❌ | ❌ | ❌ |
+| Action                                        | owner     | admin           | member    | guest             |
+| --------------------------------------------- | --------- | --------------- | --------- | ----------------- |
+| Read public team content                      | ✅        | ✅              | ✅        | only teams joined |
+| Read private team content                     | if member | if member       | if member | if member         |
+| Create/edit tasks, comments                   | ✅        | ✅              | ✅        | in joined teams   |
+| Create teams, projects                        | ✅        | ✅              | ✅        | ❌                |
+| Manage labels, fields, templates, automations | ✅        | ✅              | ❌        | ❌                |
+| Invite members / change roles                 | ✅        | ✅ (not owners) | ❌        | ❌                |
+| Delete workspace, manage owners               | ✅        | ❌              | ❌        | ❌                |
 
 ## Consequences
 

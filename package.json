@@ -1,0 +1,37 @@
+{
+  "name": "daiq",
+  "private": true,
+  "description": "Daiq — Everything your team needs. Nothing it doesn't.",
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "turbo run dev --filter=@daiq/web",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "oxlint --type-aware",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "turbo run test",
+    "test:e2e": "pnpm --filter @daiq/web test:e2e",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:migrate": "supabase migration up --local",
+    "db:seed": "supabase db reset --local",
+    "db:test": "supabase test db",
+    "db:types": "supabase gen types typescript --local --schema public > packages/data/src/database.types.ts && prettier --write packages/data/src/database.types.ts",
+    "docker:up": "docker compose -f docker/docker-compose.yml --env-file docker/.env up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml --env-file docker/.env down"
+  },
+  "devDependencies": {
+    "oxlint": "^1.89.0",
+    "oxlint-tsgolint": "^7.0.2004",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "supabase": "^2.121.0",
+    "turbo": "^2.11.10",
+    "typescript": "catalog:"
+  }
+}

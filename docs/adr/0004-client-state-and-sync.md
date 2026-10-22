@@ -8,21 +8,21 @@ Linear's perceived speed comes from a local-first sync engine: in-memory reactiv
 
 ## Alternatives considered
 
-| Option | Extra server | RLS as read gate | Maturity (Oct 2026) |
-|---|---|---|---|
-| **TanStack Query 5 + Supabase Broadcast + optimistic updates** | No | Yes | Stable |
-| TanStack DB (QueryCollection) | No | Yes | Core 0.15 (pre-1.0) |
-| ElectricSQL | Yes (+ auth proxy) | No (shape proxy) | 1.x |
-| PowerSync | Yes (service + storage) | Partly (sync streams mirror RLS) | Mature, FSL service licence |
-| Rocicorp Zero | Yes (zero-cache + endpoints) | No | 1.x |
-| Redux/Zustand global store | No | n/a | Not a sync solution |
+| Option                                                         | Extra server                 | RLS as read gate                 | Maturity (Oct 2026)         |
+| -------------------------------------------------------------- | ---------------------------- | -------------------------------- | --------------------------- |
+| **TanStack Query 5 + Supabase Broadcast + optimistic updates** | No                           | Yes                              | Stable                      |
+| TanStack DB (QueryCollection)                                  | No                           | Yes                              | Core 0.15 (pre-1.0)         |
+| ElectricSQL                                                    | Yes (+ auth proxy)           | No (shape proxy)                 | 1.x                         |
+| PowerSync                                                      | Yes (service + storage)      | Partly (sync streams mirror RLS) | Mature, FSL service licence |
+| Rocicorp Zero                                                  | Yes (zero-cache + endpoints) | No                               | 1.x                         |
+| Redux/Zustand global store                                     | No                           | n/a                              | Not a sync solution         |
 
 ## Decision
 
 **Phase 1 (now): TanStack Query as the client store, behind `packages/data`.**
 
 - Query keys are entity-scoped and hierarchical (`['tasks', 'team', teamId]`, `['task', taskId]`), defined in one module.
-- Every mutation is optimistic: `onMutate` patches all affected cached queries through shared *cache patchers* (one per entity), `onError` rolls back and shows a toast, `onSettled` reconciles with the server row.
+- Every mutation is optimistic: `onMutate` patches all affected cached queries through shared _cache patchers_ (one per entity), `onError` rolls back and shows a toast, `onSettled` reconciles with the server row.
 - Client-generated UUIDs make creation optimistic without temporary ids.
 - Realtime events ([ADR-0007](0007-realtime.md)) carry `{entity, id, op}`; the data layer refetches the row through PostgREST (RLS-checked) and applies it with the same cache patchers. Events caused by the local user's own pending mutation are ignored.
 - On reconnect / tab focus, active queries refetch (TanStack defaults), which closes gaps without a change-log protocol.

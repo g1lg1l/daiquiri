@@ -8,14 +8,14 @@ Task descriptions, comments and project descriptions need a high-quality editor:
 
 ## Alternatives considered (details: [tech-stack-research.md §2a](../research/tech-stack-research.md))
 
-| | Tiptap 3.32 | BlockNote 0.56 | Lexical 0.52 |
-|---|---|---|---|
-| Canonical format | ProseMirror JSON (schema-checked) | BlockNote block JSON | Lexical serialized state |
-| Headless JSON → HTML | `@tiptap/static-renderer`, no DOM | `server-util` needs jsdom | needs happy-dom |
-| Slash/mentions/tables/code | MIT extensions, our own UI | Built-in Notion-like UI | Mostly DIY |
-| Licence | MIT | MPL-2.0 core, **GPL-3.0/commercial `xl-*`** | MIT |
-| Maturity | 3.x stable | 0.x | 0.x |
-| Size (gzip) | ~37 kB core + pm | ~188 kB core | ~63 kB core |
+|                            | Tiptap 3.32                       | BlockNote 0.56                              | Lexical 0.52             |
+| -------------------------- | --------------------------------- | ------------------------------------------- | ------------------------ |
+| Canonical format           | ProseMirror JSON (schema-checked) | BlockNote block JSON                        | Lexical serialized state |
+| Headless JSON → HTML       | `@tiptap/static-renderer`, no DOM | `server-util` needs jsdom                   | needs happy-dom          |
+| Slash/mentions/tables/code | MIT extensions, our own UI        | Built-in Notion-like UI                     | Mostly DIY               |
+| Licence                    | MIT                               | MPL-2.0 core, **GPL-3.0/commercial `xl-*`** | MIT                      |
+| Maturity                   | 3.x stable                        | 0.x                                         | 0.x                      |
+| Size (gzip)                | ~37 kB core + pm                  | ~188 kB core                                | ~63 kB core              |
 
 ## Decision
 

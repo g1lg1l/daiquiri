@@ -29,19 +29,19 @@ flowchart LR
 
 ## Packages
 
-| Path | Responsibility | May import |
-|---|---|---|
-| `apps/web` | Routes, screens, features (task list, board, palette…), app shell, shortcut registry | all packages |
-| `packages/domain` | Pure TypeScript: entity types, Zod schemas, filter engine, ordering keys, identifiers, permission matrix, date buckets | `zod` only |
-| `packages/data` | The only place that talks to Supabase: client factory, query keys, query/mutation hooks with optimistic cache patchers, realtime subscriptions, generated DB types | `domain` |
-| `packages/ui` | Design system: tokens, theme, shadcn/Base UI components, motion presets, DnD hooks | — |
-| `packages/editor` | Tiptap editor, shared schema, static renderer, Markdown/HTML conversion, sanitiser | `ui` |
-| `supabase/` | SQL migrations, seed, pgTAP tests, local config | — |
-| `docker/` | Self-host compose, web image, migrate job | — |
+| Path              | Responsibility                                                                                                                                                     | May import   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| `apps/web`        | Routes, screens, features (task list, board, palette…), app shell, shortcut registry                                                                               | all packages |
+| `packages/domain` | Pure TypeScript: entity types, Zod schemas, filter engine, ordering keys, identifiers, permission matrix, date buckets                                             | `zod` only   |
+| `packages/data`   | The only place that talks to Supabase: client factory, query keys, query/mutation hooks with optimistic cache patchers, realtime subscriptions, generated DB types | `domain`     |
+| `packages/ui`     | Design system: tokens, theme, shadcn/Base UI components, motion presets, DnD hooks                                                                                 | —            |
+| `packages/editor` | Tiptap editor, shared schema, static renderer, Markdown/HTML conversion, sanitiser                                                                                 | `ui`         |
+| `supabase/`       | SQL migrations, seed, pgTAP tests, local config                                                                                                                    | —            |
+| `docker/`         | Self-host compose, web image, migrate job                                                                                                                          | —            |
 
 ## Request lifecycle (edit a task's status)
 
-1. User presses `S`, picks *In Progress*.
+1. User presses `S`, picks _In Progress_.
 2. `useUpdateTask()` (packages/data) runs `onMutate`: cache patchers update every cached query containing the task; the row moves groups with a layout animation.
 3. PostgREST `PATCH /tasks?id=eq.…` with only the changed column; RLS + column grants authorise it.
 4. Triggers: `updated_at`, `started_at`/`completed_at`, `activity` row, notifications for subscribers, `realtime.send` to `team:<id>`.

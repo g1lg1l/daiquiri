@@ -6,7 +6,7 @@ Companion to [product-principles.md](product-principles.md). This document turns
 
 - **Three zones**: sidebar (navigation), main (the current view), detail (task drawer / side peek). Never more than three simultaneous columns.
 - Sidebar ≤ 240 px, collapsible (`[`), and lists only things the user chose to see: Inbox, My tasks, favourites, teams they belong to.
-- The main view header holds the view title, view switcher and a single "Display" control. Filters render as removable chips *only when active*.
+- The main view header holds the view title, view switcher and a single "Display" control. Filters render as removable chips _only when active_.
 - Detail opens as a side peek on wide screens and full page on narrow ones; `Esc` always returns focus to the row it came from.
 
 ## Density and typography
@@ -19,7 +19,7 @@ Companion to [product-principles.md](product-principles.md). This document turns
 
 - Semantic tokens only (`--color-fg`, `--color-bg-subtle`, `--color-accent`, `--color-status-started`, …). Components never reference raw palette values.
 - Status colors derive from the **status category** (backlog, unstarted, started, done, canceled) — five hues, not a rainbow per status.
-- Priority uses shape + one warm hue for *urgent* only. Color is never the only signal (WCAG 1.4.1).
+- Priority uses shape + one warm hue for _urgent_ only. Color is never the only signal (WCAG 1.4.1).
 - Light and dark themes are designed together; contrast targets WCAG 2.2 AA (4.5:1 text, 3:1 UI).
 
 ## Controls
@@ -27,13 +27,13 @@ Companion to [product-principles.md](product-principles.md). This document turns
 - Rarely used actions appear on hover/focus or inside the `…` menu and the command palette — not as permanent buttons.
 - Every property on a task is editable in place, from the keyboard, with the same picker component (status, priority, assignee, labels, dates, project).
 - Pickers are type-to-filter lists with the selected value first and a shortcut hint on the right.
-- Destructive actions are undoable (toast with *Undo*, `⌘Z`) rather than confirmed with a modal, except for irreversible ones (deleting a workspace).
+- Destructive actions are undoable (toast with _Undo_, `⌘Z`) rather than confirmed with a modal, except for irreversible ones (deleting a workspace).
 
 ## Feedback and motion
 
 - Optimistic first: the UI changes on input; reconciliation with the server is invisible unless it fails, in which case the change is reverted with an explanatory toast.
 - Durations: 120–180 ms for most transitions, ≤ 240 ms for panels and dialogs, spring-based for drag and drop. Exit animations are faster than entry.
-- Motion communicates *where something went* (a completed task slides into its new group, a created task grows from the composer).
+- Motion communicates _where something went_ (a completed task slides into its new group, a created task grows from the composer).
 - `prefers-reduced-motion: reduce` replaces movement with opacity changes and disables layout animations.
 
 ## Empty, loading and error states

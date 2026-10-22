@@ -14,13 +14,13 @@ Constraints:
 
 ## Alternatives considered
 
-| Option | Security | Pages-compatible | Self-host | Maintenance |
-|---|---|---|---|---|
-| A. Direct PostgREST only, RLS | Strong for reads; multi-row invariants hard | ✅ | ✅ | Low |
-| B. RPC (Postgres functions) for everything | Strong; verbose for simple edits | ✅ | ✅ | Medium |
-| C. Separate API service (Node/Hono) with service role | Strong if written well; RLS becomes optional (fail-open risk) | ❌ needs hosting | Extra container | High (two permission systems) |
-| D. Edge Functions for domain ops | Strong | ✅ (hosted) | Self-hosted functions have no deploy command, weaker DX | Medium-high |
-| **E. Hybrid: PostgREST + RLS for reads and single-row edits, RPC for multi-row operations, triggers for side effects** | Strong, one permission system (RLS) | ✅ | ✅ | Medium |
+| Option                                                                                                                 | Security                                                      | Pages-compatible | Self-host                                               | Maintenance                   |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------- | ------------------------------------------------------- | ----------------------------- |
+| A. Direct PostgREST only, RLS                                                                                          | Strong for reads; multi-row invariants hard                   | ✅               | ✅                                                      | Low                           |
+| B. RPC (Postgres functions) for everything                                                                             | Strong; verbose for simple edits                              | ✅               | ✅                                                      | Medium                        |
+| C. Separate API service (Node/Hono) with service role                                                                  | Strong if written well; RLS becomes optional (fail-open risk) | ❌ needs hosting | Extra container                                         | High (two permission systems) |
+| D. Edge Functions for domain ops                                                                                       | Strong                                                        | ✅ (hosted)      | Self-hosted functions have no deploy command, weaker DX | Medium-high                   |
+| **E. Hybrid: PostgREST + RLS for reads and single-row edits, RPC for multi-row operations, triggers for side effects** | Strong, one permission system (RLS)                           | ✅               | ✅                                                      | Medium                        |
 
 ## Decision
 

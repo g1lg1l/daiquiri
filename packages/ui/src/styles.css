@@ -1,0 +1,215 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+/*
+ * Daiq design tokens. Components use only these semantic tokens (via the
+ * Tailwind theme below), never raw palette values. Colours are OKLCH.
+ * Theme is selected by [data-theme] on <html> (set before first paint).
+ */
+
+:root {
+  color-scheme: light;
+
+  --surface: oklch(0.995 0.001 120);
+  --surface-subtle: oklch(0.977 0.003 120);
+  --surface-muted: oklch(0.955 0.004 120);
+  --surface-emphasis: oklch(0.925 0.006 120);
+  --overlay: oklch(1 0 0);
+
+  --fg: oklch(0.22 0.012 125);
+  --fg-muted: oklch(0.47 0.012 125);
+  --fg-subtle: oklch(0.6 0.01 125);
+  --fg-inverted: oklch(0.985 0.002 120);
+
+  --border: oklch(0.915 0.005 120);
+  --border-strong: oklch(0.85 0.007 120);
+
+  --accent: oklch(0.8 0.19 128);
+  --accent-fg: oklch(0.24 0.06 132);
+  --accent-subtle: oklch(0.95 0.06 128);
+  --accent-text: oklch(0.47 0.13 138);
+  --focus: oklch(0.62 0.17 136);
+
+  --danger: oklch(0.56 0.2 27);
+  --danger-subtle: oklch(0.96 0.03 27);
+  --warning: oklch(0.72 0.15 70);
+
+  --status-triage: oklch(0.66 0.16 45);
+  --status-backlog: oklch(0.68 0.01 125);
+  --status-unstarted: oklch(0.52 0.012 125);
+  --status-started: oklch(0.72 0.16 75);
+  --status-completed: oklch(0.6 0.17 138);
+  --status-canceled: oklch(0.66 0.008 125);
+  --priority-urgent: oklch(0.6 0.21 33);
+
+  --shadow-popover: 0 1px 2px oklch(0.2 0.02 125 / 6%), 0 8px 24px -6px oklch(0.2 0.02 125 / 14%);
+  --scrim: oklch(0.2 0.02 125 / 18%);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --surface: oklch(0.175 0.006 125);
+  --surface-subtle: oklch(0.195 0.007 125);
+  --surface-muted: oklch(0.232 0.008 125);
+  --surface-emphasis: oklch(0.27 0.009 125);
+  --overlay: oklch(0.215 0.008 125);
+
+  --fg: oklch(0.95 0.006 120);
+  --fg-muted: oklch(0.74 0.01 120);
+  --fg-subtle: oklch(0.6 0.01 120);
+  --fg-inverted: oklch(0.2 0.01 125);
+
+  --border: oklch(0.28 0.007 125);
+  --border-strong: oklch(0.35 0.008 125);
+
+  --accent: oklch(0.85 0.19 128);
+  --accent-fg: oklch(0.22 0.06 132);
+  --accent-subtle: oklch(0.3 0.06 132);
+  --accent-text: oklch(0.85 0.17 130);
+  --focus: oklch(0.8 0.17 130);
+
+  --danger: oklch(0.7 0.18 25);
+  --danger-subtle: oklch(0.3 0.06 25);
+  --warning: oklch(0.8 0.14 75);
+
+  --status-triage: oklch(0.74 0.15 50);
+  --status-backlog: oklch(0.58 0.01 120);
+  --status-unstarted: oklch(0.72 0.01 120);
+  --status-started: oklch(0.8 0.15 80);
+  --status-completed: oklch(0.78 0.17 132);
+  --status-canceled: oklch(0.55 0.008 120);
+  --priority-urgent: oklch(0.7 0.19 35);
+
+  --shadow-popover: 0 0 0 1px oklch(1 0 0 / 6%), 0 12px 32px -8px oklch(0 0 0 / 55%);
+  --scrim: oklch(0 0 0 / 45%);
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-emphasis: var(--surface-emphasis);
+  --color-overlay: var(--overlay);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-fg-inverted: var(--fg-inverted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-text: var(--accent-text);
+  --color-focus: var(--focus);
+  --color-danger: var(--danger);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-warning: var(--warning);
+  --color-status-triage: var(--status-triage);
+  --color-status-backlog: var(--status-backlog);
+  --color-status-unstarted: var(--status-unstarted);
+  --color-status-started: var(--status-started);
+  --color-status-completed: var(--status-completed);
+  --color-status-canceled: var(--status-canceled);
+  --color-priority-urgent: var(--priority-urgent);
+  --color-scrim: var(--scrim);
+
+  --shadow-popover: var(--shadow-popover);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1.15);
+  --animate-duration-fast: 120ms;
+}
+
+/* Base UI exposes state as data attributes; these variants keep class names short. */
+@custom-variant data-open {
+  &:where([data-open]:not([data-open='false'])) {
+    @slot;
+  }
+}
+@custom-variant data-closed {
+  &:where([data-closed]:not([data-closed='false'])) {
+    @slot;
+  }
+}
+@custom-variant data-highlighted {
+  &:where([data-highlighted]) {
+    @slot;
+  }
+}
+@custom-variant data-selected {
+  &:where([data-selected='true']) {
+    @slot;
+  }
+}
+@custom-variant data-disabled {
+  &:where([data-disabled]:not([data-disabled='false'])) {
+    @slot;
+  }
+}
+@custom-variant data-checked {
+  &:where([data-checked]:not([data-checked='false'])) {
+    @slot;
+  }
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--surface);
+    color: var(--fg);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+
+  ::selection {
+    background: var(--accent-subtle);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}

@@ -8,12 +8,12 @@ The web app must (a) build to static files for the GitHub Pages demo, (b) run be
 
 ## Alternatives considered
 
-| Option | Verdict |
-|---|---|
+| Option                                                  | Verdict                                                                                                                              |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **React 19.3 + Vite 8.3 + TanStack Router 1.170 (SPA)** | Static output, type-safe routes and search params, built-in preloading and loaders, file-based routes with automatic code splitting. |
-| Next.js / TanStack Start (SSR) | SSR adds a server we do not need and cannot host on Pages; static export loses most of the value. |
-| React Router 7 (framework mode) | Comparable, but weaker typed search-param story; framework mode leans on a server. |
-| SolidJS / Svelte 5 | Excellent performance, but smaller ecosystem for editor (Tiptap React bindings), DnD and accessible primitives. |
+| Next.js / TanStack Start (SSR)                          | SSR adds a server we do not need and cannot host on Pages; static export loses most of the value.                                    |
+| React Router 7 (framework mode)                         | Comparable, but weaker typed search-param story; framework mode leans on a server.                                                   |
+| SolidJS / Svelte 5                                      | Excellent performance, but smaller ecosystem for editor (Tiptap React bindings), DnD and accessible primitives.                      |
 
 ## Decision
 

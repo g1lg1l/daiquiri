@@ -1,0 +1,50 @@
+-- Shared pgTAP helpers, included by every test file with \ir _helpers.psql.
+set client_min_messages = warning;
+-- Everything runs inside the test's transaction and is rolled back afterwards.
+create extension if not exists pgtap with schema extensions;
+set search_path = public, extensions;
+
+create schema if not exists tests;
+
+-- Creates an auth user (the on_auth_user_created trigger adds the profile).
+create or replace function tests.create_user(handle text, anonymous boolean default false)
+returns uuid language plpgsql as $$
+declare
+  uid uuid := gen_random_uuid();
+begin
+  insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data, is_anonymous, created_at, updated_at)
+  values (uid, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+          case when anonymous then null else handle || '@test.daiq' end,
+          jsonb_build_object('display_name', initcap(handle)), anonymous, now(), now());
+  return uid;
+end $$;
+
+create or replace function tests.uid(handle text) returns uuid language sql security definer as $$
+  select id from auth.users where email = handle || '@test.daiq'
+$$;
+
+-- Switches to the authenticated role with the given user's JWT claims.
+create or replace function tests.authenticate_as(handle text) returns void language plpgsql as $$
+declare
+  uid uuid := tests.uid(handle);
+begin
+  if uid is null then raise exception 'unknown test user %', handle; end if;
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', uid, 'role', 'authenticated', 'email', handle || '@test.daiq', 'is_anonymous', false)::text, true);
+  perform set_config('role', 'authenticated', true);
+end $$;
+
+create or replace function tests.authenticate_anon() returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  perform set_config('role', 'anon', true);
+end $$;
+
+create or replace function tests.clear_authentication() returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', null, true);
+  perform set_config('role', 'postgres', true);
+end $$;
+
+grant usage on schema tests to authenticated, anon;
+grant execute on all functions in schema tests to authenticated, anon;

@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+dist
+coverage
+.turbo
+supabase/.temp
+apps/web/src/routeTree.gen.ts
+docs/research

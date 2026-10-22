@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Please **do not open a public issue** for security problems. Use GitHub's private vulnerability reporting ("Report a vulnerability" under the repository's *Security* tab). You will get an acknowledgement within 72 hours and a status update at least weekly until the issue is resolved.
+Please **do not open a public issue** for security problems. Use GitHub's private vulnerability reporting ("Report a vulnerability" under the repository's _Security_ tab). You will get an acknowledgement within 72 hours and a status update at least weekly until the issue is resolved.
 
 Include: affected version/commit, deployment type (hosted demo or self-hosted), reproduction steps, and impact.
 
