@@ -80,4 +80,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities privately as desc
 
 ## License
 
-Not yet chosen (AGPL-3.0 is proposed in [docs/plan.md](docs/plan.md) §T). Until a license is added, all rights are reserved by the author.
+Daiq is free software under the [GNU Affero General Public License v3.0](LICENSE) (`AGPL-3.0-only`).
+
+You can use, self-host, modify and redistribute it. If you run a modified version for other people over a network, the AGPL requires you to offer them the source code of your version.

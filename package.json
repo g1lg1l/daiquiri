@@ -1,6 +1,7 @@
 {
   "name": "daiq",
   "private": true,
+  "license": "AGPL-3.0-only",
   "description": "Daiq — Everything your team needs. Nothing it doesn't.",
   "type": "module",
   "packageManager": "pnpm@12.15.0",

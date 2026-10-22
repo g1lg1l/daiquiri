@@ -202,13 +202,14 @@ Vertical slices 0–10 (skeleton → identity → teams → tasks/list → board
 
 Resolved through research (no user input needed): editor, DnD, realtime mode, sync layer, validation, linting, SPA routing, demo strategy, background jobs, search.
 
+Resolved by the owner: **licence** is AGPL-3.0-only (2026-10-22), so hosted forks must share their changes. See [`LICENSE`](../LICENSE).
+
 Still open:
 
-1. **Licence.** AGPL-3.0 is recommended so hosted forks contribute back; MIT would maximise adoption. **Owner decision needed** before the repository goes public. No `LICENSE` file has been added yet.
-2. **Demo Supabase project.** The hosted project and its keys must be created by the owner. CI uses repository variables and secrets that are not yet set.
-3. **Email delivery for self-hosters.** SMTP is optional. Without it, magic links and invitations fall back to copyable links. This is acceptable and documented.
-4. **TanStack DB adoption point.** Re-evaluate when the core reaches 1.0.
-5. **Multiple assignees in reporting.** Workload counts a task once for each assignee. This is to be confirmed with real usage.
+1. **Demo Supabase project.** The hosted project and its keys must be created by the owner. CI uses repository variables and secrets that are not yet set.
+2. **Email delivery for self-hosters.** SMTP is optional. Without it, magic links and invitations fall back to copyable links. This is acceptable and documented.
+3. **TanStack DB adoption point.** Re-evaluate when the core reaches 1.0.
+4. **Multiple assignees in reporting.** Workload counts a task once for each assignee. This is to be confirmed with real usage.
 
 ## Plan review (§32 checklist)
 
