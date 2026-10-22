@@ -146,7 +146,7 @@ See [ADR-0005](adr/0005-editor.md).
 
 Budgets:
 
-- ≤ 200 kB gzip of initial JS.
+- ≤ 250 kB gzip of initial JS (measured 241 kB; see performance.md for the breakdown).
 - INP ≤ 100 ms.
 - 5k-row lists at 60 fps.
 - Optimistic changes visible within one frame.

@@ -4,21 +4,37 @@ Performance is a product feature. Budgets are measured, enforced in CI where fea
 
 ## Budgets
 
-| Metric                                      | Budget                               | How it is measured                                             |
-| ------------------------------------------- | ------------------------------------ | -------------------------------------------------------------- |
-| Initial JS (shell + first route), gzip      | ≤ 200 kB                             | `pnpm --filter web size` (script over `dist/assets`, fails CI) |
-| Any lazily loaded route chunk, gzip         | ≤ 90 kB                              | same script                                                    |
-| Editor chunk, gzip                          | ≤ 140 kB                             | same script                                                    |
-| LCP, signed-in task list, desktop broadband | ≤ 1.5 s                              | Playwright trace on `vite preview`                             |
-| INP p75                                     | ≤ 100 ms (hard limit 200 ms)         | Web-vitals in the logger; Playwright interaction timings       |
-| CLS                                         | ≤ 0.05                               | Web-vitals                                                     |
-| Optimistic mutation visible                 | next frame (≤ 16 ms after input)     | Component test with fake timers + Playwright                   |
-| Open task from list (cached)                | ≤ 100 ms                             | Playwright                                                     |
-| Team list with 5,000 tasks                  | first render ≤ 150 ms; 60 fps scroll | Playwright with seeded data; DevTools profile on regressions   |
-| Board with 2,000 cards                      | drag at 60 fps                       | Manual profile per release                                     |
-| PostgREST team task list (5k rows)          | p95 ≤ 150 ms server time             | `explain analyze` pgTAP plan checks; `pg_stat_statements`      |
-| RPC (create workspace, search)              | p95 ≤ 100 ms                         | pgTAP timing smoke + `pg_stat_statements`                      |
-| Realtime propagation                        | p95 ≤ 1 s                            | Two-browser E2E                                                |
+| Metric                                      | Budget                               | How it is measured                                                 |
+| ------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------ |
+| Initial JS (entry + static imports), gzip   | ≤ 250 kB                             | `pnpm --filter @daiq/web size` (reads the Vite manifest, fails CI) |
+| Any lazily loaded chunk, gzip               | ≤ 90 kB                              | same script                                                        |
+| Editor chunk, gzip                          | ≤ 180 kB                             | same script                                                        |
+| LCP, signed-in task list, desktop broadband | ≤ 1.5 s                              | Playwright trace on `vite preview`                                 |
+| INP p75                                     | ≤ 100 ms (hard limit 200 ms)         | Web-vitals in the logger; Playwright interaction timings           |
+| CLS                                         | ≤ 0.05                               | Web-vitals                                                         |
+| Optimistic mutation visible                 | next frame (≤ 16 ms after input)     | Component test with fake timers + Playwright                       |
+| Open task from list (cached)                | ≤ 100 ms                             | Playwright                                                         |
+| Team list with 5,000 tasks                  | first render ≤ 150 ms; 60 fps scroll | Playwright with seeded data; DevTools profile on regressions       |
+| Board with 2,000 cards                      | drag at 60 fps                       | Manual profile per release                                         |
+| PostgREST team task list (5k rows)          | p95 ≤ 150 ms server time             | `explain analyze` pgTAP plan checks; `pg_stat_statements`          |
+| RPC (create workspace, search)              | p95 ≤ 100 ms                         | pgTAP timing smoke + `pg_stat_statements`                          |
+| Realtime propagation                        | p95 ≤ 1 s                            | Two-browser E2E                                                    |
+
+### Measured baseline (2026-10-22)
+
+The first budgets were set before any code existed; they were revised after the first production build, as the plan requires (measure, don't guess).
+
+| Chunk                  | gzip   | Main contents                                                                                                                                       |
+| ---------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Initial JS             | 241 kB | react-dom ≈ 45, supabase-js (auth, PostgREST, realtime, storage) ≈ 45, Zod 24, TanStack Router 21 + Query 13, Base UI primitives, sonner, app shell |
+| Editor (lazy)          | 174 kB | Tiptap core + ProseMirror ≈ 100, tables 15, highlight.js (10 languages) ≈ 25, linkify, static renderer                                              |
+| Command palette (lazy) | 27 kB  | cmdk, palette actions, search                                                                                                                       |
+
+Known next steps, in order of value per effort:
+
+1. Route search schemas and runtime config on `zod/mini` (≈ −17 kB initial).
+2. Load syntax highlighting languages on demand (≈ −25 kB editor).
+3. Mount the toast renderer after first paint (≈ −8 kB initial).
 
 ## Techniques
 

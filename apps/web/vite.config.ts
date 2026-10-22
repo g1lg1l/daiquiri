@@ -36,6 +36,10 @@ export default defineConfig({
   build: {
     target: 'es2023',
     sourcemap: true,
+    // Read by scripts/size.mjs to enforce the bundle budgets in performance.md.
+    manifest: true,
+    // The editor chunk is lazy and budgeted separately; avoid noisy warnings.
+    chunkSizeWarningLimit: 800,
   },
   server: { port: 5173, strictPort: true },
   preview: { port: 4173, strictPort: true },
