@@ -36,6 +36,7 @@ import {
   UserPlusIcon,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
+import { Wordmark } from '../../components/wordmark';
 import { nowIso } from '../../lib/use-today';
 import { usePalette } from '../command-palette/palette';
 import { SHORTCUTS } from '../shortcuts/registry';
@@ -362,6 +363,16 @@ export function Sidebar() {
           to keep your work.
         </div>
       )}
+
+      <a
+        href="https://github.com/g1lg1l/daiquiri"
+        target="_blank"
+        rel="noreferrer"
+        aria-label="Daiquiri source code on GitHub"
+        className="self-start rounded-md px-2 py-1 text-fg-muted transition-colors hover:text-fg"
+      >
+        <Wordmark className="text-[15px] text-inherit" />
+      </a>
     </nav>
   );
 }

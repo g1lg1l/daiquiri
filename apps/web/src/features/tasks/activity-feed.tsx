@@ -124,7 +124,7 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
   const actions = useCommentActions(task.id, workspace.id, userId);
   const [showActivity, setShowActivity] = useState(true);
   const name = (id: string | null) =>
-    id ? (data.membersById.get(id)?.displayName ?? 'Someone') : 'Daiq';
+    id ? (data.membersById.get(id)?.displayName ?? 'Someone') : 'Daiquiri';
 
   const items: FeedItem[] = [
     ...(showActivity

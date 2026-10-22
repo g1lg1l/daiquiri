@@ -146,7 +146,7 @@ function Inbox() {
                     selectedId === notification.id && 'bg-surface-muted',
                   )}
                 >
-                  <Avatar name={actor?.displayName ?? 'Daiq'} size="lg" />
+                  <Avatar name={actor?.displayName ?? 'Daiquiri'} size="lg" />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-2 text-[13px]">
                       <span className={cn('truncate', !notification.readAt && 'font-semibold')}>

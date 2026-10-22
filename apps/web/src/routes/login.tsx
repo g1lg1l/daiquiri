@@ -57,7 +57,7 @@ function Login() {
       footer={
         <div className="flex flex-col gap-2">
           <span>
-            New to Daiq?{' '}
+            New to Daiquiri?{' '}
             <Link to="/signup" className="text-accent-text hover:underline">
               Create an account
             </Link>

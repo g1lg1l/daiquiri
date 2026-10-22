@@ -6,7 +6,7 @@ export function ConfigErrorScreen({ error }: { error: unknown }) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-5 px-6">
       <Wordmark />
-      <h1 className="text-2xl font-semibold font-display">Daiq needs a backend to talk to</h1>
+      <h1 className="text-2xl font-semibold font-display">Daiquiri needs a backend to talk to</h1>
       <p className="text-fg-muted">
         The app could not read its runtime configuration. Provide a <code>config.json</code> next to{' '}
         <code>index.html</code> with your Supabase URL and publishable key.
