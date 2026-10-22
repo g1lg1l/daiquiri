@@ -15,6 +15,7 @@ export type Database = {
           team_id: string | null;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           actor_id?: string | null;
           created_at?: string;
@@ -83,6 +84,7 @@ export type Database = {
           user_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           comment_id: string;
           created_at?: string;
@@ -135,6 +137,7 @@ export type Database = {
           updated_at: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           author_id?: string | null;
           body: NonNullable<Json>;
@@ -194,6 +197,7 @@ export type Database = {
           user_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           entity_id: string;
@@ -233,6 +237,7 @@ export type Database = {
           token_hash: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           accepted_at?: string | null;
           created_at?: string;
@@ -282,6 +287,7 @@ export type Database = {
           name: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           color?: string;
           created_at?: string;
@@ -321,6 +327,7 @@ export type Database = {
           user_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           actor_id?: string | null;
           archived_at?: string | null;
@@ -388,6 +395,7 @@ export type Database = {
           id: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           avatar_url?: string | null;
           created_at?: string;
@@ -421,6 +429,7 @@ export type Database = {
           updated_at: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           archived_at?: string | null;
           created_at?: string;
@@ -487,6 +496,7 @@ export type Database = {
           team_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           category: Database['public']['Enums']['status_category'];
           created_at?: string;
@@ -522,6 +532,7 @@ export type Database = {
           user_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           task_id: string;
@@ -558,6 +569,7 @@ export type Database = {
           task_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           label_id: string;
@@ -597,6 +609,7 @@ export type Database = {
           task_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           created_by?: string | null;
@@ -646,6 +659,7 @@ export type Database = {
           user_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           task_id: string;
@@ -700,6 +714,7 @@ export type Database = {
           updated_at: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           canceled_at?: string | null;
           completed_at?: string | null;
@@ -793,6 +808,7 @@ export type Database = {
           user_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           team_id: string;
@@ -837,6 +853,7 @@ export type Database = {
           updated_at: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           cycles_enabled?: boolean;
@@ -887,6 +904,7 @@ export type Database = {
           updated_at: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           config?: NonNullable<Json>;
           created_at?: string;
@@ -940,6 +958,7 @@ export type Database = {
           user_id: string;
           workspace_id: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           role?: Database['public']['Enums']['workspace_role'];
@@ -979,6 +998,7 @@ export type Database = {
           slug: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           created_by?: string | null;
