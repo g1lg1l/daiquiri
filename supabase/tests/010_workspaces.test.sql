@@ -9,7 +9,7 @@ select tests.create_user('mallory');
 -- Workspace creation --------------------------------------------------------
 select tests.authenticate_as('alice');
 select lives_ok(
-  $$ select public.create_workspace('Acme', 'acme', 'Engineering', 'ENG', 'software') $$,
+  $$ select public.create_workspace('Acme', 't-acme', 'Engineering', 'ENG', 'software') $$,
   'a signed-in user can create a workspace'
 );
 select is((select role::text from public.workspace_members where user_id = tests.uid('alice')), 'owner', 'creator is owner');
@@ -21,7 +21,7 @@ select is(
 );
 select is((select count(*)::int from public.team_members where user_id = tests.uid('alice')), 1, 'creator joins the team');
 select throws_ok(
-  $$ select public.create_workspace('Acme 2', 'acme', 'General', 'GEN') $$,
+  $$ select public.create_workspace('Acme 2', 't-acme', 'General', 'GEN') $$,
   '23505', null, 'slugs are unique'
 );
 select throws_ok(
@@ -41,11 +41,11 @@ select is((select count(*)::int from public.statuses), 0, 'outsider sees no stat
 select is((select count(*)::int from public.workspace_members), 0, 'outsider sees no members');
 select is((select count(*)::int from public.profiles where id = tests.uid('alice')), 0, 'outsider cannot see member profiles');
 select throws_ok(
-  $$ select public.create_invitation((select id from public.workspaces where slug = 'acme'), 'x@test.daiq') $$,
+  $$ select public.create_invitation((select id from public.workspaces where slug = 't-acme'), 'x@test.daiq') $$,
   '42501', null, 'outsider cannot invite'
 );
 select is(
-  (select count(*)::int from public.workspace_member_emails((select id from public.workspaces where slug = 'acme'))),
+  (select count(*)::int from public.workspace_member_emails((select id from public.workspaces where slug = 't-acme'))),
   0, 'outsider cannot read member emails'
 );
 
@@ -54,10 +54,10 @@ select tests.authenticate_as('alice');
 create temp table tokens (handle text, token text) on commit drop;
 grant all on tokens to authenticated;
 insert into tokens
-select 'bob', public.create_invitation((select id from public.workspaces where slug = 'acme'), 'BOB@test.daiq', 'member');
+select 'bob', public.create_invitation((select id from public.workspaces where slug = 't-acme'), 'BOB@test.daiq', 'member');
 
 select throws_ok(
-  $$ select public.create_invitation((select id from public.workspaces where slug = 'acme'), 'x@test.daiq', 'owner') $$,
+  $$ select public.create_invitation((select id from public.workspaces where slug = 't-acme'), 'x@test.daiq', 'owner') $$,
   '22023', null, 'owners cannot be invited'
 );
 select is((select length(token) from tokens), 43, 'tokens carry 256 bits (43 base64url chars)');
@@ -83,17 +83,17 @@ select throws_ok(
 
 -- Roles ---------------------------------------------------------------------
 select throws_ok(
-  $$ select public.set_member_role((select id from public.workspaces where slug = 'acme'), tests.uid('alice'), 'member') $$,
+  $$ select public.set_member_role((select id from public.workspaces where slug = 't-acme'), tests.uid('alice'), 'member') $$,
   '42501', null, 'members cannot change roles'
 );
 
 select tests.authenticate_as('alice');
 select lives_ok(
-  $$ select public.set_member_role((select id from public.workspaces where slug = 'acme'), tests.uid('bob'), 'admin') $$,
+  $$ select public.set_member_role((select id from public.workspaces where slug = 't-acme'), tests.uid('bob'), 'admin') $$,
   'owner promotes a member to admin'
 );
 select throws_ok(
-  $$ select public.remove_member((select id from public.workspaces where slug = 'acme'), tests.uid('alice'));
+  $$ select public.remove_member((select id from public.workspaces where slug = 't-acme'), tests.uid('alice'));
      set constraints all immediate $$,
   '23514', null, 'the last owner cannot leave'
 );

@@ -10,15 +10,15 @@ select tests.create_user('gina');
 -- Seed membership directly (RPC flows are covered in 010).
 select tests.clear_authentication();
 select tests.authenticate_as('alice');
-select public.create_workspace('Acme', 'acme', 'General', 'GEN');
+select public.create_workspace('Acme', 't-acme', 'General', 'GEN');
 select tests.clear_authentication();
 insert into public.workspace_members (workspace_id, user_id, role)
-select id, tests.uid('bob'), 'member'::public.workspace_role from public.workspaces where slug = 'acme'
+select id, tests.uid('bob'), 'member'::public.workspace_role from public.workspaces where slug = 't-acme'
 union all
-select id, tests.uid('gina'), 'guest'::public.workspace_role from public.workspaces where slug = 'acme';
+select id, tests.uid('gina'), 'guest'::public.workspace_role from public.workspaces where slug = 't-acme';
 
 select tests.authenticate_as('alice');
-select public.create_team((select id from public.workspaces where slug = 'acme'), 'Leadership', 'LEAD', 'generic', true);
+select public.create_team((select id from public.workspaces where slug = 't-acme'), 'Leadership', 'LEAD', 'generic', true);
 select is((select count(*)::int from public.teams), 2, 'creator sees the private team');
 
 select tests.authenticate_as('bob');

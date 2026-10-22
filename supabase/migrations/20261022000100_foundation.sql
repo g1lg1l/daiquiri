@@ -387,7 +387,7 @@ declare
     when 'marketing' then '[["Ideas","backlog"],["Planned","unstarted"],["In Progress","started"],["Review","started"],["Published","completed"],["Canceled","canceled"]]'
     when 'operations' then '[["Backlog","backlog"],["To Do","unstarted"],["Doing","started"],["Waiting","started"],["Done","completed"],["Canceled","canceled"]]'
     when 'generic' then '[["Backlog","backlog"],["Todo","unstarted"],["In Progress","started"],["Done","completed"],["Canceled","canceled"]]'
-  end;
+  end::jsonb;
 begin
   if workflow is null then
     raise exception 'Unknown team template: %', p_template using errcode = '22023';
