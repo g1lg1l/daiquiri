@@ -54,7 +54,9 @@ const pairs: [string, string, number][] = [
   ['accent-fg', 'accent', 4.5],
   ['accent-text', 'surface', 4.5],
   ['danger', 'surface', 4.5],
-  ['fg-subtle', 'surface', 3],
+  // fg-subtle is used for secondary text (identifiers, section labels), so it needs text contrast.
+  ['fg-subtle', 'surface', 4.5],
+  ['fg-subtle', 'surface-subtle', 4.5],
   ['focus', 'surface', 3],
   ['status-started', 'surface', 2.2],
   ['status-completed', 'surface', 3],

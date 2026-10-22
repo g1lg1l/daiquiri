@@ -43,8 +43,9 @@ export function Avatar({
     >
       {src && <AvatarPrimitive.Image src={src} alt="" className="size-full object-cover" />}
       <AvatarPrimitive.Fallback
+        aria-hidden
         className="flex size-full items-center justify-center font-semibold text-white"
-        style={{ background: `oklch(0.62 0.12 ${hue(name)})` }}
+        style={{ background: `oklch(0.47 0.11 ${hue(name)})` }}
       >
         {initials(name)}
       </AvatarPrimitive.Fallback>

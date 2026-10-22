@@ -192,13 +192,13 @@ function WorkspaceMenu() {
         <ChevronDownIcon className="size-3.5 text-fg-subtle" />
       </MenuTrigger>
       <MenuContent className="w-60">
-        <MenuLabel>Workspaces</MenuLabel>
         <MenuRadioGroup
           value={workspace.slug}
           onValueChange={(slug: string) =>
             void navigate({ to: '/$workspace', params: { workspace: slug } })
           }
         >
+          <MenuLabel>Workspaces</MenuLabel>
           {workspaces.data?.map((w) => (
             <MenuRadioItem key={w.id} value={w.slug}>
               <Avatar name={w.name} size="xs" className="rounded-[4px]" />

@@ -145,11 +145,11 @@ export function DisplayMenu({
         <SlidersHorizontalIcon /> Display
       </MenuTrigger>
       <MenuContent align="end" className="w-56">
-        <MenuLabel>Group by</MenuLabel>
         <MenuRadioGroup
           value={group}
           onValueChange={(value: GroupBy) => setSearch({ group: value })}
         >
+          <MenuLabel>Group by</MenuLabel>
           {allowedGroups.map((g) => (
             <MenuRadioItem key={g} value={g}>
               {GROUP_LABEL[g]}
@@ -157,11 +157,11 @@ export function DisplayMenu({
           ))}
         </MenuRadioGroup>
         <MenuSeparator />
-        <MenuLabel>Order by</MenuLabel>
         <MenuRadioGroup
           value={order}
           onValueChange={(value: OrderBy) => setSearch({ order: value })}
         >
+          <MenuLabel>Order by</MenuLabel>
           {ORDER_BY.map((o) => (
             <MenuRadioItem key={o} value={o}>
               {ORDER_LABEL[o]}
@@ -169,11 +169,11 @@ export function DisplayMenu({
           ))}
         </MenuRadioGroup>
         <MenuSeparator />
-        <MenuLabel>Completed tasks</MenuLabel>
         <MenuRadioGroup
           value={completed}
           onValueChange={(value: 'all' | 'week' | 'none') => setSearch({ completed: value })}
         >
+          <MenuLabel>Completed tasks</MenuLabel>
           <MenuRadioItem value="week">Past week</MenuRadioItem>
           <MenuRadioItem value="all">All</MenuRadioItem>
           <MenuRadioItem value="none">None</MenuRadioItem>

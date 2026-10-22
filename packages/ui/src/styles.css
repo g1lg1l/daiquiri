@@ -28,7 +28,7 @@
 
   --fg: oklch(0.25 0.022 145);
   --fg-muted: oklch(0.47 0.02 142);
-  --fg-subtle: oklch(0.6 0.016 140);
+  --fg-subtle: oklch(0.52 0.016 140);
   --fg-inverted: oklch(0.985 0.004 115);
 
   --border: oklch(0.912 0.009 122);
@@ -69,7 +69,7 @@
 
   --fg: oklch(0.95 0.012 118);
   --fg-muted: oklch(0.77 0.016 128);
-  --fg-subtle: oklch(0.63 0.016 135);
+  --fg-subtle: oklch(0.68 0.016 135);
   --fg-inverted: oklch(0.22 0.016 150);
 
   --border: oklch(0.31 0.017 150);

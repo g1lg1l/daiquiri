@@ -8,8 +8,8 @@ export function Wordmark({ className }: { className?: string }) {
         'relative inline-flex items-baseline text-[1.375rem] font-[680] font-display tracking-tight text-fg',
         className,
       )}
-      aria-label="Daiq"
     >
+      <span className="sr-only">Daiq</span>
       <span aria-hidden>da</span>
       <span aria-hidden className="relative">
         ı
