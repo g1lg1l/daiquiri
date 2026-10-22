@@ -8,7 +8,7 @@ Include: affected version/commit, deployment type (hosted demo or self-hosted), 
 
 ## Supported versions
 
-Daiq is pre-1.0. Only the latest commit on `main` receives security fixes.
+Daiquiri is pre-1.0. Only the latest commit on `main` receives security fixes.
 
 ## Security model in brief
 
@@ -20,7 +20,7 @@ Daiq is pre-1.0. Only the latest commit on `main` receives security fixes.
 ## Self-hosting checklist
 
 - Generate unique values for `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY` (see `docker/README.md`). Never reuse the example values.
-- Serve Daiq over HTTPS behind a reverse proxy.
+- Serve Daiquiri over HTTPS behind a reverse proxy.
 - Configure the Auth `SITE_URL` and redirect allow-list to your domain only.
 - Keep the Postgres port closed to the internet.
 - Back up the database volume regularly (see `docker/README.md`).

@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/assets/daiq-icon.svg" width="120" height="120" alt="Daiq app icon: a half lime wheel shaped like a D, with a lime drop">
+<img src="docs/assets/icon.svg" width="128" height="128" alt="Daiquiri app icon: a lime wheel and a stem forming a lowercase d on an emerald tile">
 
-# Daiq
+# Daiquiri
 
 **Everything your team needs. Nothing it doesn't.**
 
@@ -11,12 +11,12 @@ Tasks, projects, boards and an inbox: fast, realtime and yours to host.
 
 <a href="https://g1lg1l.github.io/daiquiri/"><img src="https://img.shields.io/badge/Open_the_live_demo-cdf04a?style=for-the-badge" alt="Open the live demo"></a>
 
-[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-1b2416?style=flat-square)](LICENSE)
-[![React 19](https://img.shields.io/badge/React-19-1b2416?style=flat-square&logo=react)](https://react.dev)
-[![TypeScript 7](https://img.shields.io/badge/TypeScript-7-1b2416?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
-[![Supabase](https://img.shields.io/badge/Supabase-Postgres_17-1b2416?style=flat-square&logo=supabase)](https://supabase.com)
-[![Tailwind CSS 4](https://img.shields.io/badge/Tailwind-4-1b2416?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
-[![Docker](https://img.shields.io/badge/self--host-docker_compose-1b2416?style=flat-square&logo=docker)](docker/README.md)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-11683a?style=flat-square)](LICENSE)
+[![React 19](https://img.shields.io/badge/React-19-11683a?style=flat-square&logo=react)](https://react.dev)
+[![TypeScript 7](https://img.shields.io/badge/TypeScript-7-11683a?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres_17-11683a?style=flat-square&logo=supabase)](https://supabase.com)
+[![Tailwind CSS 4](https://img.shields.io/badge/Tailwind-4-11683a?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
+[![Docker](https://img.shields.io/badge/self--host-docker_compose-11683a?style=flat-square&logo=docker)](docker/README.md)
 
 </div>
 
@@ -24,12 +24,12 @@ Tasks, projects, boards and an inbox: fast, realtime and yours to host.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/list-dark.webp">
-  <img src="docs/assets/screenshots/list-light.webp" alt="Daiq team task list grouped by status, with a task open in the side peek showing its fields, sub-tasks, relations and activity">
+  <img src="docs/assets/screenshots/list-light.webp" alt="Daiquiri team task list grouped by status, with a task open in the side peek showing its fields, sub-tasks, relations and activity">
 </picture>
 
-## Why Daiq
+## Why Daiquiri
 
-ClickUp, Asana and Linear each do a lot. Most teams use a small part of it, every day, and want that part to be instant. Daiq keeps that part and leaves out the configuration sprawl.
+ClickUp, Asana and Linear each do a lot. Most teams use a small part of it, every day, and want that part to be instant. Daiquiri keeps that part and leaves out the configuration sprawl.
 
 - **Instant.** Every change is optimistic, the cache survives reloads, teammates' edits arrive in realtime and long lists are virtualised.
 - **Keyboard first.** `⌘K` reaches everything. `C` creates a task, `S` `P` `A` `L` `D` change the focused one, `G` then `I` opens the inbox. `?` lists every shortcut.
@@ -50,7 +50,7 @@ ClickUp, Asana and Linear each do a lot. Most teams use a small part of it, ever
   </tr>
   <tr>
     <td><img src="docs/assets/screenshots/task-light.webp" alt="Task page with description, comments, activity and fields for status, priority, assignee, labels, project and dates"></td>
-    <td><img src="docs/assets/screenshots/login-light.webp" alt="Sign-in screen with the Daiq tagline"></td>
+    <td><img src="docs/assets/screenshots/login-light.webp" alt="Sign-in screen with the Daiquiri tagline"></td>
   </tr>
   <tr>
     <td><b>Task page.</b> Rich-text description, sub-tasks, blocking relations, comments with @mentions and reactions, and a folded activity history.</td>
@@ -96,7 +96,7 @@ Sign in as `dev@daiq.local` with password `daiq-dev-password`, create your own a
 
 ```bash
 cp docker/.env.example docker/.env   # fill in secrets, see docker/README.md
-pnpm docker:up                       # Daiq on http://localhost:3000
+pnpm docker:up                       # Daiquiri on http://localhost:3000
 ```
 
 The stack runs Postgres, Auth, PostgREST, Realtime and Storage from pinned Supabase images, applies migrations with a one-shot job and serves the app from nginx on the same origin. Backups, upgrades and health checks are covered in [docker/README.md](docker/README.md).
@@ -167,6 +167,6 @@ Contributions are welcome: [CONTRIBUTING.md](CONTRIBUTING.md) explains the setup
 
 ## License
 
-Daiq is free software under the [GNU Affero General Public License v3.0](LICENSE) (`AGPL-3.0-only`).
+Daiquiri is free software under the [GNU Affero General Public License v3.0](LICENSE) (`AGPL-3.0-only`).
 
 You can use, self-host, modify and redistribute it. If you run a modified version for other people over a network, the AGPL requires you to offer them the source code of your version.

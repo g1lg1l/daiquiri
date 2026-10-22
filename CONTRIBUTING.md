@@ -1,4 +1,4 @@
-# Contributing to Daiq
+# Contributing to Daiquiri
 
 Thanks for helping. This guide covers how the codebase is organised and what a change needs before it is merged.
 

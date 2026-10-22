@@ -1,7 +1,7 @@
-# Self-hosting Daiq
+# Self-hosting Daiquiri
 
-Daiq runs on a trimmed copy of the official Supabase self-hosting stack plus two
-Daiq containers. Everything is reachable through **one port**: the `web`
+Daiquiri runs on a trimmed copy of the official Supabase self-hosting stack plus two
+Daiquiri containers. Everything is reachable through **one port**: the `web`
 container serves the app and proxies the Supabase APIs on the same origin.
 
 ```
@@ -86,12 +86,12 @@ copy of `docker/.env` (the JWT secret is needed to keep existing sessions valid)
 ## Upgrading
 
 1. Back up (above).
-2. `git pull` the new Daiq version.
+2. `git pull` the new Daiquiri version.
 3. `pnpm docker:up` rebuilds `web` and `migrate`; `migrate` applies only new
    migrations (tracked in `supabase_migrations.schema_migrations`).
 
 Supabase service images are pinned in `docker/docker-compose.yml` and the
-supporting files in `docker/supabase/` (see `docker/supabase/UPSTREAM`). Daiq
+supporting files in `docker/supabase/` (see `docker/supabase/UPSTREAM`). Daiquiri
 upgrades them together after testing; do not bump them independently.
 
 ## Images
