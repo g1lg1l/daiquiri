@@ -29,6 +29,7 @@ export const keys = {
   comments: (taskId: string) => ['comments', taskId] as const,
   attachments: (taskId: string) => ['attachments', taskId] as const,
   activity: (taskId: string) => ['activity', taskId] as const,
+  recurrence: (taskId: string) => ['recurrence', taskId] as const,
   notifications: (workspaceId: string) => ['notifications', workspaceId] as const,
   cycles: (teamId: string) => ['cycles', teamId] as const,
   customFields: (workspaceId: string) => ['custom-fields', workspaceId] as const,

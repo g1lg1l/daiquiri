@@ -214,6 +214,7 @@ export function useCreateTask() {
         cycleId: input.cycleId ?? null,
         milestoneId: null,
         attachmentCount: 0,
+        recurring: false,
         fields: {},
         sortKey: input.sortKey,
         completedAt: null,

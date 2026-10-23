@@ -21,7 +21,7 @@ import {
 import type { Json, Tables, TablesUpdate } from './database.types';
 
 export const TASK_COLUMNS =
-  'id, workspace_id, team_id, number, title, status_id, priority, project_id, parent_id, creator_id, start_date, due_date, estimate, cycle_id, milestone_id, sort_key, completed_at, canceled_at, created_at, updated_at, task_assignees(user_id), task_labels(label_id), attachments(count), task_field_values(field_id, value)';
+  'id, workspace_id, team_id, number, title, status_id, priority, project_id, parent_id, creator_id, start_date, due_date, estimate, cycle_id, milestone_id, sort_key, completed_at, canceled_at, created_at, updated_at, task_assignees(user_id), task_labels(label_id), attachments(count), task_field_values(field_id, value), task_recurrences(unit)';
 
 export const TASK_DETAIL_COLUMNS = `${TASK_COLUMNS}, description`;
 
@@ -33,6 +33,7 @@ type TaskRow = Omit<
   /** Absent on rows that come back from create_task (a new task has no files or fields). */
   attachments?: { count: number }[];
   task_field_values?: { field_id: string; value: Json }[];
+  task_recurrences?: { unit: string }[];
   task_labels: { label_id: string }[];
 };
 
@@ -63,6 +64,7 @@ export function toTask(row: TaskRow): Task {
     cycleId: row.cycle_id,
     milestoneId: row.milestone_id,
     attachmentCount: row.attachments?.[0]?.count ?? 0,
+    recurring: (row.task_recurrences?.length ?? 0) > 0,
     fields: toFieldValues(row.task_field_values ?? []),
     sortKey: row.sort_key,
     completedAt: row.completed_at,

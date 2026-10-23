@@ -26,6 +26,7 @@ function task(overrides: Partial<Task>): Task {
     cycleId: null,
     milestoneId: null,
     attachmentCount: 0,
+    recurring: false,
     fields: {},
     sortKey: 'a',
     completedAt: null,

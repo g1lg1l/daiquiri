@@ -57,6 +57,7 @@ export {
   useWorkspaces,
 } from './workspaces';
 export { useStatusFlow } from './insights';
+export { useRecurrence, useRecurrenceActions } from './recurrences';
 export type { StatusFlow } from './insights';
 export { useCycleProgress, useCycles, useRenameCycle, useUpdateTeam } from './planning';
 export type { CycleDay, TeamSettings } from './planning';

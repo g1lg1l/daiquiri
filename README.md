@@ -152,7 +152,9 @@ Start with [ARCHITECTURE.md](ARCHITECTURE.md), then [docs/plan.md](docs/plan.md)
 - [x] Custom fields per team (text, number, date, select, person, checkbox, link), with grouping and filters
 - [ ] Time tracking
 - [x] File attachments on private storage
-- [ ] Automations, recurring tasks and templates
+- [x] Recurring tasks, on a schedule or after completion
+- [ ] Task and project templates
+- [ ] Automations with a run log
 - [x] Insights on every view (throughput, burn-up, cycle and lead time, time in status) and CSV/JSON export
 - [ ] Weekly reminders to post a project update
 - [ ] Integrations: webhooks, API tokens, Slack, importers from Linear, Asana and ClickUp

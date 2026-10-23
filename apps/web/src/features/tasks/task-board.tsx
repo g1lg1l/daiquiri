@@ -27,7 +27,7 @@ import {
   type TaskPatch,
 } from '@daiq/domain';
 import { Avatar, Button, cn, Tooltip } from '@daiq/ui';
-import { PaperclipIcon, PlusIcon } from 'lucide-react';
+import { PaperclipIcon, PlusIcon, RepeatIcon } from 'lucide-react';
 import {
   memo,
   useEffect,
@@ -477,6 +477,7 @@ const Card = memo(function Card({
       <div className="flex items-center gap-1.5 text-xs text-fg-subtle">
         {status && <StatusIcon category={status.category} className="size-3" />}
         <span className="tabular">{identifier}</span>
+        {task.recurring && <RepeatIcon role="img" aria-label="Repeats" className="size-3" />}
       </div>
       <p className={cn('line-clamp-2 leading-snug', closed && 'text-fg-muted')}>{task.title}</p>
       <div className="flex items-center gap-1.5">

@@ -225,6 +225,8 @@ export interface Task {
   milestoneId: string | null;
   /** Files attached to the task (read-only; maintained by the database). */
   attachmentCount: number;
+  /** The task is the latest of a recurring series. */
+  recurring: boolean;
   /** Custom field values by field id (only fields that have a value). */
   fields: Readonly<Record<string, FieldValue>>;
   sortKey: string;

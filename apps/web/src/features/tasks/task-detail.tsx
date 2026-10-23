@@ -70,6 +70,7 @@ import { FieldEditor } from './field-editors';
 import { useComposer } from './composer';
 import { PriorityIcon, StatusIcon } from './icons';
 import { LABEL_COLOR } from './label-colors';
+import { RecurrenceEditor } from './recurrence-editor';
 import { DateField, useTaskActions } from './task-actions';
 import { useIdentifier } from './use-identifier';
 import { useToday } from '../../lib/use-today';
@@ -501,6 +502,9 @@ function TaskDetailBody({
           value={task.startDate}
           onChange={(startDate) => actions.update([task], { startDate }, 'Start date')}
         />
+      </PropertyRow>
+      <PropertyRow label="Repeat">
+        <RecurrenceEditor task={task} triggerClassName={ghostTrigger} />
       </PropertyRow>
     </div>
   );

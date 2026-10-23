@@ -882,6 +882,61 @@ export type Database = {
           },
         ];
       };
+      task_recurrences: {
+        Row: {
+          after_completion: boolean;
+          anchor_on: string;
+          created_at: string;
+          created_by: string | null;
+          every: number;
+          next_on: string | null;
+          task_id: string;
+          unit: string;
+          weekdays: number[];
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          after_completion?: boolean;
+          anchor_on?: string;
+          created_at?: string;
+          created_by?: string | null;
+          every?: number;
+          next_on?: string | null;
+          task_id: string;
+          unit: string;
+          weekdays?: number[];
+          workspace_id: string;
+        };
+        Update: {
+          after_completion?: boolean;
+          anchor_on?: string;
+          created_at?: string;
+          created_by?: string | null;
+          every?: number;
+          next_on?: string | null;
+          task_id?: string;
+          unit?: string;
+          weekdays?: number[];
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'task_recurrences_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'task_recurrences_workspace_id_task_id_fkey';
+            columns: ['workspace_id', 'task_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
       task_relations: {
         Row: {
           created_at: string;

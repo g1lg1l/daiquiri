@@ -151,3 +151,10 @@ export {
 } from './fields';
 export { exportRows, formatHours, median, summarize, toCsv, weeklyThroughput } from './insights';
 export type { ExportContext, ExportRow, InsightSummary, InsightWeek } from './insights';
+export {
+  describeRecurrence,
+  isRecurrenceUnit,
+  RECURRENCE_UNITS,
+  WEEKDAY_SHORT,
+} from './recurrence';
+export type { Recurrence, RecurrenceRule, RecurrenceUnit } from './recurrence';

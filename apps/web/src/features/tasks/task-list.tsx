@@ -10,7 +10,13 @@ import {
 } from '@daiq/domain';
 import { Avatar, Button, cn, Shortcut, Tooltip } from '@daiq/ui';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ChevronDownIcon, ChevronRightIcon, PaperclipIcon, PlusIcon } from 'lucide-react';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  PaperclipIcon,
+  PlusIcon,
+  RepeatIcon,
+} from 'lucide-react';
 import {
   memo,
   useCallback,
@@ -503,6 +509,9 @@ const TaskRow = memo(function TaskRow({
       </div>
       <div role="gridcell" className="flex min-w-0 flex-1 items-center gap-2">
         <span className={cn('min-w-0 truncate', closed && 'text-fg-muted')}>{task.title}</span>
+        {task.recurring && (
+          <RepeatIcon role="img" aria-label="Repeats" className="size-3 shrink-0 text-fg-subtle" />
+        )}
         <span className="hidden shrink-0 items-center gap-1 @3xl/list:flex">
           {task.labelIds.slice(0, 3).map((id) => {
             const labelData = data.labelsById.get(id);
