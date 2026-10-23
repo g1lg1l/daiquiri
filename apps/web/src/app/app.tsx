@@ -16,8 +16,12 @@ function AppRouter({ config }: { config: RuntimeConfig }) {
   const [router] = useState(() => createAppRouter(queryClient, config));
   const previousUser = useRef<string | null>(null);
   const userId = auth.status === 'signed-in' ? auth.userId : null;
+  const ready = auth.status !== 'loading';
 
   useEffect(() => {
+    // Re-running the guards while the session is still loading would redirect a
+    // signed-in visitor to /login before the router even mounts.
+    if (!ready) return;
     // Never let one user's cached data survive into another session.
     if (previousUser.current && previousUser.current !== userId) {
       queryClient.clear();
@@ -25,7 +29,7 @@ function AppRouter({ config }: { config: RuntimeConfig }) {
     }
     previousUser.current = userId;
     void router.invalidate();
-  }, [userId, queryClient, router]);
+  }, [ready, userId, queryClient, router]);
 
   if (auth.status === 'loading') return <Splash />;
   return <RouterProvider router={router} context={{ auth }} />;

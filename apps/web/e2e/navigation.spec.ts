@@ -44,4 +44,10 @@ test('the demo creates a private sandbox with sample data', async ({ page }) => 
     page.getByRole('row').filter({ hasText: 'Crash when opening a task from a widget' }),
   ).toBeVisible();
   await expect(page.getByText('You’re in a demo')).toBeVisible();
+
+  // The anonymous session survives a reload (it used to fall back to /login).
+  const sandbox = page.url();
+  await page.reload();
+  await expect(page.getByText('You’re in a demo')).toBeVisible();
+  expect(page.url()).toBe(sandbox);
 });
