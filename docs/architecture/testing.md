@@ -30,11 +30,14 @@
 
 | Suite            | Command                                 | Current size                                                                                       |
 | ---------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Unit + component | `pnpm test`                             | 166 tests (domain 94, ui 35, editor 26, data 5, web 6)                                             |
-| Database         | `pnpm db:test`                          | 229 pgTAP assertions in 17 files                                                                   |
-| E2E              | `pnpm test:e2e` (needs `pnpm db:start`) | 27 Playwright flows incl. axe on every layout, realtime between two sessions and a 5,000-task list |
+| Unit + component | `pnpm test`                             | 186 tests (domain 112, ui 35, editor 26, data 7, web 6)                                             |
+| Database         | `pnpm db:test`                          | 292 pgTAP assertions in 23 files                                                                   |
+| E2E              | `pnpm test:e2e` (needs `pnpm db:start`) | 33 Playwright flows incl. axe on every layout, realtime between two sessions and a 5,000-task list |
 
 ## Rules
+
+- E2E specs import `test` from `e2e/fixtures.ts`: every `goto`/`reload` first waits for writes still pending (`<html data-saving>`), as a person would before leaving the page, and names the open requests if they never finish.
+- Before calling a flaky test fixed, run the whole suite with `--repeat-each=3 --retries=0`.
 
 - Every bug fix adds the test that would have caught it.
 - RLS: every table has at least _non-member denied_, _member allowed_, _cross-workspace insert denied_ tests. A meta-test fails if any `public` table has RLS disabled.
