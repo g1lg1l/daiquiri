@@ -108,6 +108,13 @@ export function snapshotTasks(queryClient: QueryClient) {
   };
 }
 
+/**
+ * Every task write shares one mutation queue: optimistic updates still apply
+ * at once, but requests reach the server in the order they were made, so a
+ * quick second edit (or an edit right after creating) never lands first.
+ */
+export const TASK_WRITES = { id: 'task-writes' };
+
 /*
  * Ids with an in-flight local mutation. Realtime events for these ids are
  * skipped: the mutation's own reconciliation is authoritative.
@@ -127,5 +134,9 @@ export const pendingWrites = {
   },
   has(id: string) {
     return pending.has(id);
+  },
+  /** More than one write to this task is in flight or queued. */
+  isContended(id: string) {
+    return (pending.get(id) ?? 0) > 1;
   },
 };

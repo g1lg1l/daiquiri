@@ -3,6 +3,7 @@ import type { Priority, RichDocument, Task, TaskDetail, TaskPatch } from '@daiq/
 import {
   patchTask,
   pendingWrites,
+  TASK_WRITES,
   removeTasks,
   snapshotTasks,
   upsertTask,
@@ -129,10 +130,12 @@ export async function refreshTasks(
       ),
     )
   ).flat();
-  const tasks = rows.map(toTask);
+  // A local write that started while this read was in flight is newer than it:
+  // its own reconciliation decides, otherwise the task would jump back.
+  const tasks = rows.map(toTask).filter((task) => !pendingWrites.has(task.id));
   upsertTasks(queryClient, tasks);
-  const found = new Set(tasks.map((task) => task.id));
-  const gone = new Set(ids.filter((id) => !found.has(id)));
+  const found = new Set(rows.map((row) => row.id));
+  const gone = new Set(ids.filter((id) => !found.has(id) && !pendingWrites.has(id)));
   if (gone.size > 0) removeTasks(queryClient, gone);
 }
 
@@ -168,6 +171,7 @@ export function useCreateTask() {
   const client = useDaiqClient();
   const queryClient = useQueryClient();
   return useMutation({
+    scope: TASK_WRITES,
     mutationFn: async (input: NewTask): Promise<Task> => {
       const row = unwrap(
         await client.rpc('create_task', {
@@ -226,7 +230,9 @@ export function useCreateTask() {
       });
     },
     onError: (_error, input) => removeTasks(queryClient, new Set([input.id])),
-    onSuccess: (task) => upsertTask(queryClient, task),
+    onSuccess: (task) => {
+      if (!pendingWrites.isContended(task.id)) upsertTask(queryClient, task);
+    },
     onSettled: (_data, _error, input) => pendingWrites.end([input.id]),
   });
 }
@@ -235,6 +241,7 @@ export function useUpdateTasks() {
   const client = useDaiqClient();
   const queryClient = useQueryClient();
   return useMutation({
+    scope: TASK_WRITES,
     mutationFn: async ({ ids, patch }: { ids: string[]; patch: TaskPatch }): Promise<Task[]> =>
       unwrap(
         await client
@@ -251,7 +258,12 @@ export function useUpdateTasks() {
       return { restore };
     },
     onError: (_error, _input, context) => context?.restore(),
-    onSuccess: (tasks) => upsertTasks(queryClient, tasks),
+    // A newer write to the same task is queued: it reconciles, this one would flicker.
+    onSuccess: (tasks) =>
+      upsertTasks(
+        queryClient,
+        tasks.filter((task) => !pendingWrites.isContended(task.id)),
+      ),
     onSettled: (_data, _error, { ids }) => pendingWrites.end(ids),
   });
 }
@@ -263,6 +275,7 @@ function useReplaceSet(
   const client = useDaiqClient();
   const queryClient = useQueryClient();
   return useMutation({
+    scope: TASK_WRITES,
     mutationFn: async ({ taskId, ids }: { taskId: string; ids: string[] }) => {
       const result =
         rpc === 'set_task_assignees'
@@ -288,6 +301,7 @@ export function useDeleteTasks() {
   const client = useDaiqClient();
   const queryClient = useQueryClient();
   return useMutation({
+    scope: TASK_WRITES,
     mutationFn: async (ids: string[]) =>
       unwrap(await client.rpc('delete_tasks', { task_ids: ids })),
     onMutate: async (ids) => {
@@ -310,6 +324,7 @@ export function useRestoreTasks() {
   const client = useDaiqClient();
   const queryClient = useQueryClient();
   return useMutation({
+    scope: TASK_WRITES,
     mutationFn: async (ids: string[]) =>
       unwrap(await client.rpc('restore_tasks', { task_ids: ids })),
     onSettled: () => queryClient.invalidateQueries({ queryKey: keys.allTasks() }),

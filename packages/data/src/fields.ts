@@ -8,7 +8,7 @@ import {
   type Task,
   type Team,
 } from '@daiq/domain';
-import { findTask, patchTask } from './cache';
+import { findTask, patchTask, TASK_WRITES } from './cache';
 import { useDaiqClient } from './context';
 import { ensureOk, unwrap } from './errors';
 import { keys } from './keys';
@@ -163,6 +163,7 @@ export function useSetFieldValue() {
   const client = useDaiqClient();
   const queryClient = useQueryClient();
   return useMutation({
+    scope: TASK_WRITES,
     mutationFn: async ({
       task,
       fieldId,

@@ -214,12 +214,13 @@ export function useRealtimeSync(options: {
     };
 
     // Data fetched (or restored from the persisted cache) before every channel
-    // was listening may have missed events: refetch it once all are subscribed.
-    const listeningSince = Date.now();
+    // was listening may have missed events, including data fetched after this
+    // effect started but before the last join was acknowledged: once all
+    // channels listen, refetch everything loaded up to that moment.
     const subscribed = new Set<string>();
     let caughtUp = false;
 
-    const channels = topics.map((topic) => {
+    const subscribe = (topic: string) => {
       let subscribedBefore = false;
       return client
         .channel(topic, { config: { private: true } })
@@ -236,14 +237,23 @@ export function useRealtimeSync(options: {
           subscribed.add(topic);
           if (!caughtUp && subscribed.size === topics.length) {
             caughtUp = true;
+            const listening = Date.now();
             void queryClient.invalidateQueries({
-              predicate: (query) => query.state.dataUpdatedAt < listeningSince,
+              predicate: (query) => query.state.dataUpdatedAt <= listening,
             });
           }
         });
-    });
+    };
 
-    void client.realtime.setAuth();
+    // Private channels authorize with the user's JWT: set it before joining, or
+    // the first join is refused and only recovers through the retry backoff.
+    let channels: ReturnType<typeof subscribe>[] = [];
+    client.realtime
+      .setAuth()
+      .then(() => {
+        if (!disposed) channels = topics.map(subscribe);
+      })
+      .catch(reportError);
 
     return () => {
       disposed = true;
