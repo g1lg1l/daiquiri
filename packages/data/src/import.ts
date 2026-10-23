@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { RichDocument } from '@daiq/domain';
 import { useDaiqClient } from './context';
-import { unwrap } from './errors';
+import { ensureOk, unwrap } from './errors';
 import { keys } from './keys';
 import { documentToJson } from './mappers';
 
@@ -12,6 +12,8 @@ export interface ImportRow {
   statusId: string | null;
   priority: number;
   projectId: string | null;
+  /** Another row of the same import, earlier in the list. */
+  parentId?: string | null;
   dueDate: string | null;
   startDate: string | null;
   estimate: number | null;
@@ -48,6 +50,7 @@ export function useImportTasks(teamId: string) {
           status_id: row.statusId,
           priority: row.priority,
           project_id: row.projectId,
+          parent_id: row.parentId ?? null,
           due_date: row.dueDate,
           start_date: row.startDate,
           estimate: row.estimate,
@@ -62,5 +65,35 @@ export function useImportTasks(teamId: string) {
       }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: keys.allTasks() }),
+  });
+}
+
+/**
+ * Adds imported comments, 200 per request. They are posted by the person
+ * importing (comments cannot be written as someone else); the original author
+ * and date are part of their text.
+ */
+export function useImportComments(workspaceId: string) {
+  const client = useDaiqClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: async ({
+      comments,
+      onProgress,
+    }: {
+      comments: readonly { taskId: string; body: RichDocument }[];
+      onProgress: (done: number) => void;
+    }) => {
+      for (let from = 0; from < comments.length; from += 200) {
+        const batch = comments.slice(from, from + 200).map((comment) => ({
+          workspace_id: workspaceId,
+          task_id: comment.taskId,
+          body: documentToJson(comment.body),
+        }));
+        // oxlint-disable-next-line no-await-in-loop
+        ensureOk(await client.from('comments').insert(batch));
+        onProgress(Math.min(comments.length, from + 200));
+      }
+    },
   });
 }

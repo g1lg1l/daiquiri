@@ -20,13 +20,25 @@ const visit = (key) => {
 visit(entryKey);
 
 const initialKb = [...initial].reduce((sum, key) => sum + gzipKb(manifest[key].file), 0);
+// Who imports each chunk: code shared only by the editor package (its React
+// editor and its Markdown conversion) is editor code, wherever Vite puts it.
+const importers = new Map();
+for (const [key, chunk] of Object.entries(manifest)) {
+  for (const target of [...(chunk.imports ?? []), ...(chunk.dynamicImports ?? [])]) {
+    importers.set(target, [...(importers.get(target) ?? []), key]);
+  }
+}
+const isEditor = (key) =>
+  key.includes('editor') ||
+  ((importers.get(key) ?? []).length > 0 &&
+    (importers.get(key) ?? []).every((k) => k.includes('packages/editor/')));
 const lazy = Object.entries(manifest)
   .filter(([key, chunk]) => !initial.has(key) && chunk.file.endsWith('.js'))
   .map(([key, chunk]) => ({
     key,
     file: chunk.file,
     kb: gzipKb(chunk.file),
-    editor: key.includes('editor'),
+    editor: isEditor(key),
   }));
 
 const failures = [];

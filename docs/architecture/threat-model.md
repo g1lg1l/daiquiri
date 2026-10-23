@@ -56,6 +56,8 @@ Everything left of the gateway is attacker-controlled. The only credentials ship
 
 | T21 | **Form spam and abuse** of public intake forms | One `security definer` entry point (`submit_form`) with size limits, an email check, a honeypot field and rate limits per client (5 per 10 min, keyed by a SHA-256 of the client address and form, never the raw address) and per form (200 per hour); answers HTTP 429 when exceeded; only fields the team uses can be asked, never people; the public demo cannot publish forms; the submitter's email is visible to the team only (activity RLS). CAPTCHA is not built | `190_forms.test.sql` (honeypot, rate limit, invalid email, workspace-only forms closed to strangers, outsiders see no submissions) |
 
+| T22 | **Third-party tokens and content** in the Linear, Asana and ClickUp importers | The person's API token is used from their browser for the import only: never stored, never sent to Daiquiri (the services allow cross-origin requests; self-hosted CSP lists only their API hosts); imported text is untrusted and goes through the editor schema (Markdown → validated document) or plain paragraphs, never raw HTML; tasks, labels, projects and comments are written as the importing user under RLS, comments naming their original author in the text rather than impersonating them | `external.test.ts`, `sources.test.ts`, `import-linear.spec.ts` (the key reaches only Linear), `210_import.test.sql` |
+
 ## Security checklist for every new table
 
 1. `workspace_id` column + composite FK to its parent.

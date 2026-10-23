@@ -162,7 +162,8 @@ Start with [ARCHITECTURE.md](ARCHITECTURE.md), then [docs/plan.md](docs/plan.md)
 - [x] Weekly reminders to post a project update
 - [x] Outbound webhooks: signed, retried, with a delivery log, and callable from automations
 - [x] CSV import (Linear, Asana, ClickUp or spreadsheet exports) with column matching
-- [ ] Integrations: API tokens, Slack, direct importers from Linear, Asana and ClickUp
+- [x] Direct import from Linear, Asana and ClickUp: sub-tasks, comments, statuses, people, labels and projects
+- [ ] Integrations: API tokens, Slack
 
 The full order and rationale are in [implementation priorities](docs/product/implementation-priorities.md).
 

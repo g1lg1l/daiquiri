@@ -107,12 +107,10 @@ export function useMemberEmails(workspaceId: string, enabled: boolean) {
   return useQuery({
     queryKey: keys.memberEmails(workspaceId),
     enabled,
-    queryFn: async () => {
-      const rows = unwrap(
-        await client.rpc('workspace_member_emails', { workspace_id: workspaceId }),
-      );
-      return new Map(rows.map((row) => [row.user_id, row.email]));
-    },
+    // The cache is persisted as JSON: keep an array there and build the Map on read.
+    queryFn: async () =>
+      unwrap(await client.rpc('workspace_member_emails', { workspace_id: workspaceId })),
+    select: (rows) => new Map(rows.map((row) => [row.user_id, row.email])),
   });
 }
 

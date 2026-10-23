@@ -15,7 +15,7 @@ server {
   gzip_types text/css application/javascript application/json image/svg+xml;
   gzip_min_length 1024;
 
-  set $csp "default-src 'self'; script-src 'self' '${DAIQ_SCRIPT_HASH}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' ${DAIQ_CONNECT_SRC}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
+  set $csp "default-src 'self'; script-src 'self' '${DAIQ_SCRIPT_HASH}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' ${DAIQ_CONNECT_SRC} https://api.linear.app https://app.asana.com https://api.clickup.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
 
   location = /healthz {
     access_log off;

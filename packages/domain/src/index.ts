@@ -203,3 +203,14 @@ export {
   textToDocument,
 } from './import';
 export type { ImportTarget } from './import';
+export {
+  asanaComments,
+  clickUpComments,
+  commentHeading,
+  defaultStatusFor,
+  fromAsana,
+  fromClickUp,
+  fromLinear,
+  orderForImport,
+} from './external';
+export type { ExternalComment, ExternalTask } from './external';

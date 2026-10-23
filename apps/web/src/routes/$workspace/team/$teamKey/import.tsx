@@ -14,11 +14,13 @@ import {
   type ImportTarget,
   type Team,
 } from '@daiq/domain';
-import { Button, FieldError, Label } from '@daiq/ui';
+import { Button, cn, FieldError, Label } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { UploadIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { NotFoundPanel } from '../../../../components/not-found-panel';
+import { ServiceImport } from '../../../../features/import/service-import';
+import { SOURCES, type Source } from '../../../../features/import/sources';
 import { ViewHeader } from '../../../../features/shell/view-header';
 import {
   useWorkspace,
@@ -109,6 +111,7 @@ function ImportTasks() {
   const tasks = useTasks(team ? { kind: 'team', id: team.id } : null);
   const importTasks = useImportTasks(team?.id ?? '');
   const createLabel = useCreateLabel(workspace.id);
+  const [from, setFrom] = useState<'csv' | Source['id']>('csv');
   const [fileName, setFileName] = useState<string | null>(null);
   const [table, setTable] = useState<string[][]>([]);
   const [mapping, setMapping] = useState<Mapping>({});
@@ -192,7 +195,34 @@ function ImportTasks() {
       <ViewHeader title="Import tasks" icon={<UploadIcon className="size-4 text-fg-muted" />} />
       <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex max-w-3xl flex-col gap-5 p-4 md:p-6">
-          {imported !== null ? (
+          <fieldset className="flex flex-wrap gap-1 self-start rounded-md border border-border p-0.5 text-[13px]">
+            <legend className="sr-only">Import from</legend>
+            {[{ id: 'csv' as const, name: 'CSV' }, ...SOURCES].map((option) => (
+              <label
+                key={option.id}
+                className={cn(
+                  'cursor-pointer rounded-[5px] px-3 py-1 text-fg-muted has-focus-visible:outline-2 has-focus-visible:outline-focus',
+                  from === option.id && 'bg-surface-emphasis text-fg',
+                )}
+              >
+                <input
+                  type="radio"
+                  name="import-from"
+                  className="sr-only"
+                  checked={from === option.id}
+                  onChange={() => setFrom(option.id)}
+                />
+                {option.name}
+              </label>
+            ))}
+          </fieldset>
+          {from !== 'csv' ? (
+            <ServiceImport
+              key={from}
+              source={SOURCES.find((s) => s.id === from) ?? SOURCES[0]!}
+              team={team}
+            />
+          ) : imported !== null ? (
             <section className="flex flex-col items-start gap-3" aria-live="polite">
               <h2 className="text-lg font-semibold font-display">
                 Imported {imported.toLocaleString()} tasks
@@ -208,8 +238,8 @@ function ImportTasks() {
           ) : (
             <>
               <p className="text-[13px] text-fg-muted">
-                Bring tasks into {team.name} from a CSV file, such as an export from Linear, Asana,
-                ClickUp or a spreadsheet. Columns are matched by name; check them before importing.
+                Bring tasks into {team.name} from a CSV file, such as a spreadsheet or an export
+                from another tool. Columns are matched by name; check them before importing.
               </p>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="import-file">CSV file</Label>
