@@ -12,12 +12,15 @@ import {
   QuoteIcon,
   TableIcon,
 } from 'lucide-react';
+import { editorTexts, type EditorTexts } from './strings';
 import { suggestionRenderer, type SlashCommand } from './suggestion';
 
-export const SLASH_COMMANDS: SlashCommand[] = [
+type SlashId = keyof EditorTexts['slash'];
+
+/** Titles come from `editorTexts.slash` when the menu opens. */
+export const SLASH_COMMANDS: (Omit<SlashCommand, 'id' | 'title'> & { id: SlashId })[] = [
   {
     id: 'h1',
-    title: 'Heading 1',
     hint: '#',
     keywords: ['title', 'h1'],
     icon: <Heading1Icon />,
@@ -25,7 +28,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     id: 'h2',
-    title: 'Heading 2',
     hint: '##',
     keywords: ['subtitle', 'h2'],
     icon: <Heading2Icon />,
@@ -33,7 +35,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     id: 'h3',
-    title: 'Heading 3',
     hint: '###',
     keywords: ['h3'],
     icon: <Heading3Icon />,
@@ -41,7 +42,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     id: 'bullet',
-    title: 'Bulleted list',
     hint: '-',
     keywords: ['unordered', 'ul'],
     icon: <ListIcon />,
@@ -49,7 +49,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     id: 'ordered',
-    title: 'Numbered list',
     hint: '1.',
     keywords: ['ordered', 'ol'],
     icon: <ListOrderedIcon />,
@@ -57,7 +56,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     id: 'task',
-    title: 'Checklist',
     hint: '[]',
     keywords: ['todo', 'task', 'checkbox'],
     icon: <ListChecksIcon />,
@@ -65,7 +63,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     id: 'quote',
-    title: 'Quote',
     hint: '>',
     keywords: ['blockquote'],
     icon: <QuoteIcon />,
@@ -73,7 +70,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     id: 'code',
-    title: 'Code block',
     hint: '```',
     keywords: ['snippet', 'pre'],
     icon: <CodeIcon />,
@@ -81,7 +77,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     id: 'table',
-    title: 'Table',
     keywords: ['grid'],
     icon: <TableIcon />,
     run: (e, r) =>
@@ -89,7 +84,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   },
   {
     id: 'divider',
-    title: 'Divider',
     hint: '---',
     keywords: ['hr', 'rule', 'separator'],
     icon: <MinusIcon />,
@@ -108,13 +102,13 @@ export const SlashCommands = Extension.create({
         startOfLine: false,
         items: ({ query }) => {
           const q = query.toLowerCase();
-          return SLASH_COMMANDS.filter(
+          return SLASH_COMMANDS.map((c) => ({ ...c, title: editorTexts.slash[c.id] })).filter(
             (c) => !q || c.title.toLowerCase().includes(q) || c.keywords.some((k) => k.includes(q)),
           );
         },
         command: ({ editor, range, props }) => props.run(editor, range),
         render: suggestionRenderer<SlashCommand, SlashCommand>(
-          'Insert block',
+          editorTexts.insertBlock,
           (command) => command,
         ),
       }),

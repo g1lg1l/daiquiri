@@ -32,15 +32,30 @@ function preferred(): Locale {
   return 'en';
 }
 
-/** The active strings. Replaced in place by `loadLocale`, so imports stay valid. */
-export const m: Messages = { ...en };
+/**
+ * The active strings. Replaced in place by `loadLocale`, so imports stay valid.
+ * Route namespaces are added by `provide` when their screens' modules load,
+ * which is always before those screens render.
+ */
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+export const m = { ...en } as Messages;
+
+/** Adds English namespaces that the loaded language did not already provide. */
+export function provide(part: Partial<Messages>): void {
+  for (const [key, value] of Object.entries(part))
+    if (!(key in m)) Object.assign(m, { [key]: value });
+}
 /** The active language, for `Intl` formatting. */
 export let locale: Locale = 'en';
 
 export async function loadLocale(): Promise<void> {
   locale = preferred();
   document.documentElement.lang = locale;
-  if (locale === 'it') Object.assign(m, (await import('./it')).it);
+  if (locale === 'it') {
+    const italian = await import('./it');
+    Object.assign(m, italian.it);
+    italian.localizePackages();
+  }
 }
 
 export function setLocale(next: Locale): void {
@@ -52,14 +67,4 @@ export function setLocale(next: Locale): void {
   window.location.reload();
 }
 
-const pluralRules = new Map<string, Intl.PluralRules>();
-
-/** "1 task" / "3 tasks": `#` in the chosen form becomes the formatted count. */
-export function count(n: number, one: string, other: string): string {
-  let rules = pluralRules.get(locale);
-  if (!rules) {
-    rules = new Intl.PluralRules(locale);
-    pluralRules.set(locale, rules);
-  }
-  return (rules.select(n) === 'one' ? one : other).replace('#', n.toLocaleString(locale));
-}
+export { count } from './count';

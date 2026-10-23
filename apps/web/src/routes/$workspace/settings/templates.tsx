@@ -15,19 +15,18 @@ import { FolderIcon, ListChecksIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { TeamBadge } from '../../../components/team-badge';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
+import { m } from '../../../i18n/settings';
 import { formString } from '../../../lib/forms';
 
 export const Route = createFileRoute('/$workspace/settings/templates')({
   component: TemplatesSettings,
 });
 
-const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
-
 function contents(template: Template): string {
   const { subtasks, milestones, tasks } = template.counts;
   if (template.kind === 'task')
-    return subtasks ? `Task with ${plural(subtasks, 'sub-task')}` : 'Task';
-  return `Project with ${plural(milestones, 'milestone')} and ${plural(tasks, 'task')}`;
+    return subtasks ? m.settings.templates.taskWith(subtasks) : m.settings.templates.task;
+  return m.settings.templates.project(milestones, tasks);
 }
 
 function TemplatesSettings() {
@@ -44,17 +43,12 @@ function TemplatesSettings() {
   return (
     <section className="flex flex-col gap-4">
       <header>
-        <h2 className="text-lg font-semibold font-display">Templates</h2>
-        <p className="text-[13px] text-fg-muted">
-          Save a task or a project as a template from its menu. Use task templates from the new task
-          dialog and project templates when you create a project.
-        </p>
+        <h2 className="text-lg font-semibold font-display">{m.settings.sections.templates}</h2>
+        <p className="text-[13px] text-fg-muted">{m.settings.templates.intro}</p>
       </header>
 
       {templates.data?.length === 0 && (
-        <p className="text-[13px] text-fg-subtle">
-          No templates yet. Open a task or a project and choose Save as template.
-        </p>
+        <p className="text-[13px] text-fg-subtle">{m.settings.templates.empty}</p>
       )}
 
       {teams.map((team) => (
@@ -77,18 +71,21 @@ function TemplatesSettings() {
                     <span className="text-xs text-fg-subtle">
                       {contents(template)}
                       {template.createdBy &&
-                        `, saved by ${data.membersById.get(template.createdBy)?.displayName ?? 'a former member'}`}
+                        m.settings.templates.savedBy(
+                          data.membersById.get(template.createdBy)?.displayName ??
+                            m.settings.templates.formerMember,
+                        )}
                     </span>
                   </span>
                   {canManage(template) && (
                     <>
                       <Button variant="ghost" size="sm" onClick={() => setRenaming(template)}>
-                        Rename
+                        {m.common.rename}
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label={`Delete ${template.name}`}
+                        aria-label={m.settings.deleteNamed(template.name)}
                         onClick={() => setDeleting(template)}
                       >
                         <Trash2Icon />
@@ -103,7 +100,7 @@ function TemplatesSettings() {
 
       <Dialog open={renaming !== null} onOpenChange={(open) => !open && setRenaming(null)}>
         <DialogContent>
-          <DialogTitle>Rename template</DialogTitle>
+          <DialogTitle>{m.settings.templates.renameTitle}</DialogTitle>
           {renaming && (
             <form
               className="flex flex-col gap-4"
@@ -115,7 +112,7 @@ function TemplatesSettings() {
               }}
             >
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="rename-template">Name</Label>
+                <Label htmlFor="rename-template">{m.settings.name}</Label>
                 <Input
                   id="rename-template"
                   name="name"
@@ -127,10 +124,10 @@ function TemplatesSettings() {
               </div>
               <DialogFooter>
                 <Button type="button" onClick={() => setRenaming(null)}>
-                  Cancel
+                  {m.common.cancel}
                 </Button>
                 <Button type="submit" variant="primary">
-                  Rename
+                  {m.common.rename}
                 </Button>
               </DialogFooter>
             </form>
@@ -140,12 +137,10 @@ function TemplatesSettings() {
 
       <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
         <DialogContent>
-          <DialogTitle>Delete {deleting?.name}?</DialogTitle>
-          <DialogDescription>
-            Tasks and projects already created from it stay as they are.
-          </DialogDescription>
+          <DialogTitle>{m.settings.deleteTitle(deleting?.name ?? '')}</DialogTitle>
+          <DialogDescription>{m.settings.templates.deleteDescription}</DialogDescription>
           <DialogFooter>
-            <Button onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button onClick={() => setDeleting(null)}>{m.common.cancel}</Button>
             <Button
               variant="danger"
               onClick={() => {
@@ -153,7 +148,7 @@ function TemplatesSettings() {
                 setDeleting(null);
               }}
             >
-              Delete template
+              {m.settings.templates.deleteConfirm}
             </Button>
           </DialogFooter>
         </DialogContent>

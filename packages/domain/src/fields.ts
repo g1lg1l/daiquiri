@@ -1,5 +1,6 @@
 import { parseIsoDate } from './dates';
 import type { CustomField, CustomFieldKind, FieldValue, Task } from './model';
+import { words } from './text';
 
 /*
  * Custom fields (feature spec §3.9): value checks, display, filtering and grouping.
@@ -58,12 +59,14 @@ export function formatFieldValue(
     case 'multi_select':
       return Array.isArray(value) ? value.map(option).join(', ') : '';
     case 'person':
-      return typeof value === 'string' ? (members.get(value)?.displayName ?? 'Former member') : '';
+      return typeof value === 'string'
+        ? (members.get(value)?.displayName ?? words.formerMember)
+        : '';
     case 'checkbox':
-      return value === true ? 'Yes' : 'No';
+      return value === true ? words.yes : words.no;
     case 'date':
       return typeof value === 'string'
-        ? parseIsoDate(value).toLocaleDateString(undefined, {
+        ? parseIsoDate(value).toLocaleDateString(words.locale, {
             day: 'numeric',
             month: 'short',
             year: 'numeric',

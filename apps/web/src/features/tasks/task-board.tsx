@@ -38,6 +38,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
+import { m } from '../../i18n';
 import { useToday } from '../../lib/use-today';
 import { useShortcuts } from '../shortcuts/use-shortcuts';
 import { useWorkspaceData } from '../workspace/workspace-context';
@@ -209,7 +210,7 @@ export function TaskBoard({
         ? patchForMove(laneBy, task, fromLane, toLane, laneField)
         : {};
     if (patch === null || lanePatch === null) {
-      announce('Tasks cannot be moved there.');
+      announce(m.tasks.board.cannotMove);
       return;
     }
     const others = cell(lane, target).filter((t) => t.id !== task.id);
@@ -226,11 +227,17 @@ export function TaskBoard({
     applyPatch(task, lanePatch, laneField, plain);
     const moved = fromKey !== toKey || fromLane !== toLane;
     if (Object.keys(plain).length > 0)
-      actions.update([task], plain, moved ? `Move to ${target.label}` : 'Reorder');
+      actions.update(
+        [task],
+        plain,
+        moved ? m.tasks.undo.moveTo(target.label) : m.tasks.undo.reorder,
+      );
     announce(
-      moved
-        ? `${identifier(task)} moved to ${target.label}${lane ? ` in ${lane.label}` : ''}`
-        : `${identifier(task)} moved to position ${clamped + 1}`,
+      !moved
+        ? m.tasks.board.movedToPosition(identifier(task), clamped + 1)
+        : lane
+          ? m.tasks.board.movedInLane(identifier(task), target.label, lane.label)
+          : m.tasks.board.moved(identifier(task), target.label),
     );
   };
 
@@ -398,12 +405,12 @@ export function TaskBoard({
       <section
         ref={scrollRef}
         className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto p-3 scrollbar-thin md:p-4"
-        aria-label="Board"
+        aria-label={m.tasks.board.label}
       >
         {lanes.map((lane, laneIndex) => (
           <section
             key={lane.key}
-            aria-label={`${lane.label}, ${lane.taskIds.size} tasks`}
+            aria-label={m.tasks.board.lane(lane.label, lane.taskIds.size)}
             className="flex w-max flex-col gap-2"
           >
             <h2 className="sticky left-0 flex w-fit items-center gap-2 px-1 text-[13px] font-semibold">
@@ -423,7 +430,7 @@ export function TaskBoard({
     <section
       ref={scrollRef}
       className="flex min-h-0 flex-1 gap-3 overflow-x-auto overflow-y-hidden p-3 scrollbar-thin md:p-4"
-      aria-label="Board"
+      aria-label={m.tasks.board.label}
     >
       {columns(undefined, 0)}
     </section>
@@ -462,7 +469,11 @@ function Column({
 
   return (
     <section
-      aria-label={`${group.label}${lane ? ` in ${lane.label}` : ''}, ${count} tasks`}
+      aria-label={
+        lane
+          ? m.tasks.board.columnInLane(group.label, lane.label, count)
+          : m.tasks.board.column(group.label, count)
+      }
       className={cn(
         'flex w-72 shrink-0 flex-col rounded-xl bg-surface-subtle',
         lane && 'max-h-[70vh]',
@@ -473,12 +484,12 @@ function Column({
         {isPriority(groupPriority) && <PriorityIcon priority={groupPriority} />}
         <h2 className="truncate text-[13px] font-medium">{group.label}</h2>
         <span className="text-xs text-fg-subtle tabular">{count}</span>
-        <Tooltip label={`Create in ${group.label}`}>
+        <Tooltip label={m.tasks.createIn(group.label)}>
           <Button
             variant="ghost"
             size="icon-sm"
             className="ml-auto opacity-0 group-hover/col:opacity-100 focus-visible:opacity-100"
-            aria-label={`Create task in ${group.label}`}
+            aria-label={m.tasks.createTaskIn(group.label)}
             onClick={onCreate}
           >
             <PlusIcon />
@@ -591,7 +602,9 @@ const Card = memo(function Card({
       <div className="flex items-center gap-1.5 text-xs text-fg-subtle">
         {status && <StatusIcon category={status.category} className="size-3" />}
         <span className="font-mono tabular">{identifier}</span>
-        {task.recurring && <RepeatIcon role="img" aria-label="Repeats" className="size-3" />}
+        {task.recurring && (
+          <RepeatIcon role="img" aria-label={m.tasks.repeats} className="size-3" />
+        )}
       </div>
       <p className={cn('line-clamp-2 leading-snug', closed && 'text-fg-muted')}>{task.title}</p>
       <div className="flex items-center gap-1.5">
@@ -614,7 +627,7 @@ const Card = memo(function Card({
         {task.attachmentCount > 0 && (
           <span
             className="flex items-center gap-0.5 text-[11px] text-fg-subtle tabular"
-            aria-label={`${task.attachmentCount} ${task.attachmentCount === 1 ? 'attachment' : 'attachments'}`}
+            aria-label={m.tasks.attachments(task.attachmentCount)}
           >
             <PaperclipIcon aria-hidden className="size-3" />
             {task.attachmentCount}

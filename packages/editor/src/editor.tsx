@@ -8,6 +8,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 import { toJsonContent } from './json';
 import { schemaExtensions } from './schema';
 import { SlashCommands } from './slash';
+import { editorTexts } from './strings';
 import { suggestionRenderer, type SuggestionItem } from './suggestion';
 import './editor.css';
 
@@ -40,7 +41,7 @@ const NO_MENTIONABLES: readonly Mentionable[] = [];
 export function RichTextEditor({
   value,
   onChange,
-  placeholder = 'Write something, or press / for commands…',
+  placeholder = editorTexts.placeholder,
   mentionables = NO_MENTIONABLES,
   autoFocus = false,
   onSubmit,
@@ -87,10 +88,13 @@ export function RichTextEditor({
                 { type: 'text', text: ' ' },
               ])
               .run(),
-          render: suggestionRenderer<MentionItem, MentionNodeAttrs>('Mention someone', (item) => ({
-            id: item.id,
-            label: item.title,
-          })),
+          render: suggestionRenderer<MentionItem, MentionNodeAttrs>(
+            editorTexts.mentionSomeone,
+            (item) => ({
+              id: item.id,
+              label: item.title,
+            }),
+          ),
         },
       }),
       SlashCommands,

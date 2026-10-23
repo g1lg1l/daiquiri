@@ -6,6 +6,7 @@ import { LockIcon, SettingsIcon } from 'lucide-react';
 import { useState } from 'react';
 import { TeamBadge } from '../../../components/team-badge';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
+import { m } from '../../../i18n/settings';
 
 export const Route = createFileRoute('/$workspace/settings/teams')({ component: TeamsSettings });
 
@@ -23,11 +24,8 @@ function TeamsSettings() {
   return (
     <section className="flex flex-col gap-4">
       <header>
-        <h2 className="text-lg font-semibold font-display">Teams</h2>
-        <p className="text-[13px] text-fg-muted">
-          Each team has its own workflow and task numbers. Private teams are visible only to their
-          members.
-        </p>
+        <h2 className="text-lg font-semibold font-display">{m.settings.sections.teams}</h2>
+        <p className="text-[13px] text-fg-muted">{m.settings.teams.intro}</p>
       </header>
       {can(workspace.role, 'teams.create') && (
         <form
@@ -42,12 +40,12 @@ function TeamsSettings() {
           }}
         >
           <div className="flex min-w-56 flex-1 flex-col gap-1.5">
-            <Label htmlFor="team-name">New team</Label>
+            <Label htmlFor="team-name">{m.settings.teams.newTeam}</Label>
             <Input
               id="team-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Design"
+              placeholder={m.settings.teams.namePlaceholder}
               required
               maxLength={60}
             />
@@ -59,20 +57,16 @@ function TeamsSettings() {
               onChange={(e) => setIsPrivate(e.target.checked)}
               className="accent-(--accent)"
             />
-            Private
+            {m.settings.teams.private}
           </label>
           <Button
             type="submit"
             variant="primary"
             disabled={!name.trim() || keyTaken || !teamKeySchema.safeParse(key).success}
           >
-            Create {key && `(${key})`}
+            {m.common.create} {key && `(${key})`}
           </Button>
-          {keyTaken && (
-            <FieldError className="w-full">
-              The key {key} is already used. Try a different name.
-            </FieldError>
-          )}
+          {keyTaken && <FieldError className="w-full">{m.settings.teams.keyTaken(key)}</FieldError>}
           {error && <FieldError className="w-full">{error}</FieldError>}
         </form>
       )}
@@ -90,18 +84,21 @@ function TeamsSettings() {
                 {team.name}
               </Link>
               {team.isPrivate && (
-                <LockIcon className="size-3.5 text-fg-subtle" aria-label="Private team" />
+                <LockIcon
+                  className="size-3.5 text-fg-subtle"
+                  aria-label={m.settings.teams.privateTeam}
+                />
               )}
               <Link
                 to="/$workspace/settings/teams/$teamKey"
                 params={{ workspace: workspace.slug, teamKey: team.key }}
                 className="flex size-7 items-center justify-center rounded-md text-fg-subtle hover:bg-surface-muted hover:text-fg"
-                aria-label={`${team.name} settings`}
+                aria-label={m.settings.teams.teamSettings(team.name)}
               >
                 <SettingsIcon className="size-4" />
               </Link>
               <span className="text-xs text-fg-subtle tabular">
-                {team.memberIds.length} members
+                {m.settings.teams.members(team.memberIds.length)}
               </span>
               {isMember ? (
                 <Button
@@ -109,14 +106,14 @@ function TeamsSettings() {
                   size="sm"
                   onClick={() => membership.leave.mutate({ teamId: team.id, userId })}
                 >
-                  Leave
+                  {m.settings.teams.leave}
                 </Button>
               ) : (
                 <Button
                   size="sm"
                   onClick={() => membership.join.mutate({ teamId: team.id, userId })}
                 >
-                  Join
+                  {m.settings.teams.join}
                 </Button>
               )}
             </li>

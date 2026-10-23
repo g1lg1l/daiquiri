@@ -1,5 +1,6 @@
 import type { CycleDay } from '@daiq/data';
 import { daysBetween } from '@daiq/domain';
+import { m } from '../../i18n';
 
 const WIDTH = 600;
 const HEIGHT = 140;
@@ -31,10 +32,13 @@ export function BurnUp({
   const line = (values: number[]) =>
     days.map((d, i) => `${i === 0 ? 'M' : 'L'} ${x(d.day)} ${y(values[i] ?? 0)}`).join(' ');
   const last = days.at(-1);
-  const unit = points ? 'points' : 'tasks';
   const summary = last
-    ? `${points ? last.completedPoints : last.completed} of ${points ? last.scopePoints : last.scope} ${unit} completed`
-    : 'No work in this cycle yet';
+    ? m.shell.burnUp.summary(
+        points ? last.completedPoints : last.completed,
+        points ? last.scopePoints : last.scope,
+        points,
+      )
+    : m.shell.burnUp.empty;
 
   return (
     <figure className="flex flex-col gap-1">
@@ -88,11 +92,11 @@ export function BurnUp({
       </div>
       <figcaption className="flex items-center gap-4 text-xs text-fg-muted">
         <span className="flex items-center gap-1.5">
-          <span aria-hidden className="h-0.5 w-4 bg-accent" /> Completed
+          <span aria-hidden className="h-0.5 w-4 bg-accent" /> {m.shell.burnUp.completed}
         </span>
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="h-0 w-4 border-t-[1.5px] border-dashed border-fg-subtle" />{' '}
-          Scope
+          {m.shell.burnUp.scope}
         </span>
         <span className="ml-auto">{summary}</span>
       </figcaption>

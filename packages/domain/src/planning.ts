@@ -1,4 +1,5 @@
 import type { Cycle, EstimateScale } from './model';
+import { words } from './text';
 
 /*
  * Estimates and cycles (feature spec §3.10, §11).
@@ -15,12 +16,12 @@ export function estimateOptions(scale: EstimateScale): readonly number[] {
 
 export function formatEstimate(value: number, scale: EstimateScale): string {
   if (scale === 'hours') return `${value}h`;
-  return `${value} ${value === 1 ? 'point' : 'points'}`;
+  return words.points(value);
 }
 
 /** "Cycle 7", or "Cycle 7 · Launch" when it has a name. */
 export function cycleLabel(cycle: Pick<Cycle, 'number' | 'name'>): string {
-  return cycle.name ? `Cycle ${cycle.number} · ${cycle.name}` : `Cycle ${cycle.number}`;
+  return cycle.name ? `${words.cycle(cycle.number)} · ${cycle.name}` : words.cycle(cycle.number);
 }
 
 export type CycleState = 'past' | 'current' | 'upcoming';

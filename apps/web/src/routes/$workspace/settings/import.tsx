@@ -4,45 +4,27 @@ import { FileSpreadsheetIcon, LockIcon, PlugZapIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { Source } from '../../../features/import/sources';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
+import { m } from '../../../i18n/importer';
 
 export const Route = createFileRoute('/$workspace/settings/import')({ component: ImportSettings });
 
 type From = 'csv' | Source['id'];
 
-const CARDS: { from: From; name: string; summary: string; brings: string; needs: string }[] = [
-  {
-    from: 'linear',
-    name: 'Linear',
-    summary: 'A whole Linear team, sub-issues included.',
-    brings:
-      'Titles, Markdown descriptions, statuses, priorities, assignees, labels, projects, due dates, estimates, sub-issues and comments.',
-    needs: 'A personal API key (Settings → Account → Security & access).',
-  },
-  {
-    from: 'asana',
-    name: 'Asana',
-    summary: 'One Asana project; its sections become statuses.',
-    brings:
-      'Task names, notes, sections and completion, assignees, tags as labels, start and due dates, two levels of sub-tasks, and comments.',
-    needs: 'A personal access token (My settings → Apps → Developer apps).',
-  },
-  {
-    from: 'clickup',
-    name: 'ClickUp',
-    summary: 'One ClickUp list, with its sub-tasks.',
-    brings:
-      'Names, Markdown descriptions, statuses, priorities, assignees, tags as labels, start and due dates, time estimates or points, sub-tasks and comments.',
-    needs: 'A personal API token (Settings → Apps).',
-  },
-  {
-    from: 'csv',
-    name: 'CSV file',
-    summary: 'A spreadsheet or an export from any other tool.',
-    brings:
-      'Any of title, description, status, priority, assignees, labels, project, start and due dates and estimate. You match the columns before importing.',
-    needs: 'A .csv file with a header row, up to 10,000 rows.',
-  },
-];
+const cards = (): {
+  from: From;
+  name: string;
+  summary: string;
+  brings: string;
+  needs: string;
+}[] => {
+  const text = m.importer.settings.cards;
+  return [
+    { from: 'linear', name: 'Linear', ...text.linear },
+    { from: 'asana', name: 'Asana', ...text.asana },
+    { from: 'clickup', name: 'ClickUp', ...text.clickup },
+    { from: 'csv', ...text.csv },
+  ];
+};
 
 function ImportSettings() {
   const { workspace } = useWorkspace();
@@ -54,22 +36,18 @@ function ImportSettings() {
   return (
     <>
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold font-display">Import</h2>
-        <p className="text-[13px] text-fg-muted">
-          Bring your work over from another tool. Imported tasks are added to the team you choose,
-          above what is already there; nothing changes in the tool you import from, so you can try
-          it and import again.
-        </p>
+        <h2 className="text-lg font-semibold font-display">{m.importer.settings.title}</h2>
+        <p className="text-[13px] text-fg-muted">{m.importer.settings.intro}</p>
       </section>
 
       {teams.length === 0 ? (
         <p className="rounded-lg border border-border p-4 text-[13px] text-fg-muted">
-          Join a team first: tasks are always imported into a team.
+          {m.importer.settings.joinTeam}
         </p>
       ) : (
         <>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="import-team">Import into</Label>
+            <Label htmlFor="import-team">{m.importer.settings.into}</Label>
             <Select
               id="import-team"
               className="w-60"
@@ -80,7 +58,7 @@ function ImportSettings() {
           </div>
 
           <ul className="grid gap-3 sm:grid-cols-2">
-            {CARDS.map((card) => (
+            {cards().map((card) => (
               <li
                 key={card.from}
                 className="flex flex-col gap-3 rounded-lg border border-border p-4 transition-[border-color,translate] duration-200 hover:-translate-y-0.5 hover:border-border-strong"
@@ -96,11 +74,11 @@ function ImportSettings() {
                 <p className="text-[13px]">{card.summary}</p>
                 <dl className="flex flex-col gap-2 text-xs">
                   <div>
-                    <dt className="font-medium">Brings over</dt>
+                    <dt className="font-medium">{m.importer.settings.bringsOver}</dt>
                     <dd className="text-fg-muted">{card.brings}</dd>
                   </div>
                   <div>
-                    <dt className="font-medium">You need</dt>
+                    <dt className="font-medium">{m.importer.settings.youNeed}</dt>
                     <dd className="text-fg-muted">{card.needs}</dd>
                   </div>
                 </dl>
@@ -110,7 +88,7 @@ function ImportSettings() {
                   search={{ from: card.from }}
                   className={buttonVariants({ size: 'sm', className: 'mt-auto self-start' })}
                 >
-                  Import from {card.name}
+                  {m.importer.settings.importFrom(card.name)}
                 </Link>
               </li>
             ))}
@@ -119,32 +97,24 @@ function ImportSettings() {
       )}
 
       <section className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold">How it works</h3>
+        <h3 className="text-sm font-semibold">{m.importer.settings.howItWorks}</h3>
         <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-[13px] text-fg-muted marker:text-fg-subtle">
-          <li>Connect with a token, or choose a CSV file.</li>
-          <li>Pick what to import and check how its statuses map to your team’s.</li>
-          <li>Review the summary (people, new labels, new projects) and import.</li>
+          {m.importer.settings.steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
         </ol>
       </section>
 
       <section className="flex flex-col gap-2 text-[13px] text-fg-muted">
-        <h3 className="text-sm font-semibold text-fg">Good to know</h3>
+        <h3 className="text-sm font-semibold text-fg">{m.importer.settings.goodToKnow}</h3>
         <p className="flex gap-2">
           <LockIcon aria-hidden className="mt-0.5 size-3.5 shrink-0" />
-          Tokens are used by your browser to read from the other tool during the import. They are
-          never sent to Daiquiri’s servers and never saved.
+          {m.importer.settings.tokens}
         </p>
         <ul className="flex list-disc flex-col gap-1 pl-5 marker:text-fg-subtle">
-          <li>
-            People are matched to members by email (when you are an admin) or by name; anyone else
-            is left unassigned.
-          </li>
-          <li>Labels and projects that don’t exist yet can be created during the import.</li>
-          <li>
-            Comments are posted by you, starting with their original author and date, because
-            Daiquiri cannot write as someone else.
-          </li>
-          <li>Sub-tasks deeper than three levels are attached to their nearest allowed parent.</li>
+          {m.importer.settings.notes.map((note) => (
+            <li key={note}>{note}</li>
+          ))}
         </ul>
       </section>
     </>

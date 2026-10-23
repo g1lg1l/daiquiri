@@ -1,3 +1,5 @@
+import { formatNumber } from './text';
+
 /*
  * Task attachments (feature spec P2). Files live in the private `attachments`
  * bucket at {workspace}/{task}/{attachment}/{file name}.
@@ -48,5 +50,10 @@ export function formatBytes(bytes: number): string {
     value /= 1024;
     unit += 1;
   }
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)} ${units[unit]}`;
+  // toFixed rounds; Intl only localizes the decimal separator.
+  const shown =
+    value < 10
+      ? formatNumber(Number(value.toFixed(1)), { minimumFractionDigits: 1 })
+      : formatNumber(Math.round(value));
+  return `${shown} ${units[unit]}`;
 }

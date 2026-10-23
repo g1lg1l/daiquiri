@@ -11,6 +11,7 @@ import { useShortcuts } from '../../features/shortcuts/use-shortcuts';
 import { TaskDetail } from '../../features/tasks/task-detail';
 import { useIdentifier } from '../../features/tasks/use-identifier';
 import { useWorkspace, useWorkspaceData } from '../../features/workspace/workspace-context';
+import { m } from '../../i18n';
 import { timeAgo } from '../../lib/time';
 import { nowIso, useToday } from '../../lib/use-today';
 
@@ -20,16 +21,6 @@ export const Route = createFileRoute('/$workspace/inbox')({
   }),
   component: Inbox,
 });
-
-const VERB: Record<Notification['kind'], string> = {
-  assigned: 'assigned you',
-  mention: 'mentioned you',
-  comment: 'commented',
-  status: 'changed the status',
-  unblocked: 'unblocked your task',
-  automation: 'asked you to look at this',
-  update_reminder: 'reminds you to post a project update',
-};
 
 function Inbox() {
   const { workspace } = useWorkspace();
@@ -100,19 +91,19 @@ function Inbox() {
   return (
     <div className="flex min-h-0 flex-1">
       <div className="flex w-full min-w-0 flex-col md:w-[400px] md:shrink-0 md:border-r md:border-border">
-        <ViewHeader title="Inbox" icon={<InboxIcon className="size-4 text-fg-muted" />}>
+        <ViewHeader title={m.shell.nav.inbox} icon={<InboxIcon className="size-4 text-fg-muted" />}>
           {unreadIds.length > 0 && tab === 'inbox' && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => update.mutate({ ids: unreadIds, patch: { readAt: nowIso() } })}
             >
-              <CheckCheckIcon /> Mark all read
+              <CheckCheckIcon /> {m.shell.inbox.markAllRead}
             </Button>
           )}
         </ViewHeader>
         <nav
-          aria-label="Inbox sections"
+          aria-label={m.shell.inbox.sections}
           className="flex gap-0.5 border-b border-border px-3 py-1.5"
         >
           {(['inbox', 'snoozed', 'archived'] as const).map((value) => (
@@ -122,15 +113,18 @@ function Inbox() {
               search={{ tab: value === 'inbox' ? undefined : value }}
               replace
               className={cn(
-                'rounded-md px-2 py-1 text-xs text-fg-muted capitalize hover:bg-surface-muted hover:text-fg',
+                'rounded-md px-2 py-1 text-xs text-fg-muted hover:bg-surface-muted hover:text-fg',
                 tab === value && 'bg-surface-emphasis font-medium text-fg',
               )}
             >
-              {value}
+              {m.shell.inbox.tabs[value]}
             </Link>
           ))}
         </nav>
-        <ul className="min-h-0 flex-1 overflow-y-auto scrollbar-thin" aria-label="Notifications">
+        <ul
+          className="min-h-0 flex-1 overflow-y-auto scrollbar-thin"
+          aria-label={m.shell.inbox.notifications}
+        >
           {items.map((notification) => {
             const task = notification.task;
             const actor = notification.actorId
@@ -158,24 +152,25 @@ function Inbox() {
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-2 text-[13px]">
                       <span className={cn('truncate', !notification.readAt && 'font-semibold')}>
-                        {task?.title ?? notification.project?.name ?? 'A task'}
+                        {task?.title ?? notification.project?.name ?? m.shell.inbox.aTask}
                       </span>
                       {!notification.readAt && (
                         <span
                           className="size-2 shrink-0 rounded-full bg-accent"
-                          aria-label="Unread"
+                          aria-label={m.shell.inbox.unread}
                         />
                       )}
                     </span>
                     <span className="truncate text-xs text-fg-muted">
                       {actor?.displayName ??
                         (notification.kind === 'automation'
-                          ? 'An automation'
+                          ? m.shell.inbox.automation
                           : notification.kind === 'update_reminder'
                             ? 'Daiquiri'
-                            : 'Someone')}{' '}
-                      {VERB[notification.kind]}
-                      {notification.eventCount > 1 && ` and ${notification.eventCount - 1} more`}
+                            : m.common.someone)}{' '}
+                      {m.shell.inbox.verbs[notification.kind]}
+                      {notification.eventCount > 1 &&
+                        ` ${m.shell.inbox.more(notification.eventCount - 1)}`}
                     </span>
                   </span>
                   <span className="flex shrink-0 flex-col items-end gap-1 text-[11px] text-fg-subtle">
@@ -193,34 +188,31 @@ function Inbox() {
           {items.length === 0 && (
             <li className="flex flex-col items-center gap-2 px-6 py-20 text-center text-[13px] text-fg-muted">
               <ArchiveIcon className="size-5 text-fg-subtle" aria-hidden />
-              {tab === 'inbox'
-                ? 'You’re all caught up.'
-                : tab === 'snoozed'
-                  ? 'Nothing snoozed.'
-                  : 'No archived notifications.'}
+              {m.shell.inbox.empty[tab]}
             </li>
           )}
         </ul>
         <p className="hidden items-center gap-3 border-t border-border px-4 py-2 text-[11px] text-fg-subtle md:flex">
           <span className="flex items-center gap-1">
-            <Shortcut keys={SHORTCUTS.toggleRead.keys} /> read
+            <Shortcut keys={SHORTCUTS.toggleRead.keys} /> {m.shell.inbox.hints.read}
           </span>
           <span className="flex items-center gap-1">
-            <Shortcut keys={SHORTCUTS.archive.keys} /> archive
+            <Shortcut keys={SHORTCUTS.archive.keys} /> {m.shell.inbox.hints.archive}
           </span>
           <span className="flex items-center gap-1">
-            <Shortcut keys={SHORTCUTS.snooze.keys} /> snooze
+            <Shortcut keys={SHORTCUTS.snooze.keys} /> {m.shell.inbox.hints.snooze}
           </span>
         </p>
       </div>
-      <section aria-label="Notification detail" className="hidden min-w-0 flex-1 flex-col md:flex">
+      <section aria-label={m.shell.inbox.detail} className="hidden min-w-0 flex-1 flex-col md:flex">
         {selectedIdentifier ? (
           <TaskDetail key={selectedIdentifier} identifier={selectedIdentifier} mode="peek" />
         ) : selected?.project ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
             <p className="text-[13px] text-fg-muted">
-              No update on <strong className="text-fg">{selected.project.name}</strong> this week. A
-              few lines on how it is going keep everyone in the loop.
+              {m.shell.inbox.noUpdate.before}{' '}
+              <strong className="text-fg">{selected.project.name}</strong>{' '}
+              {m.shell.inbox.noUpdate.after}
             </p>
             <Link
               to="/$workspace/project/$projectId"
@@ -228,12 +220,12 @@ function Inbox() {
               search={{ tab: 'updates' }}
               className={buttonVariants({ variant: 'primary', size: 'sm' })}
             >
-              Post an update
+              {m.shell.inbox.postUpdate}
             </Link>
           </div>
         ) : (
           <div className="flex flex-1 items-center justify-center text-[13px] text-fg-subtle">
-            Select a notification to see the task.
+            {m.shell.inbox.select}
           </div>
         )}
       </section>

@@ -6,7 +6,7 @@ import { CheckCircle2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { Wordmark } from '../components/wordmark';
 import { DateField } from '../features/tasks/task-actions';
-
+import { m } from '../i18n/auth';
 import { formString } from '../lib/forms';
 
 /** A team's intake form, open to anyone for public forms (feature spec §13). */
@@ -78,7 +78,7 @@ function FieldInput({ field }: { field: CustomField }) {
             id={id}
             name={id}
             defaultValue={null}
-            placeholder="Choose…"
+            placeholder={m.auth.intake.choose}
             options={field.options.map((option) => ({ value: option.id, label: option.name }))}
           />
         </div>
@@ -125,19 +125,15 @@ function IntakeForm() {
           <Skeleton className="h-64" />
         ) : !data ? (
           <section className="flex flex-col gap-2">
-            <h1 className="text-xl font-semibold font-display">This form isn’t available</h1>
-            <p className="text-[13px] text-fg-muted">
-              The link may be wrong, the form may be closed, or it may only be open to members of
-              its workspace. If you are a member, sign in and open the link again.
-            </p>
+            <h1 className="text-xl font-semibold font-display">{m.auth.intake.unavailable}</h1>
+            <p className="text-[13px] text-fg-muted">{m.auth.intake.unavailableHint}</p>
           </section>
         ) : reference !== null ? (
           <section className="flex flex-col items-start gap-3" aria-live="polite">
             <CheckCircle2Icon aria-hidden className="size-8 text-accent-text" />
-            <h1 className="text-xl font-semibold font-display">Thanks, we have it</h1>
+            <h1 className="text-xl font-semibold font-display">{m.auth.intake.thanks}</h1>
             <p className="text-[13px] text-fg-muted">
-              {data.team} at {data.workspace} will look at it
-              {reference ? `. Your reference is ${reference}.` : '.'}
+              {m.auth.intake.willLook(data.team, data.workspace, reference)}
             </p>
             <Button
               onClick={() => {
@@ -145,7 +141,7 @@ function IntakeForm() {
                 submit.reset();
               }}
             >
-              Send another
+              {m.auth.intake.sendAnother}
             </Button>
           </section>
         ) : (
@@ -189,16 +185,16 @@ function IntakeForm() {
               }}
             >
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="title">Subject</Label>
+                <Label htmlFor="title">{m.auth.intake.subject}</Label>
                 <Input id="title" name="title" required maxLength={200} autoFocus />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="details">Details</Label>
+                <Label htmlFor="details">{m.auth.intake.details}</Label>
                 <Textarea id="details" name="details" rows={5} maxLength={5000} />
               </div>
               {data.askPriority && (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="priority">How urgent is it?</Label>
+                  <Label htmlFor="priority">{m.auth.intake.urgency}</Label>
                   <Select
                     id="priority"
                     name="priority"
@@ -215,11 +211,9 @@ function IntakeForm() {
               ))}
               {!data.signedIn && (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="email">Your email</Label>
+                  <Label htmlFor="email">{m.auth.intake.yourEmail}</Label>
                   <Input id="email" name="email" type="email" required maxLength={254} />
-                  <p className="text-xs text-fg-subtle">
-                    So the team can get back to you. Only they will see it.
-                  </p>
+                  <p className="text-xs text-fg-subtle">{m.auth.intake.emailHint}</p>
                 </div>
               )}
               {/* Bots fill in every field; people never see this one. */}
@@ -231,7 +225,7 @@ function IntakeForm() {
               </div>
               {error && <FieldError>{error}</FieldError>}
               <Button type="submit" variant="primary" disabled={submit.isPending}>
-                Send
+                {m.auth.intake.send}
               </Button>
             </form>
           </>

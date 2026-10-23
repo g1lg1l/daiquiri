@@ -1,60 +1,66 @@
+import { m } from '../../i18n';
+
 /*
  * Single source of truth for keyboard shortcuts (docs/product/keyboard-navigation.md).
- * The `?` sheet, menus, tooltips and the command palette read their hints from here.
+ * The `?` sheet, menus, tooltips and the command palette read their hints from here;
+ * names live in the dictionary (`shortcutLabel`) so they follow the active language.
  */
 export type ShortcutGroup = 'General' | 'Navigation' | 'Lists' | 'Task' | 'Inbox';
 
 export interface ShortcutDefinition {
   keys: string;
-  label: string;
   group: ShortcutGroup;
 }
 
 export const SHORTCUTS = {
-  palette: { keys: 'Mod+K', label: 'Open command palette', group: 'General' },
-  search: { keys: '/', label: 'Search', group: 'General' },
-  create: { keys: 'C', label: 'Create task', group: 'General' },
-  help: { keys: '?', label: 'Keyboard shortcuts', group: 'General' },
-  toggleSidebar: { keys: '[', label: 'Toggle sidebar', group: 'General' },
-  undo: { keys: 'Mod+Z', label: 'Undo', group: 'General' },
-  goInbox: { keys: 'G I', label: 'Go to inbox', group: 'Navigation' },
-  goMyTasks: { keys: 'G M', label: 'Go to my tasks', group: 'Navigation' },
-  goTeam: { keys: 'G T', label: 'Go to team tasks', group: 'Navigation' },
-  goProjects: { keys: 'G P', label: 'Go to projects', group: 'Navigation' },
-  goSettings: { keys: 'G S', label: 'Go to settings', group: 'Navigation' },
-  next: { keys: 'J', label: 'Next item', group: 'Lists' },
-  previous: { keys: 'K', label: 'Previous item', group: 'Lists' },
-  open: { keys: 'Enter', label: 'Open', group: 'Lists' },
-  peek: { keys: 'Space', label: 'Peek', group: 'Lists' },
-  select: { keys: 'X', label: 'Select', group: 'Lists' },
-  selectAll: { keys: 'Mod+A', label: 'Select all', group: 'Lists' },
-  moveUp: { keys: 'Mod+ArrowUp', label: 'Move up', group: 'Lists' },
-  moveDown: { keys: 'Mod+ArrowDown', label: 'Move down', group: 'Lists' },
-  toggleLayout: { keys: 'Mod+B', label: 'Switch list / board', group: 'Lists' },
-  filter: { keys: 'F', label: 'Add filter', group: 'Lists' },
-  display: { keys: 'Shift+V', label: 'Display options', group: 'Lists' },
-  status: { keys: 'S', label: 'Change status', group: 'Task' },
-  priority: { keys: 'P', label: 'Change priority', group: 'Task' },
-  assignee: { keys: 'A', label: 'Change assignees', group: 'Task' },
-  assignMe: { keys: 'I', label: 'Assign to me', group: 'Task' },
-  labels: { keys: 'L', label: 'Change labels', group: 'Task' },
-  dueDate: { keys: 'D', label: 'Set due date', group: 'Task' },
-  project: { keys: 'Shift+P', label: 'Move to project', group: 'Task' },
-  estimate: { keys: 'Shift+E', label: 'Set estimate', group: 'Task' },
-  cycle: { keys: 'Shift+C', label: 'Move to cycle', group: 'Task' },
-  rename: { keys: 'E', label: 'Edit title', group: 'Task' },
-  subtask: { keys: 'Mod+Shift+O', label: 'Add sub-task', group: 'Task' },
-  copyId: { keys: 'Mod+.', label: 'Copy ID', group: 'Task' },
-  copyLink: { keys: 'Mod+Shift+L', label: 'Copy link', group: 'Task' },
-  remove: { keys: 'Mod+Backspace', label: 'Delete', group: 'Task' },
-  comment: { keys: 'M', label: 'Comment', group: 'Task' },
-  subscribe: { keys: 'Shift+S', label: 'Subscribe / unsubscribe', group: 'Task' },
-  toggleRead: { keys: 'U', label: 'Mark read / unread', group: 'Inbox' },
-  archive: { keys: 'Backspace', label: 'Archive notification', group: 'Inbox' },
-  snooze: { keys: 'H', label: 'Snooze', group: 'Inbox' },
+  palette: { keys: 'Mod+K', group: 'General' },
+  search: { keys: '/', group: 'General' },
+  create: { keys: 'C', group: 'General' },
+  help: { keys: '?', group: 'General' },
+  toggleSidebar: { keys: '[', group: 'General' },
+  undo: { keys: 'Mod+Z', group: 'General' },
+  goInbox: { keys: 'G I', group: 'Navigation' },
+  goMyTasks: { keys: 'G M', group: 'Navigation' },
+  goTeam: { keys: 'G T', group: 'Navigation' },
+  goProjects: { keys: 'G P', group: 'Navigation' },
+  goSettings: { keys: 'G S', group: 'Navigation' },
+  next: { keys: 'J', group: 'Lists' },
+  previous: { keys: 'K', group: 'Lists' },
+  open: { keys: 'Enter', group: 'Lists' },
+  peek: { keys: 'Space', group: 'Lists' },
+  select: { keys: 'X', group: 'Lists' },
+  selectAll: { keys: 'Mod+A', group: 'Lists' },
+  moveUp: { keys: 'Mod+ArrowUp', group: 'Lists' },
+  moveDown: { keys: 'Mod+ArrowDown', group: 'Lists' },
+  toggleLayout: { keys: 'Mod+B', group: 'Lists' },
+  filter: { keys: 'F', group: 'Lists' },
+  display: { keys: 'Shift+V', group: 'Lists' },
+  status: { keys: 'S', group: 'Task' },
+  priority: { keys: 'P', group: 'Task' },
+  assignee: { keys: 'A', group: 'Task' },
+  assignMe: { keys: 'I', group: 'Task' },
+  labels: { keys: 'L', group: 'Task' },
+  dueDate: { keys: 'D', group: 'Task' },
+  project: { keys: 'Shift+P', group: 'Task' },
+  estimate: { keys: 'Shift+E', group: 'Task' },
+  cycle: { keys: 'Shift+C', group: 'Task' },
+  rename: { keys: 'E', group: 'Task' },
+  subtask: { keys: 'Mod+Shift+O', group: 'Task' },
+  copyId: { keys: 'Mod+.', group: 'Task' },
+  copyLink: { keys: 'Mod+Shift+L', group: 'Task' },
+  remove: { keys: 'Mod+Backspace', group: 'Task' },
+  comment: { keys: 'M', group: 'Task' },
+  subscribe: { keys: 'Shift+S', group: 'Task' },
+  toggleRead: { keys: 'U', group: 'Inbox' },
+  archive: { keys: 'Backspace', group: 'Inbox' },
+  snooze: { keys: 'H', group: 'Inbox' },
 } as const satisfies Record<string, ShortcutDefinition>;
 
 export type ShortcutId = keyof typeof SHORTCUTS;
+
+export function shortcutLabel(id: ShortcutId): string {
+  return m.shell.shortcuts.labels[id];
+}
 
 export function isShortcutId(id: string): id is ShortcutId {
   return Object.hasOwn(SHORTCUTS, id);

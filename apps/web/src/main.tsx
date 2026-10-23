@@ -12,7 +12,8 @@ const container = document.getElementById('root');
 if (!container) throw new Error('Missing #root element');
 const root = createRoot(container);
 
-Promise.all([loadRuntimeConfig(), loadLocale()])
+const localeLoaded = loadLocale();
+Promise.all([loadRuntimeConfig(), localeLoaded])
   .then(([config]) =>
     root.render(
       <StrictMode>
@@ -20,7 +21,9 @@ Promise.all([loadRuntimeConfig(), loadLocale()])
       </StrictMode>,
     ),
   )
-  .catch((error: unknown) => {
+  .catch(async (error: unknown) => {
     logger.error('config.invalid', error);
+    // The config can fail before the language arrives; explain in the person's language.
+    await localeLoaded.catch(() => undefined);
     root.render(<ConfigErrorScreen error={error} />);
   });

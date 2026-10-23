@@ -9,7 +9,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./editor": "./src/editor.tsx",
-    "./editor.css": "./src/editor.css"
+    "./editor.css": "./src/editor.css",
+    "./strings": "./src/strings.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",

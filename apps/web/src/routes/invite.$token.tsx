@@ -4,6 +4,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { AuthLayout } from '../features/auth/auth-layout';
 import { useSubmit } from '../features/auth/use-form-error';
 import { requireAuth } from '../app/router-context';
+import { m } from '../i18n/auth';
 
 export const Route = createFileRoute('/invite/$token')({
   beforeLoad: requireAuth,
@@ -19,25 +20,24 @@ function Invite() {
 
   if (preview.isPending) {
     return (
-      <AuthLayout title="Joining workspace">
+      <AuthLayout title={m.auth.invite.joining}>
         <Skeleton className="h-10 w-full" />
       </AuthLayout>
     );
   }
   if (!preview.data) {
     return (
-      <AuthLayout title="This invitation can’t be used">
-        <p className="text-fg-muted">
-          It may have expired, been revoked, or already been accepted. Ask for a new one.
-        </p>
+      <AuthLayout title={m.auth.invite.unusable}>
+        <p className="text-fg-muted">{m.auth.invite.unusableHint}</p>
       </AuthLayout>
     );
   }
   const invitation = preview.data;
   return (
-    <AuthLayout title={`Join ${invitation.workspace_name}`}>
+    <AuthLayout title={m.auth.invite.join(invitation.workspace_name)}>
       <p className="mb-6 text-fg-muted">
-        You were invited as <strong className="text-fg">{invitation.role}</strong> (
+        {m.auth.invite.invitedAs}{' '}
+        <strong className="text-fg">{m.auth.invite.roles[invitation.role]}</strong> (
         {invitation.email}).
       </p>
       {error && <FieldError className="mb-4">{error}</FieldError>}
@@ -52,7 +52,7 @@ function Invite() {
           })
         }
       >
-        Accept invitation
+        {m.auth.invite.accept}
       </Button>
     </AuthLayout>
   );

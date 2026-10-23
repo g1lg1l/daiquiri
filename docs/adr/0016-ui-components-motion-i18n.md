@@ -33,10 +33,13 @@ Three component sources were evaluated for the shared basics:
 - **Task identifiers**: identifiers are set in the monospace face everywhere; a `TaskId` button in list rows and the task header. Clicking it copies the identifier (inside rows and cards, which are themselves buttons, it stays text and the shortcut or context menu copies it); `Mod+.` copies the focused task's identifier (also from the command palette) and `Mod+Shift+L` its link. Right-clicking a task anywhere opens its actions, copy included.
 - **Import** gets its own entry in the sidebar, settings and command palette, and a page that explains each source, what is carried over and what the token is used for.
 - **Languages**: English and Italian, with typed dictionaries in `apps/web/src/i18n` rather than a compiler plugin:
-  - English is bundled; other languages are separate chunks loaded before the first render;
+  - components read `m.<namespace>.<key>` at render time (never at module scope: the language loads after the modules); sentences with values are functions, so word order is the translator's;
+  - English for the app shell (`common`, `shell`, `tasks`, `task`) is in the initial bundle; `auth`, `importer`, `settings` and `team` ship with their screens' chunks (`provide`), and other languages are one chunk loaded before the first render;
   - every language must satisfy English's type, so a missing string fails type checking;
-  - plurals use `Intl.PluralRules`, dates and numbers use `Intl` with the chosen language;
-  - the language is a per-device preference (browser language by default) and changing it reloads the page.
+  - the shared packages keep English defaults and expose `localizeDomain`, `localizeEditor` (from `@daiq/editor/strings`, without Tiptap), `localizeUi` and `localizeErrors`, which the language chunk calls;
+  - plurals use `Intl.PluralRules`, dates, relative times and numbers use `Intl` with the chosen language;
+  - the language is a per-device preference (Settings → Preferences, browser language by default) and changing it reloads the page;
+  - stored content stays as written: status and team names, imported comment headings, and server messages (Supabase Auth, SQL errors) are not translated.
 
 ## Alternatives
 
@@ -46,6 +49,6 @@ Three component sources were evaluated for the shared basics:
 
 ## Consequences
 
-- The initial bundle loses sonner and gains Blobatar (~4 kB); the date picker (~15 kB) and toasts (~45 kB with Motion) are lazy chunks inside the 90 kB budget.
+- The initial bundle went from 248 to 244 kB gzip: sonner left, Blobatar (~4 kB) and the shell's English strings (~6 kB) came in; the date picker (~22 kB), toasts (~50 kB with Motion) and Italian (~16 kB) are lazy chunks inside the 90 kB budget.
 - Server-generated text (emails, webhook payloads) stays English; the language preference is per device, not stored on the profile, until there is a reason to sync it.
 - New UI strings must be added to both dictionaries; type checking enforces it.

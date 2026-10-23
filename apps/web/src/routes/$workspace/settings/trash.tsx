@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { TeamBadge } from '../../../components/team-badge';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
+import { m } from '../../../i18n/settings';
 import { timeAgo } from '../../../lib/time';
 import { useToday } from '../../../lib/use-today';
 
@@ -34,15 +35,12 @@ function Trash() {
   return (
     <section className="flex flex-col gap-4">
       <header>
-        <h2 className="text-lg font-semibold font-display">Trash</h2>
-        <p className="text-[13px] text-fg-muted">
-          Deleted tasks stay here for {KEEP_DAYS} days, then they are deleted for good. Restoring a
-          task brings back the sub-tasks deleted with it.
-        </p>
+        <h2 className="text-lg font-semibold font-display">{m.settings.sections.trash}</h2>
+        <p className="text-[13px] text-fg-muted">{m.settings.trash.intro(KEEP_DAYS)}</p>
       </header>
 
       {trash.data?.length === 0 && (
-        <p className="text-[13px] text-fg-subtle">The trash is empty.</p>
+        <p className="text-[13px] text-fg-subtle">{m.settings.trash.empty}</p>
       )}
       {(trash.data?.length ?? 0) > 0 && (
         <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
@@ -57,25 +55,26 @@ function Trash() {
                     <span className="text-fg-muted tabular">{identifier}</span> {task.title}
                   </span>
                   <span className="text-xs text-fg-subtle">
-                    Deleted {timeAgo(task.deletedAt)}
-                    {task.subtasks > 0 &&
-                      `, with ${task.subtasks} sub-task${task.subtasks === 1 ? '' : 's'}`}
-                    . {daysLeft(task)} days left.
+                    {m.settings.trash.deleted(
+                      timeAgo(task.deletedAt),
+                      task.subtasks,
+                      daysLeft(task),
+                    )}
                   </span>
                 </span>
                 <Button
                   size="sm"
                   onClick={() =>
                     actions.restore.mutate([task.id], {
-                      onSuccess: () => toast(`Restored ${identifier}`),
+                      onSuccess: () => toast(m.settings.trash.restored(identifier)),
                     })
                   }
                 >
-                  Restore
+                  {m.common.restore}
                 </Button>
                 {admin && (
                   <Button size="sm" variant="ghost" onClick={() => setPurging(task)}>
-                    Delete forever
+                    {m.settings.trash.deleteForever}
                   </Button>
                 )}
               </li>
@@ -86,12 +85,10 @@ function Trash() {
 
       <Dialog open={purging !== null} onOpenChange={(open) => !open && setPurging(null)}>
         <DialogContent>
-          <DialogTitle>Delete {purging?.title} forever?</DialogTitle>
-          <DialogDescription>
-            The task, its sub-tasks, comments and history are deleted. This can’t be undone.
-          </DialogDescription>
+          <DialogTitle>{m.settings.trash.purgeTitle(purging?.title ?? '')}</DialogTitle>
+          <DialogDescription>{m.settings.trash.purgeDescription}</DialogDescription>
           <DialogFooter>
-            <Button onClick={() => setPurging(null)}>Cancel</Button>
+            <Button onClick={() => setPurging(null)}>{m.common.cancel}</Button>
             <Button
               variant="danger"
               onClick={() => {
@@ -99,7 +96,7 @@ function Trash() {
                 setPurging(null);
               }}
             >
-              Delete forever
+              {m.settings.trash.deleteForever}
             </Button>
           </DialogFooter>
         </DialogContent>

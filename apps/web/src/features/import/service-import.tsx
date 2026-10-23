@@ -22,6 +22,7 @@ import { Button, FieldError, Input, Label, Select } from '@daiq/ui';
 import { Link } from '@tanstack/react-router';
 import { ExternalLinkIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { m } from '../../i18n/importer';
 import { newId } from '../../lib/ids';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import type { Scope, Source } from './sources';
@@ -71,7 +72,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
     try {
       await work();
     } catch (e) {
-      setError(e instanceof Error ? e.message : `${source.name} could not be read.`);
+      setError(e instanceof Error ? e.message : m.importer.service.unreadable(source.name));
     } finally {
       setBusy(null);
       setProgress(null);
@@ -83,7 +84,9 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
     const byEmail = new Map(
       [...(emails ?? new Map<string, string>())].map(([id, email]) => [email.toLowerCase(), id]),
     );
-    const byName = new Map(data.members.map((m) => [m.displayName.trim().toLowerCase(), m.id]));
+    const byName = new Map(
+      data.members.map((member) => [member.displayName.trim().toLowerCase(), member.id]),
+    );
     return (person: { name: string; email: string | null }) =>
       (person.email ? byEmail.get(person.email.toLowerCase()) : undefined) ??
       byName.get(person.name.trim().toLowerCase());
@@ -123,7 +126,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
   }, [step, data.labels, data.projects, team, memberFor]);
 
   const importAll = (tasks: ExternalTask[]) =>
-    run('Importing…', async () => {
+    run(m.importer.service.importingBusy, async () => {
       const { markdownToDocument } = await import('@daiq/editor');
       const toDocument = (text: string, markdown: boolean): RichDocument | null =>
         !text.trim() ? null : markdown ? markdownToDocument(text) : textToDocument(text);
@@ -165,7 +168,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
       const rows: ImportRow[] = tasks.map((task, index) => ({
         id: ids.get(task.sourceId) ?? newId(),
         parentId: task.parentId ? (ids.get(task.parentId) ?? null) : null,
-        title: task.title.trim().slice(0, 200) || 'Untitled',
+        title: task.title.trim().slice(0, 200) || m.importer.service.untitled,
         description: toDocument(
           task.description.slice(0, 50_000),
           task.descriptionFormat === 'markdown',
@@ -197,7 +200,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
         }),
       );
       if (toPost.length) {
-        setBusy('Adding comments…');
+        setBusy(m.importer.service.addingComments);
         setProgress({ done: 0, total: toPost.length });
         await importComments.mutateAsync({
           comments: toPost,
@@ -211,15 +214,15 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
     return (
       <section className="flex flex-col items-start gap-3" aria-live="polite">
         <h2 className="text-lg font-semibold font-display">
-          Imported {step.tasks.toLocaleString()} tasks
-          {step.comments > 0 && ` and ${step.comments.toLocaleString()} comments`}
+          {m.importer.imported(step.tasks)}
+          {step.comments > 0 && m.importer.service.andComments(step.comments)}
         </h2>
         <Link
           to="/$workspace/team/$teamKey/tasks"
           params={{ workspace: workspace.slug, teamKey: team.key }}
           className="text-[13px] text-accent-text underline-offset-4 hover:underline"
         >
-          Open {team.name}’s tasks
+          {m.importer.openTasks(team.name)}
         </Link>
       </section>
     );
@@ -235,10 +238,10 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
           className="flex flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault();
-            void run('Connecting…', async () => {
+            void run(m.importer.service.connecting, async () => {
               const scopes = await source.scopes(token);
               if (scopes.length === 0)
-                throw new Error(`This ${source.name} account has nothing to import.`);
+                throw new Error(m.importer.service.nothingToImport(source.name));
               setScopeId(scopes[0]?.id ?? '');
               setStep({ kind: 'scope', scopes });
             });
@@ -246,7 +249,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
         >
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="import-token">
-              {source.name} {source.tokenLabel.toLowerCase()}
+              {m.importer.service.tokenLabel(source.name, source.tokenLabel)}
             </Label>
             <Input
               id="import-token"
@@ -258,7 +261,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
               onChange={(event) => setToken(event.target.value)}
             />
             <p className="text-xs text-fg-subtle">
-              Create one in{' '}
+              {m.importer.service.createIn}{' '}
               <a
                 href={source.tokenHelp.url}
                 target="_blank"
@@ -268,12 +271,11 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
                 {source.tokenHelp.text}
                 <ExternalLinkIcon aria-hidden className="size-3" />
               </a>
-              . It is used from your browser for this import only: never stored, never sent to
-              Daiquiri.
+              {m.importer.service.tokenPrivacy}
             </p>
           </div>
           <Button type="submit" variant="primary" className="self-start" disabled={busy !== null}>
-            {busy ?? 'Connect'}
+            {busy ?? m.importer.service.connect}
           </Button>
         </form>
       )}
@@ -285,14 +287,14 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
             event.preventDefault();
             const scope = step.scopes.find((s) => s.id === scopeId);
             if (!scope) return;
-            void run('Reading…', async () => {
+            void run(m.importer.service.reading, async () => {
               const tasks = orderForImport(
                 await source.tasks(token, scope, {
                   comments,
                   onProgress: (message) => setBusy(message),
                 }),
               );
-              if (tasks.length === 0) throw new Error(`${scope.name} has no tasks to import.`);
+              if (tasks.length === 0) throw new Error(m.importer.service.noTasks(scope.name));
               setStatusMap(
                 Object.fromEntries(
                   tasks.map((task) => [
@@ -306,7 +308,9 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
           }}
         >
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="import-scope">{source.scopeLabel} to import</Label>
+            <Label htmlFor="import-scope">
+              {m.importer.service.scopeToImport(source.scopeLabel)}
+            </Label>
             <Select
               id="import-scope"
               value={scopeId}
@@ -324,36 +328,43 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
               onChange={(event) => setComments(event.target.checked)}
               className="accent-(--accent)"
             />
-            Include comments (slower: one request per task for Asana and ClickUp)
+            {m.importer.service.includeComments}
           </label>
           <Button type="submit" variant="primary" className="self-start" disabled={busy !== null}>
-            {busy ?? 'Read tasks'}
+            {busy ?? m.importer.service.readTasks}
           </Button>
         </form>
       )}
 
       {step.kind === 'review' && review && (
-        <section aria-label="Review" className="flex flex-col gap-4">
+        <section aria-label={m.importer.service.review} className="flex flex-col gap-4">
           <h2 className="text-[13px] font-semibold">
-            {step.tasks.length.toLocaleString()} tasks from {step.scope.name}
-            {review.subtasks > 0 && `, ${review.subtasks} of them sub-tasks`}
-            {review.comments > 0 && `, with ${review.comments.toLocaleString()} comments`}
+            {m.importer.service.summary(step.tasks.length, step.scope.name)}
+            {review.subtasks > 0 && m.importer.service.subtasks(review.subtasks)}
+            {review.comments > 0 && m.importer.service.withComments(review.comments)}
           </h2>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1.5 text-[13px] font-semibold">Statuses</legend>
+            <legend className="mb-1.5 text-[13px] font-semibold">
+              {m.importer.service.statuses}
+            </legend>
             {review.statuses.map(([key, entry]) => (
               <label key={key} className="flex items-center justify-between gap-3 text-[13px]">
                 <span>
-                  {entry.status ?? (entry.category === 'completed' ? 'Completed' : 'No status')}{' '}
+                  {entry.status ??
+                    (entry.category === 'completed'
+                      ? m.importer.service.completed
+                      : m.importer.service.noStatus)}{' '}
                   <span className="text-xs text-fg-subtle">({entry.count})</span>
                 </span>
                 <Select
-                  aria-label={`Status for ${entry.status ?? 'tasks without a status'}`}
+                  aria-label={m.importer.service.statusFor(
+                    entry.status ?? m.importer.service.withoutStatus,
+                  )}
                   value={statusMap[key] ?? DEFAULT}
                   onValueChange={(value) => setStatusMap({ ...statusMap, [key]: value })}
                   options={[
-                    { value: DEFAULT, label: `${team.name}’s default` },
+                    { value: DEFAULT, label: m.importer.service.teamDefault(team.name) },
                     ...team.statuses.map((s) => ({ value: s.id, label: s.name })),
                   ]}
                 />
@@ -364,9 +375,11 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
           <ul className="flex flex-col gap-1 text-xs text-fg-muted">
             {review.unmatched.length > 0 && (
               <li>
-                Not members here, left unassigned: {review.unmatched.slice(0, 6).join(', ')}
-                {review.unmatched.length > 6 && ` and ${review.unmatched.length - 6} more`}.
-                {!admin && ' (Admins also match people by email.)'}
+                {m.importer.service.unassigned(
+                  review.unmatched.slice(0, 6).join(', '),
+                  review.unmatched.length - 6,
+                )}
+                {!admin && m.importer.service.adminsMatch}
               </li>
             )}
             {review.missingLabels.length > 0 && (
@@ -378,7 +391,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
                     onChange={(event) => setCreateLabels(event.target.checked)}
                     className="accent-(--accent)"
                   />
-                  Create {review.missingLabels.length} missing labels
+                  {m.importer.service.createLabels(review.missingLabels.length)}
                 </label>
               </li>
             )}
@@ -391,8 +404,10 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
                     onChange={(event) => setCreateProjects(event.target.checked)}
                     className="accent-(--accent)"
                   />
-                  Create {review.missingProjects.length} projects (
-                  {review.missingProjects.slice(0, 4).join(', ')})
+                  {m.importer.service.createProjects(
+                    review.missingProjects.length,
+                    review.missingProjects.slice(0, 4).join(', '),
+                  )}
                 </label>
               </li>
             )}
@@ -400,7 +415,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
 
           {progress && (
             <progress
-              aria-label={busy ?? 'Importing'}
+              aria-label={busy ?? m.importer.importing}
               max={progress.total}
               value={progress.done}
               className="h-1.5 w-full overflow-hidden rounded-full [&::-moz-progress-bar]:bg-accent [&::-webkit-progress-bar]:bg-surface-muted [&::-webkit-progress-value]:bg-accent"
@@ -412,7 +427,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
             disabled={busy !== null}
             onClick={() => void importAll(step.tasks)}
           >
-            {busy ?? `Import ${step.tasks.length.toLocaleString()} tasks`}
+            {busy ?? m.importer.importTasks(step.tasks.length)}
           </Button>
         </section>
       )}
@@ -420,7 +435,7 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
       {error && (
         <FieldError>
           {error}
-          {step.kind === 'review' && ' Tasks imported before the error stay.'}
+          {step.kind === 'review' && m.importer.service.errorKept}
         </FieldError>
       )}
     </div>

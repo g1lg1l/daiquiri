@@ -9,13 +9,14 @@ import {
 } from '@daiq/domain';
 import { Avatar, Skeleton } from '@daiq/ui';
 import { useMemo, type ReactNode } from 'react';
+import { locale, m } from '../../i18n';
 import { useToday } from '../../lib/use-today';
 import { BurnUp } from '../planning/burn-up';
 import { StatusIcon } from '../tasks/icons';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 
 const shortDate = (iso: string) =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  new Date(`${iso}T12:00:00`).toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 
 function Panel({
   title,
@@ -94,7 +95,7 @@ function Throughput({ weeks }: { weeks: readonly InsightWeek[] }) {
           {weeks.map((week) => (
             <div
               key={week.week}
-              title={`Week of ${shortDate(week.week)}: ${week.created} created, ${week.completed} completed`}
+              title={m.shell.insights.week(shortDate(week.week), week.created, week.completed)}
               className="flex h-full flex-1 items-end justify-center gap-0.5 hover:bg-surface-muted"
             >
               <span
@@ -111,23 +112,25 @@ function Throughput({ weeks }: { weeks: readonly InsightWeek[] }) {
       </div>
       <div aria-hidden className="flex justify-between pl-6 text-[10px] text-fg-subtle">
         <span>{shortDate(weeks[0]?.week ?? '')}</span>
-        <span>This week</span>
+        <span>{m.shell.insights.thisWeek}</span>
       </div>
       <figcaption className="flex items-center gap-4 text-xs text-fg-muted">
         <span className="flex items-center gap-1.5">
-          <span aria-hidden className="size-2.5 rounded-[2px] bg-border-strong" /> Created
+          <span aria-hidden className="size-2.5 rounded-[2px] bg-border-strong" />{' '}
+          {m.shell.insights.created}
         </span>
         <span className="flex items-center gap-1.5">
-          <span aria-hidden className="size-2.5 rounded-[2px] bg-accent" /> Completed
+          <span aria-hidden className="size-2.5 rounded-[2px] bg-accent" />{' '}
+          {m.shell.insights.completed}
         </span>
       </figcaption>
       <table className="sr-only">
-        <caption>Tasks created and completed per week</caption>
+        <caption>{m.shell.insights.throughputHint}</caption>
         <thead>
           <tr>
-            <th scope="col">Week of</th>
-            <th scope="col">Created</th>
-            <th scope="col">Completed</th>
+            <th scope="col">{m.shell.insights.weekOf}</th>
+            <th scope="col">{m.shell.insights.created}</th>
+            <th scope="col">{m.shell.insights.completed}</th>
           </tr>
         </thead>
         <tbody>
@@ -173,7 +176,7 @@ export function TaskInsights({ tasks }: { tasks: readonly Task[] }) {
   if (tasks.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center p-8 text-center text-[13px] text-fg-muted">
-        No tasks match this view. Clear a filter to see its insights.
+        {m.shell.insights.empty}
       </div>
     );
   }
@@ -182,22 +185,26 @@ export function TaskInsights({ tasks }: { tasks: readonly Task[] }) {
     <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:p-6">
         <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-          <Stat label="Open" value={summary.open} />
+          <Stat label={m.shell.insights.open} value={summary.open} />
           <Stat
-            label="Overdue"
+            label={m.shell.insights.overdue}
             value={summary.overdue}
             {...(summary.open > 0 && {
-              hint: `${Math.round((summary.overdue / summary.open) * 100)}% of open work`,
+              hint: m.shell.insights.overdueShare(
+                Math.round((summary.overdue / summary.open) * 100),
+              ),
             })}
           />
-          <Stat label="Completed in the last 7 days" value={summary.completedThisWeek} />
+          <Stat label={m.shell.insights.completedThisWeek} value={summary.completedThisWeek} />
           <Stat
-            label="Median lead time"
-            value={summary.leadTimeDays === null ? '–' : `${summary.leadTimeDays} d`}
-            hint="Created to completed, last 12 weeks"
+            label={m.shell.insights.leadTime}
+            value={
+              summary.leadTimeDays === null ? '–' : m.shell.insights.days(summary.leadTimeDays)
+            }
+            hint={m.shell.insights.leadTimeHint}
           />
           <Stat
-            label="Median cycle time"
+            label={m.shell.insights.cycleTime}
             value={
               flow.isPending
                 ? pending
@@ -206,16 +213,16 @@ export function TaskInsights({ tasks }: { tasks: readonly Task[] }) {
                   : formatHours(cycle.median_hours)
             }
             {...(cycle?.p85_hours != null && {
-              hint: `85% within ${formatHours(cycle.p85_hours)}`,
+              hint: m.shell.insights.cycleTimeHint(formatHours(cycle.p85_hours)),
             })}
           />
         </dl>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <Panel title="Throughput" description="Tasks created and completed per week">
+          <Panel title={m.shell.insights.throughput} description={m.shell.insights.throughputHint}>
             <Throughput weeks={weeks} />
           </Panel>
-          <Panel title="Burn-up" description="All work and completed work over 12 weeks">
+          <Panel title={m.shell.insights.burnUp} description={m.shell.insights.burnUpHint}>
             <BurnUp
               days={weeks.map((w) => ({
                 day: w.week,
@@ -232,9 +239,9 @@ export function TaskInsights({ tasks }: { tasks: readonly Task[] }) {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-3">
-          <Panel title="Status">
+          <Panel title={m.shell.insights.status}>
             <BarList
-              empty="No tasks."
+              empty={m.shell.insights.noTasks}
               bars={summary.byStatus.map(({ status, tasks: count }) => ({
                 key: status.id,
                 label: (
@@ -248,13 +255,13 @@ export function TaskInsights({ tasks }: { tasks: readonly Task[] }) {
               }))}
             />
           </Panel>
-          <Panel title="Open work by assignee">
+          <Panel title={m.shell.insights.byAssignee}>
             <BarList
-              empty="No open work."
+              empty={m.shell.insights.noOpenWork}
               bars={summary.byAssignee.map((entry) => {
                 const name = entry.assigneeId
-                  ? (data.membersById.get(entry.assigneeId)?.displayName ?? 'Former member')
-                  : 'Unassigned';
+                  ? (data.membersById.get(entry.assigneeId)?.displayName ?? m.common.formerMember)
+                  : m.shell.insights.unassigned;
                 return {
                   key: entry.assigneeId ?? 'none',
                   label: (
@@ -265,18 +272,21 @@ export function TaskInsights({ tasks }: { tasks: readonly Task[] }) {
                   ),
                   value: entry.tasks,
                   display: entry.estimate
-                    ? `${entry.tasks} · ${entry.estimate} est.`
+                    ? m.shell.insights.withEstimate(entry.tasks, entry.estimate)
                     : String(entry.tasks),
                 };
               })}
             />
           </Panel>
-          <Panel title="Time in status" description="Median time tasks spend in each status">
+          <Panel
+            title={m.shell.insights.timeInStatus}
+            description={m.shell.insights.timeInStatusHint}
+          >
             {flow.isPending ? (
               <Skeleton className="h-24" />
             ) : (
               <BarList
-                empty="No status history yet."
+                empty={m.shell.insights.noHistory}
                 bars={(flow.data?.statuses ?? []).map((entry) => {
                   const category = STATUS_CATEGORIES.find((c) => c === entry.category);
                   return {

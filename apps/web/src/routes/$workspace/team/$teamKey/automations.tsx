@@ -56,6 +56,7 @@ import {
   useWorkspaceData,
   type WorkspaceData,
 } from '../../../../features/workspace/workspace-context';
+import { m } from '../../../../i18n/team';
 import { timeAgo } from '../../../../lib/time';
 
 export const Route = createFileRoute('/$workspace/team/$teamKey/automations')({
@@ -150,84 +151,90 @@ function DaysInput({
   );
 }
 
-const categoryOptions: PickerOption[] = STATUS_CATEGORIES.map((category) => ({
-  value: category,
-  label: STATUS_CATEGORY_LABEL[category],
-  icon: <StatusIcon category={category} />,
-}));
+const categoryOptions = (): PickerOption[] =>
+  STATUS_CATEGORIES.map((category) => ({
+    value: category,
+    label: STATUS_CATEGORY_LABEL[category],
+    icon: <StatusIcon category={category} />,
+  }));
 
 /** Readable sentence for the list (the builder shows the same parts as controls). */
 function describe(automation: Automation, team: Team, data: WorkspaceData): string {
+  const d = m.team.automations.describe;
   const status = (id: string | undefined) =>
-    team.statuses.find((s) => s.id === id)?.name ?? 'a status';
+    team.statuses.find((s) => s.id === id)?.name ?? d.aStatus;
   const person = (id: string | undefined) =>
-    data.membersById.get(id ?? '')?.displayName ?? 'someone';
-  const label = (id: string | undefined) => data.labelsById.get(id ?? '')?.name ?? 'a label';
+    data.membersById.get(id ?? '')?.displayName ?? d.someone;
+  const label = (id: string | undefined) => data.labelsById.get(id ?? '')?.name ?? d.aLabel;
   const project = (id: string | null | undefined) =>
-    id ? (data.projectsById.get(id)?.name ?? 'a project') : 'no project';
+    id ? (data.projectsById.get(id)?.name ?? d.aProject) : d.noProject;
   const t = automation.trigger;
   const when =
     t.kind === 'status_changed' && (t.status_id || t.category)
-      ? `the status changes to ${t.status_id ? status(t.status_id) : STATUS_CATEGORY_LABEL[t.category ?? 'started']}`
+      ? d.statusChanges(
+          t.status_id ? status(t.status_id) : STATUS_CATEGORY_LABEL[t.category ?? 'started'],
+        )
       : t.kind === 'priority_changed' && t.priority !== undefined && isPriority(t.priority)
-        ? `the priority changes to ${PRIORITY_LABEL[t.priority]}`
+        ? d.priorityChanges(PRIORITY_LABEL[t.priority])
         : t.kind === 'assignee_added' && t.user_id
-          ? `${person(t.user_id)} is assigned`
+          ? d.isAssigned(person(t.user_id))
           : t.kind === 'moved_to_project' && t.project_id
-            ? `a task moves to ${project(t.project_id)}`
+            ? d.movesTo(project(t.project_id))
             : t.kind === 'due_approaching'
               ? t.days === 0
-                ? 'a task is due today'
-                : `a task is due in ${t.days} day${t.days === 1 ? '' : 's'}`
+                ? d.dueToday
+                : d.dueIn(t.days)
               : TRIGGER_LABEL[t.kind].charAt(0).toLowerCase() + TRIGGER_LABEL[t.kind].slice(1);
   const c = automation.conditions;
   const ifs = [
     c.priorities?.length &&
-      `priority is ${c.priorities.map((p) => (isPriority(p) ? PRIORITY_LABEL[p] : p)).join(' or ')}`,
-    c.categories?.length &&
-      `status is ${c.categories.map((k) => STATUS_CATEGORY_LABEL[k]).join(' or ')}`,
-    c.label_ids?.length && `labelled ${c.label_ids.map(label).join(' or ')}`,
+      d.priorityIs(c.priorities.map((p) => (isPriority(p) ? PRIORITY_LABEL[p] : String(p)))),
+    c.categories?.length && d.statusIs(c.categories.map((k) => STATUS_CATEGORY_LABEL[k])),
+    c.label_ids?.length && d.labelled(c.label_ids.map(label)),
     c.project_ids?.length &&
-      `in ${c.project_ids.map((id) => project(id === 'none' ? null : id)).join(' or ')}`,
-    c.assignee && (c.assignee === 'none' ? 'unassigned' : 'assigned'),
-  ].filter(Boolean);
+      d.inProjects(c.project_ids.map((id) => project(id === 'none' ? null : id))),
+    c.assignee && (c.assignee === 'none' ? d.unassigned : d.assigned),
+  ].filter((part) => typeof part === 'string');
   const thens = automation.actions.map((a) => {
     switch (a.kind) {
       case 'set_status':
-        return `set status to ${status(a.status_id)}`;
+        return d.setStatus(status(a.status_id));
       case 'set_priority':
-        return `set priority to ${isPriority(a.priority) ? PRIORITY_LABEL[a.priority] : a.priority}`;
+        return d.setPriority(
+          isPriority(a.priority) ? PRIORITY_LABEL[a.priority] : String(a.priority),
+        );
       case 'assign':
-        return `assign ${person(a.user_id)}`;
+        return d.assign(person(a.user_id));
       case 'unassign':
-        return 'remove assignees';
+        return d.unassign;
       case 'add_label':
-        return `add ${label(a.label_id)}`;
+        return d.addLabel(label(a.label_id));
       case 'remove_label':
-        return `remove ${label(a.label_id)}`;
+        return d.removeLabel(label(a.label_id));
       case 'set_project':
-        return `move to ${project(a.project_id)}`;
+        return d.moveTo(project(a.project_id));
       case 'set_due_date':
-        return a.days === 0 ? 'make it due today' : `make it due in ${a.days} days`;
+        return a.days === 0 ? d.makeDueToday : d.makeDueIn(a.days);
       case 'create_subtask':
-        return 'add sub-tasks from a template';
+        return d.createSubtask;
       case 'notify':
-        return `notify ${a.user_ids.map(person).join(', ')}`;
+        return d.notify(a.user_ids.map(person));
       case 'call_webhook':
-        return 'call a webhook';
+        return d.callWebhook;
       default:
         return a satisfies never;
     }
   });
-  return `When ${when}${ifs.length ? `, if ${ifs.join(' and ')}` : ''}, ${thens.join(', then ')}.`;
+  return d.sentence(when, ifs, thens);
 }
 
 function RunLog({ automation, team }: { automation: Automation; team: Team }) {
   const { workspace } = useWorkspace();
   const runs = useAutomationRuns(automation.id);
   const tasks = useTasks({ kind: 'team', id: team.id });
-  if (runs.isPending) return <p className="text-xs text-fg-subtle">Loading runs…</p>;
-  if (!runs.data?.length) return <p className="text-xs text-fg-subtle">No runs yet.</p>;
+  const log = m.team.automations.runLog;
+  if (runs.isPending) return <p className="text-xs text-fg-subtle">{log.loading}</p>;
+  if (!runs.data?.length) return <p className="text-xs text-fg-subtle">{log.empty}</p>;
   return (
     <ol className="flex max-h-64 flex-col gap-1 overflow-y-auto text-xs scrollbar-thin">
       {runs.data.map((run) => {
@@ -236,11 +243,11 @@ function RunLog({ automation, team }: { automation: Automation; team: Team }) {
           <li key={run.id} className="flex items-start gap-2">
             {run.status === 'succeeded' ? (
               <CheckIcon
-                aria-label="Succeeded"
+                aria-label={log.succeeded}
                 className="mt-0.5 size-3.5 shrink-0 text-accent-text"
               />
             ) : (
-              <XIcon aria-label="Failed" className="mt-0.5 size-3.5 shrink-0 text-danger" />
+              <XIcon aria-label={log.failed} className="mt-0.5 size-3.5 shrink-0 text-danger" />
             )}
             <span className="min-w-0 flex-1">
               {task?.number ? (
@@ -255,7 +262,7 @@ function RunLog({ automation, team }: { automation: Automation; team: Team }) {
                   {formatIdentifier(team.key, task.number)} {task.title}
                 </Link>
               ) : (
-                <span className="text-fg-subtle">A deleted task</span>
+                <span className="text-fg-subtle">{log.deletedTask}</span>
               )}
               {run.error && <span className="block text-danger">{run.error}</span>}
             </span>
@@ -312,15 +319,16 @@ function Builder({
       actions: draft.actions.map((a, i) => (i === index ? { ...a, ...patch } : a)),
     });
   const t = draft.trigger;
+  const b = m.team.automations.builder;
 
   const triggerParam = () => {
     switch (t.kind) {
       case 'status_changed':
         return (
           <Choice
-            label="To"
-            empty="to any status"
-            options={[...categoryOptions, ...statuses]}
+            label={b.to}
+            empty={b.toAnyStatus}
+            options={[...categoryOptions(), ...statuses]}
             selected={[str(t.status_id) ?? str(t.category) ?? ''].filter(Boolean)}
             onChange={([value]) =>
               setDraft({
@@ -337,8 +345,8 @@ function Builder({
       case 'priority_changed':
         return (
           <Choice
-            label="To priority"
-            empty="to any priority"
+            label={b.toPriority}
+            empty={b.toAnyPriority}
             options={priorityOptions()}
             selected={typeof t.priority === 'number' ? [String(t.priority)] : []}
             onChange={([value]) => setTrigger({ priority: value ? Number(value) : undefined })}
@@ -347,8 +355,8 @@ function Builder({
       case 'assignee_added':
         return (
           <Choice
-            label="Person"
-            empty="anyone"
+            label={b.person}
+            empty={b.anyone}
             options={members}
             selected={[str(t.user_id) ?? ''].filter(Boolean)}
             onChange={([value]) => setTrigger({ user_id: value })}
@@ -357,8 +365,8 @@ function Builder({
       case 'moved_to_project':
         return (
           <Choice
-            label="Project"
-            empty="any project"
+            label={b.project}
+            empty={b.anyProjectLower}
             options={projects.filter((o) => o.value !== NO_VALUE)}
             selected={[str(t.project_id) ?? ''].filter(Boolean)}
             onChange={([value]) => setTrigger({ project_id: value })}
@@ -367,7 +375,7 @@ function Builder({
       case 'due_approaching':
         return (
           <DaysInput
-            label="days before"
+            label={b.daysBefore}
             value={t.days}
             max={30}
             onChange={(days) => setTrigger({ days })}
@@ -384,8 +392,8 @@ function Builder({
       case 'set_status':
         return (
           <Choice
-            label="Status"
-            empty="Choose a status"
+            label={b.status}
+            empty={b.chooseStatus}
             options={statuses}
             selected={[str(action.status_id) ?? ''].filter(Boolean)}
             onChange={([value]) => setAction(index, { status_id: value })}
@@ -394,8 +402,8 @@ function Builder({
       case 'set_priority':
         return (
           <Choice
-            label="Priority"
-            empty="Choose a priority"
+            label={b.priority}
+            empty={b.choosePriority}
             options={priorityOptions()}
             selected={typeof action.priority === 'number' ? [String(action.priority)] : []}
             onChange={([value]) => setAction(index, { priority: Number(value ?? 0) })}
@@ -404,8 +412,8 @@ function Builder({
       case 'assign':
         return (
           <Choice
-            label="Person"
-            empty="Choose someone"
+            label={b.person}
+            empty={b.chooseSomeone}
             options={members}
             selected={[str(action.user_id) ?? ''].filter(Boolean)}
             onChange={([value]) => setAction(index, { user_id: value })}
@@ -415,8 +423,8 @@ function Builder({
       case 'remove_label':
         return (
           <Choice
-            label="Label"
-            empty="Choose a label"
+            label={b.label}
+            empty={b.chooseLabel}
             options={labelOptions(data.labels)}
             selected={[str(action.label_id) ?? ''].filter(Boolean)}
             onChange={([value]) => setAction(index, { label_id: value })}
@@ -425,8 +433,8 @@ function Builder({
       case 'set_project':
         return (
           <Choice
-            label="Project"
-            empty="No project"
+            label={b.project}
+            empty={b.noProject}
             options={projects}
             selected={[str(action.project_id) ?? NO_VALUE]}
             onChange={([value]) =>
@@ -437,7 +445,7 @@ function Builder({
       case 'set_due_date':
         return (
           <DaysInput
-            label="days later"
+            label={b.daysLater}
             value={action.days}
             max={365}
             onChange={(days) => setAction(index, { days })}
@@ -446,8 +454,8 @@ function Builder({
       case 'create_subtask':
         return (
           <Choice
-            label="Template"
-            empty={templates.length ? 'Choose a template' : 'No task templates yet'}
+            label={b.template}
+            empty={templates.length ? b.chooseTemplate : b.noTemplates}
             options={templates.map((tpl) => ({ value: tpl.id, label: tpl.name }))}
             selected={[str(action.template_id) ?? ''].filter(Boolean)}
             onChange={([value]) => setAction(index, { template_id: value })}
@@ -456,8 +464,8 @@ function Builder({
       case 'notify':
         return (
           <Choice
-            label="People"
-            empty="Choose people"
+            label={b.people}
+            empty={b.choosePeople}
             multiple
             options={members}
             selected={strings(action.user_ids)}
@@ -467,10 +475,8 @@ function Builder({
       case 'call_webhook':
         return (
           <Choice
-            label="Webhook"
-            empty={
-              webhooks.length ? 'Choose a webhook' : 'No webhooks (admins add them in Settings)'
-            }
+            label={b.webhook}
+            empty={webhooks.length ? b.chooseWebhook : b.noWebhooks}
             options={webhooks.map((hook) => ({ value: hook.id, label: hook.name }))}
             selected={[str(action.webhook_id) ?? ''].filter(Boolean)}
             onChange={([value]) => setAction(index, { webhook_id: value })}
@@ -488,11 +494,7 @@ function Builder({
         event.preventDefault();
         const parsed = automationInputSchema.safeParse(draft);
         if (!parsed.success) {
-          setError(
-            draft.name.trim()
-              ? 'Complete every part of the sentence: each action needs its value.'
-              : 'Give the automation a name.',
-          );
+          setError(draft.name.trim() ? b.incomplete : b.nameRequired);
           return;
         }
         const done = { onSuccess: onDone, onError: (e: Error) => setError(e.message) };
@@ -501,23 +503,23 @@ function Builder({
       }}
     >
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="automation-name">Name</Label>
+        <Label htmlFor="automation-name">{m.team.nameLabel}</Label>
         <Input
           id="automation-name"
           value={draft.name}
           maxLength={80}
-          placeholder="Triage urgent bugs"
+          placeholder={b.namePlaceholder}
           autoFocus
           onChange={(event) => setDraft({ ...draft, name: event.target.value })}
         />
       </div>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1.5 text-[13px] font-semibold">When</legend>
+        <legend className="mb-1.5 text-[13px] font-semibold">{b.whenLegend}</legend>
         <div className="flex flex-wrap items-center gap-2">
           <Choice
-            label="Trigger"
-            empty="Choose a trigger"
+            label={b.trigger}
+            empty={b.chooseTrigger}
             options={TRIGGER_KINDS.map((kind) => ({ value: kind, label: TRIGGER_LABEL[kind] }))}
             selected={[t.kind]}
             onChange={([kind]) => {
@@ -534,21 +536,21 @@ function Builder({
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1.5 text-[13px] font-semibold">If</legend>
+        <legend className="mb-1.5 text-[13px] font-semibold">{b.ifLegend}</legend>
         <div className="flex flex-wrap items-center gap-2">
           <Choice
-            label="Priority"
-            empty="Any priority"
+            label={b.priority}
+            empty={b.anyPriority}
             multiple
             options={priorityOptions()}
             selected={(draft.conditions.priorities ?? []).map(String)}
             onChange={(values) => setConditions({ priorities: list(values)?.map(Number) })}
           />
           <Choice
-            label="Status"
-            empty="Any status"
+            label={b.status}
+            empty={b.anyStatus}
             multiple
-            options={categoryOptions}
+            options={categoryOptions()}
             selected={draft.conditions.categories ?? []}
             onChange={(values) =>
               setConditions({
@@ -559,16 +561,16 @@ function Builder({
             }
           />
           <Choice
-            label="Labels"
-            empty="Any labels"
+            label={b.labels}
+            empty={b.anyLabels}
             multiple
             options={labelOptions(data.labels)}
             selected={draft.conditions.label_ids ?? []}
             onChange={(values) => setConditions({ label_ids: list(values) })}
           />
           <Choice
-            label="Project"
-            empty="Any project"
+            label={b.project}
+            empty={b.anyProject}
             multiple
             options={projects}
             selected={(draft.conditions.project_ids ?? []).map((id) =>
@@ -579,11 +581,11 @@ function Builder({
             }
           />
           <Choice
-            label="Assignment"
-            empty="Assigned or not"
+            label={b.assignment}
+            empty={b.assignedOrNot}
             options={[
-              { value: 'any', label: 'Assigned' },
-              { value: 'none', label: 'Unassigned' },
+              { value: 'any', label: b.assigned },
+              { value: 'none', label: b.unassigned },
             ]}
             selected={draft.conditions.assignee ? [draft.conditions.assignee] : []}
             onChange={([value]) =>
@@ -594,15 +596,15 @@ function Builder({
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1.5 text-[13px] font-semibold">Then</legend>
+        <legend className="mb-1.5 text-[13px] font-semibold">{b.thenLegend}</legend>
         <ol className="flex flex-col gap-2">
           {draft.actions.map((action, index) => (
             // Actions have no identity of their own; their position is it.
             // oxlint-disable-next-line react/no-array-index-key
             <li key={index} className="flex flex-wrap items-center gap-2">
               <Choice
-                label={`Action ${index + 1}`}
-                empty="Choose an action"
+                label={b.action(index + 1)}
+                empty={b.chooseAction}
                 options={ACTION_KINDS.map((kind) => ({ value: kind, label: ACTION_LABEL[kind] }))}
                 selected={[action.kind]}
                 onChange={([kind]) => {
@@ -622,7 +624,7 @@ function Builder({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`Remove action ${index + 1}`}
+                  aria-label={b.removeAction(index + 1)}
                   onClick={() =>
                     setDraft({ ...draft, actions: draft.actions.filter((_, i) => i !== index) })
                   }
@@ -646,7 +648,7 @@ function Builder({
               })
             }
           >
-            <PlusIcon /> Add action
+            <PlusIcon /> {b.addAction}
           </Button>
         )}
       </fieldset>
@@ -654,14 +656,14 @@ function Builder({
       {error && <FieldError>{error}</FieldError>}
       <DialogFooter>
         <Button type="button" onClick={onDone}>
-          Cancel
+          {m.common.cancel}
         </Button>
         <Button
           type="submit"
           variant="primary"
           disabled={actions.create.isPending || actions.update.isPending}
         >
-          {initial ? 'Save automation' : 'Create automation'}
+          {initial ? b.save : b.create}
         </Button>
       </DialogFooter>
     </form>
@@ -678,11 +680,10 @@ function TeamAutomations() {
   const [editing, setEditing] = useState<Automation | 'new' | null>(null);
   const [deleting, setDeleting] = useState<Automation | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+  const t = m.team.automations;
 
   if (!team) {
-    return (
-      <NotFoundPanel title="Team not found" message={`There is no team with the key ${teamKey}.`} />
-    );
+    return <NotFoundPanel title={m.team.notFound} message={m.team.noTeam(teamKey)} />;
   }
   // RLS allows admins and the team's own (non-guest) members.
   const canManage =
@@ -691,24 +692,19 @@ function TeamAutomations() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <ViewHeader title="Automations" icon={<WorkflowIcon className="size-4 text-fg-muted" />}>
+      <ViewHeader title={t.title} icon={<WorkflowIcon className="size-4 text-fg-muted" />}>
         {canManage && (
           <Button size="sm" variant="primary" onClick={() => setEditing('new')}>
-            <PlusIcon /> New automation
+            <PlusIcon /> {t.new}
           </Button>
         )}
       </ViewHeader>
       <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex max-w-3xl flex-col gap-3 p-4 md:p-6">
-          <p className="text-[13px] text-fg-muted">
-            Automations change {team.name}’s tasks for you: when something happens, if the task
-            matches, then up to three actions run within seconds. They never notify anyone unless
-            told to.
-          </p>
+          <p className="text-[13px] text-fg-muted">{t.about(team.name)}</p>
           {automations.data?.length === 0 && (
             <p className="rounded-lg border border-dashed border-border p-6 text-center text-[13px] text-fg-subtle">
-              No automations yet.
-              {canManage && ' Create one to assign, label or reschedule tasks as they change.'}
+              {canManage ? t.emptyCanManage : t.empty}
             </p>
           )}
           <ul className="flex flex-col gap-3">
@@ -723,7 +719,7 @@ function TeamAutomations() {
                     type="checkbox"
                     role="switch"
                     aria-checked={automation.enabled}
-                    aria-label={`Run ${automation.name}`}
+                    aria-label={t.run(automation.name)}
                     checked={automation.enabled}
                     disabled={!canManage}
                     onChange={(event) =>
@@ -751,17 +747,17 @@ function TeamAutomations() {
                     aria-expanded={open === automation.id}
                     onClick={() => setOpen(open === automation.id ? null : automation.id)}
                   >
-                    Runs
+                    {t.runs}
                   </Button>
                   {canManage && (
                     <>
                       <Button variant="ghost" size="sm" onClick={() => setEditing(automation)}>
-                        Edit
+                        {m.common.edit}
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        aria-label={`Delete ${automation.name}`}
+                        aria-label={m.team.deleteNamed(automation.name)}
                         onClick={() => setDeleting(automation)}
                       >
                         <Trash2Icon />
@@ -770,7 +766,7 @@ function TeamAutomations() {
                   )}
                 </div>
                 {open === automation.id && (
-                  <section aria-label={`Runs of ${automation.name}`} className="pl-7">
+                  <section aria-label={t.runsOf(automation.name)} className="pl-7">
                     <RunLog automation={automation} team={team} />
                   </section>
                 )}
@@ -782,7 +778,7 @@ function TeamAutomations() {
 
       <Dialog open={editing !== null} onOpenChange={(next) => !next && setEditing(null)}>
         <DialogContent className="max-w-2xl">
-          <DialogTitle>{editing === 'new' ? 'New automation' : 'Edit automation'}</DialogTitle>
+          <DialogTitle>{editing === 'new' ? t.new : t.edit}</DialogTitle>
           {editing !== null && (
             <Builder
               team={team}
@@ -795,10 +791,10 @@ function TeamAutomations() {
 
       <Dialog open={deleting !== null} onOpenChange={(next) => !next && setDeleting(null)}>
         <DialogContent>
-          <DialogTitle>Delete {deleting?.name}?</DialogTitle>
-          <DialogDescription>Its run log is deleted too. Changes it made stay.</DialogDescription>
+          <DialogTitle>{m.team.deleteNamedTitle(deleting?.name ?? '')}</DialogTitle>
+          <DialogDescription>{t.deleteHint}</DialogDescription>
           <DialogFooter>
-            <Button onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button onClick={() => setDeleting(null)}>{m.common.cancel}</Button>
             <Button
               variant="danger"
               onClick={() => {
@@ -806,7 +802,7 @@ function TeamAutomations() {
                 setDeleting(null);
               }}
             >
-              Delete automation
+              {t.deleteConfirm}
             </Button>
           </DialogFooter>
         </DialogContent>

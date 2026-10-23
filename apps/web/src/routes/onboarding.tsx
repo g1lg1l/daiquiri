@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { AuthLayout } from '../features/auth/auth-layout';
 import { useSubmit } from '../features/auth/use-form-error';
 import { requireAuth } from '../app/router-context';
+import { m } from '../i18n/auth';
 
 export const Route = createFileRoute('/onboarding')({
   beforeLoad: (options) => {
@@ -15,23 +16,12 @@ export const Route = createFileRoute('/onboarding')({
   component: Onboarding,
 });
 
+// The statuses each template creates, named as the database names them.
 const TEMPLATES = [
-  {
-    id: 'software',
-    team: 'Engineering',
-    workflow: ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done'],
-  },
-  {
-    id: 'marketing',
-    team: 'Marketing',
-    workflow: ['Ideas', 'Planned', 'In Progress', 'Review', 'Published'],
-  },
-  {
-    id: 'operations',
-    team: 'Operations',
-    workflow: ['Backlog', 'To Do', 'Doing', 'Waiting', 'Done'],
-  },
-  { id: 'generic', team: 'General', workflow: ['Backlog', 'Todo', 'In Progress', 'Done'] },
+  { id: 'software', workflow: ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done'] },
+  { id: 'marketing', workflow: ['Ideas', 'Planned', 'In Progress', 'Review', 'Published'] },
+  { id: 'operations', workflow: ['Backlog', 'To Do', 'Doing', 'Waiting', 'Done'] },
+  { id: 'generic', workflow: ['Backlog', 'Todo', 'In Progress', 'Done'] },
 ] as const;
 
 type TemplateId = (typeof TEMPLATES)[number]['id'];
@@ -44,8 +34,7 @@ function Onboarding() {
   const [slug, setSlug] = useState('');
   const [slugEdited, setSlugEdited] = useState(false);
   const [template, setTemplate] = useState<TemplateId>('software');
-  const chosen = TEMPLATES.find((t) => t.id === template) ?? TEMPLATES[0];
-  const [teamName, setTeamName] = useState<string>(chosen.team);
+  const [teamName, setTeamName] = useState<string>(m.auth.onboarding.teams[template]);
   const effectiveSlug = slugEdited ? slug : slugify(name);
   const teamKey = suggestTeamKey(teamName);
   const slugError = effectiveSlug && !workspaceSlugSchema.safeParse(effectiveSlug).success;
@@ -68,22 +57,22 @@ function Onboarding() {
   };
 
   return (
-    <AuthLayout title="Set up your workspace">
+    <AuthLayout title={m.auth.onboarding.title}>
       <form className="flex flex-col gap-5" onSubmit={onSubmit}>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="ws-name">Workspace name</Label>
+          <Label htmlFor="ws-name">{m.auth.onboarding.name}</Label>
           <Input
             id="ws-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Acme Inc."
+            placeholder={m.auth.onboarding.namePlaceholder}
             required
             maxLength={80}
             autoFocus
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="ws-slug">Web address</Label>
+          <Label htmlFor="ws-slug">{m.auth.onboarding.address}</Label>
           <div className="flex items-center rounded-md border border-border bg-surface-subtle pl-2.5 text-[13px] text-fg-subtle focus-within:border-focus">
             <span className="shrink-0">daiq/</span>
             <Input
@@ -98,13 +87,13 @@ function Onboarding() {
               required
             />
           </div>
-          {slugError && (
-            <FieldError>Use 2–40 lowercase letters, digits and single dashes.</FieldError>
-          )}
+          {slugError && <FieldError>{m.auth.onboarding.slugError}</FieldError>}
         </div>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1.5 text-[13px] font-medium">How does your first team work?</legend>
+          <legend className="mb-1.5 text-[13px] font-medium">
+            {m.auth.onboarding.howTeamWorks}
+          </legend>
           <div className="grid grid-cols-2 gap-2">
             {TEMPLATES.map((t) => (
               <label
@@ -120,11 +109,11 @@ function Onboarding() {
                   checked={template === t.id}
                   onChange={() => {
                     setTemplate(t.id);
-                    setTeamName(t.team);
+                    setTeamName(m.auth.onboarding.teams[t.id]);
                   }}
                   className="sr-only"
                 />
-                <span className="text-[13px] font-medium">{t.team}</span>
+                <span className="text-[13px] font-medium">{m.auth.onboarding.teams[t.id]}</span>
                 <span className="text-xs leading-snug text-fg-muted">{t.workflow.join(' → ')}</span>
               </label>
             ))}
@@ -132,7 +121,7 @@ function Onboarding() {
         </fieldset>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="team-name">First team</Label>
+          <Label htmlFor="team-name">{m.auth.onboarding.firstTeam}</Label>
           <Input
             id="team-name"
             value={teamName}
@@ -141,7 +130,7 @@ function Onboarding() {
             maxLength={60}
           />
           <p className="text-xs text-fg-subtle">
-            Tasks will be numbered{' '}
+            {m.auth.onboarding.numbered}{' '}
             <span className="font-medium text-fg-muted tabular">{teamKey}-1</span>,{' '}
             <span className="font-medium text-fg-muted tabular">{teamKey}-2</span>…
           </p>
@@ -154,7 +143,7 @@ function Onboarding() {
           size="lg"
           disabled={pending || !name.trim() || Boolean(slugError)}
         >
-          Create workspace
+          {m.auth.onboarding.submit}
         </Button>
       </form>
     </AuthLayout>

@@ -1,10 +1,11 @@
 import { z } from 'zod';
-import { addDays, dueBucket, startOfWeek, type DueBucket } from './dates';
+import { addDays, DUE_BUCKET_LABEL, dueBucket, startOfWeek, type DueBucket } from './dates';
 import { fieldKeys, matchesFieldFilters, parseFieldFilter } from './fields';
 import type { CustomField, Label, Milestone, Project, Status, Task } from './model';
-import { prioritySortKey } from './priority';
+import { PRIORITY_LABEL, prioritySortKey, type Priority } from './priority';
 import { compareSortKeys } from './ordering';
 import { isClosedCategory, STATUS_CATEGORIES, type StatusCategory } from './status';
+import { words } from './text';
 
 /*
  * View engine: filtering, grouping and ordering are pure functions over the
@@ -270,13 +271,7 @@ export interface GroupContext extends ViewContext {
   field?: CustomField;
 }
 
-const PRIORITY_GROUPS: [number, string][] = [
-  [1, 'Urgent'],
-  [2, 'High'],
-  [3, 'Medium'],
-  [4, 'Low'],
-  [0, 'No priority'],
-];
+const PRIORITY_ORDER: Priority[] = [1, 2, 3, 4, 0];
 
 const DUE_GROUP_ORDER: DueBucket[] = [
   'overdue',
@@ -286,14 +281,6 @@ const DUE_GROUP_ORDER: DueBucket[] = [
   'later',
   'none',
 ];
-const DUE_GROUP_LABEL: Record<DueBucket, string> = {
-  overdue: 'Overdue',
-  today: 'Today',
-  this_week: 'This week',
-  next_week: 'Next week',
-  later: 'Later',
-  none: 'No due date',
-};
 
 /** Groups already-sorted tasks. A task with several assignees/labels appears in each group. */
 export function groupTasks(
@@ -313,7 +300,7 @@ export function groupTasks(
 
   switch (groupBy) {
     case 'none':
-      return [{ key: 'all', kind: 'none', label: 'All tasks', tasks: [...tasks] }];
+      return [{ key: 'all', kind: 'none', label: words.allTasks, tasks: [...tasks] }];
     case 'status': {
       const groups = context.orderedStatuses.map((status) => ({
         key: status.id,
@@ -326,12 +313,15 @@ export function groupTasks(
     }
     case 'priority':
       return bucket(
-        PRIORITY_GROUPS.map(([value, label]) => [String(value), label]),
+        PRIORITY_ORDER.map((value) => [String(value), PRIORITY_LABEL[value]]),
         (task) => [String(task.priority)],
       ).filter((group) => group.tasks.length > 0);
     case 'due':
       return bucket(
-        DUE_GROUP_ORDER.map((key) => [key, DUE_GROUP_LABEL[key]]),
+        DUE_GROUP_ORDER.map((key) => [
+          key,
+          key === 'none' ? words.noDueDate : DUE_BUCKET_LABEL[key],
+        ]),
         (task) => [dueBucket(task.dueDate, context.today)],
       ).filter((group) => group.tasks.length > 0);
     case 'assignee': {
@@ -345,9 +335,9 @@ export function groupTasks(
         [
           ...[...me, ...ids.filter((id) => id !== context.userId)].map((id): [string, string] => [
             id,
-            context.members.get(id)?.displayName ?? 'Former member',
+            context.members.get(id)?.displayName ?? words.formerMember,
           ]),
-          [NONE, 'No assignee'],
+          [NONE, words.noAssignee],
         ],
         (task) => (task.assigneeIds.length ? task.assigneeIds : [NONE]),
       ).filter((group) => group.tasks.length > 0);
@@ -356,8 +346,11 @@ export function groupTasks(
       const ids = [...new Set(tasks.flatMap((task) => (task.projectId ? [task.projectId] : [])))];
       return bucket(
         [
-          ...ids.map((id): [string, string] => [id, context.projects.get(id)?.name ?? 'Project']),
-          [NONE, 'No project'],
+          ...ids.map((id): [string, string] => [
+            id,
+            context.projects.get(id)?.name ?? words.project,
+          ]),
+          [NONE, words.noProject],
         ],
         (task) => [task.projectId ?? NONE],
       ).filter((group) => group.tasks.length > 0);
@@ -368,28 +361,28 @@ export function groupTasks(
         compareSortKeys(a.sortKey, b.sortKey),
       );
       return bucket(
-        [...milestones.map((m): [string, string] => [m.id, m.name]), [NONE, 'No milestone']],
+        [...milestones.map((m): [string, string] => [m.id, m.name]), [NONE, words.noMilestone]],
         (task) => [task.milestoneId ?? NONE],
       ).filter((group) => group.key !== NONE || group.tasks.length > 0);
     }
     case 'field': {
       const field = context.field;
-      if (!field) return [{ key: 'all', kind: 'none', label: 'All tasks', tasks: [...tasks] }];
+      if (!field) return [{ key: 'all', kind: 'none', label: words.allTasks, tasks: [...tasks] }];
       const entries: [string, string][] =
         field.kind === 'checkbox'
           ? [
-              ['true', 'Yes'],
-              ['false', 'No'],
+              ['true', words.yes],
+              ['false', words.no],
             ]
           : field.kind === 'person'
             ? [...new Set(tasks.flatMap((task) => fieldKeys(task.fields[field.id])))].map(
                 (id): [string, string] => [
                   id,
-                  context.members.get(id)?.displayName ?? 'Former member',
+                  context.members.get(id)?.displayName ?? words.formerMember,
                 ],
               )
             : field.options.map((option): [string, string] => [option.id, option.name]);
-      return bucket([...entries, [NONE, `No ${field.name}`]], (task) => {
+      return bucket([...entries, [NONE, words.noValue(field.name)]], (task) => {
         const keys = fieldKeys(task.fields[field.id]);
         return keys.length ? keys : [NONE];
       }).filter((group) => group.tasks.length > 0 || field.kind === 'select');
@@ -400,8 +393,8 @@ export function groupTasks(
       );
       return bucket(
         [
-          ...ids.map((id): [string, string] => [id, context.labels.get(id)?.name ?? 'Label']),
-          [NONE, 'No label'],
+          ...ids.map((id): [string, string] => [id, context.labels.get(id)?.name ?? words.label]),
+          [NONE, words.noLabel],
         ],
         (task) => (task.labelIds.length ? task.labelIds : [NONE]),
       ).filter((group) => group.tasks.length > 0);

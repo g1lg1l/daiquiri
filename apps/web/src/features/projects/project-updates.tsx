@@ -10,6 +10,7 @@ import {
 import { Avatar, Button, cn, Menu, MenuContent, MenuItem, MenuTrigger, Skeleton } from '@daiq/ui';
 import { MegaphoneIcon, MoreHorizontalIcon } from 'lucide-react';
 import { lazy, Suspense, useState } from 'react';
+import { m } from '../../i18n/team';
 import { newId } from '../../lib/ids';
 import { formatDateTime, timeAgo } from '../../lib/time';
 import { pushUndo } from '../undo/undo';
@@ -17,10 +18,10 @@ import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { HealthBadge } from './project-status';
 
 const RichTextEditor = lazy(() =>
-  import('@daiq/editor/editor').then((m) => ({ default: m.RichTextEditor })),
+  import('@daiq/editor/editor').then((mod) => ({ default: mod.RichTextEditor })),
 );
 const RichTextView = lazy(() =>
-  import('@daiq/editor/editor').then((m) => ({ default: m.RichTextView })),
+  import('@daiq/editor/editor').then((mod) => ({ default: mod.RichTextView })),
 );
 
 const HEALTH_RING: Record<ProjectHealth, string> = {
@@ -55,15 +56,14 @@ function Composer({
     setDoc(null);
     setVersion((v) => v + 1);
   };
+  const t = m.team.updates;
   return (
     <section
-      aria-label="New update"
+      aria-label={t.composer}
       className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4"
     >
       <fieldset className="flex flex-wrap items-center gap-2">
-        <legend className="mb-2 text-xs font-medium text-fg-muted">
-          How is the project going?
-        </legend>
+        <legend className="mb-2 text-xs font-medium text-fg-muted">{t.question}</legend>
         {PROJECT_HEALTH.map((value) => (
           <label
             key={value}
@@ -92,15 +92,15 @@ function Composer({
             onChange={setDoc}
             debounceMs={0}
             onSubmit={post}
-            placeholder="What changed, what's next, what's in the way?"
-            ariaLabel="Update"
+            placeholder={t.placeholder}
+            ariaLabel={t.editorLabel}
             className="min-h-16 text-[13px]"
           />
         </Suspense>
       </div>
       <div className="flex justify-end">
         <Button variant="primary" size="sm" onClick={post}>
-          Post update
+          {t.post}
         </Button>
       </div>
     </section>
@@ -113,6 +113,7 @@ export function ProjectUpdates({ project }: { project: Project }) {
   const data = useWorkspaceData();
   const updates = useProjectUpdates(project.id);
   const actions = useProjectUpdateActions(project, userId);
+  const t = m.team.updates;
   const canDelete = (update: ProjectUpdate) =>
     update.authorId === userId || workspace.role === 'owner' || workspace.role === 'admin';
 
@@ -127,7 +128,7 @@ export function ProjectUpdates({ project }: { project: Project }) {
         ) : updates.data?.length === 0 ? (
           <div className="flex flex-col items-start gap-2 py-6 text-[13px] text-fg-muted">
             <MegaphoneIcon aria-hidden className="size-5 text-fg-subtle" />
-            No updates yet. A short weekly update keeps everyone on the same page.
+            {t.empty}
           </div>
         ) : (
           <ol className="flex flex-col gap-4">
@@ -139,8 +140,10 @@ export function ProjectUpdates({ project }: { project: Project }) {
                   className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-4"
                 >
                   <header className="flex items-center gap-2 text-[13px]">
-                    <Avatar name={author?.displayName ?? 'Former member'} size="sm" />
-                    <span className="font-medium">{author?.displayName ?? 'Former member'}</span>
+                    <Avatar name={author?.displayName ?? m.common.formerMember} size="sm" />
+                    <span className="font-medium">
+                      {author?.displayName ?? m.common.formerMember}
+                    </span>
                     <time
                       dateTime={update.createdAt}
                       title={formatDateTime(update.createdAt)}
@@ -157,7 +160,7 @@ export function ProjectUpdates({ project }: { project: Project }) {
                               variant="ghost"
                               size="icon-sm"
                               className="size-6"
-                              aria-label="Update actions"
+                              aria-label={t.actions}
                             />
                           }
                         >
@@ -170,7 +173,7 @@ export function ProjectUpdates({ project }: { project: Project }) {
                               actions.remove.mutate(update.id);
                               pushUndo(
                                 {
-                                  label: 'Delete update',
+                                  label: t.delete,
                                   undo: () =>
                                     actions.post.mutateAsync({
                                       id: update.id,
@@ -178,11 +181,11 @@ export function ProjectUpdates({ project }: { project: Project }) {
                                       body: update.body,
                                     }),
                                 },
-                                { toast: 'Update deleted' },
+                                { toast: t.deleted },
                               );
                             }}
                           >
-                            Delete update
+                            {t.delete}
                           </MenuItem>
                         </MenuContent>
                       </Menu>

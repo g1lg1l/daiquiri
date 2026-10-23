@@ -30,9 +30,9 @@
 
 | Suite            | Command                                 | Current size                                                                                       |
 | ---------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Unit + component | `pnpm test`                             | 186 tests (domain 112, ui 35, editor 26, data 7, web 6)                                            |
+| Unit + component | `pnpm test`                             | 195 tests (domain 118, ui 35, editor 26, data 7, web 9)                                            |
 | Database         | `pnpm db:test`                          | 292 pgTAP assertions in 23 files                                                                   |
-| E2E              | `pnpm test:e2e` (needs `pnpm db:start`) | 33 Playwright flows incl. axe on every layout, realtime between two sessions and a 5,000-task list |
+| E2E              | `pnpm test:e2e` (needs `pnpm db:start`) | 36 Playwright flows incl. axe on every layout, realtime between two sessions and a 5,000-task list |
 
 ## Rules
 

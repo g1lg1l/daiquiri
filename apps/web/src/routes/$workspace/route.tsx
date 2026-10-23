@@ -16,6 +16,7 @@ import {
   useWorkspaceData,
   WorkspaceProvider,
 } from '../../features/workspace/workspace-context';
+import { m } from '../../i18n';
 import { rememberWorkspace } from '../../lib/last-workspace';
 import { logger } from '../../lib/logger';
 import { requireAuth } from '../../app/router-context';
@@ -39,10 +40,10 @@ function WorkspaceLayout() {
   if (!workspace) {
     return (
       <main className="mx-auto flex max-w-md flex-col items-start gap-3 px-6 py-24">
-        <h1 className="text-xl font-semibold font-display">Workspace not found</h1>
-        <p className="text-fg-muted">It doesn’t exist, or you are not a member of it.</p>
+        <h1 className="text-xl font-semibold font-display">{m.shell.workspace.notFound}</h1>
+        <p className="text-fg-muted">{m.shell.workspace.notFoundBody}</p>
         <Link to="/" className="text-accent-text hover:underline">
-          Go to your workspaces
+          {m.shell.workspace.goToWorkspaces}
         </Link>
       </main>
     );
@@ -122,12 +123,12 @@ function Shell() {
         href="#main"
         className="sr-only z-50 rounded-md bg-surface px-3 py-2 focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
       >
-        Skip to content
+        {m.shell.workspace.skipToContent}
       </a>
       {isMobile && sidebarOpen && (
         <button
           type="button"
-          aria-label="Close navigation"
+          aria-label={m.shell.workspace.closeNavigation}
           className="fixed inset-0 z-30 bg-scrim"
           onClick={closeSidebarOnMobile}
         />

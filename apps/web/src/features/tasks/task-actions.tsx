@@ -21,6 +21,7 @@ import {
 import { Button, cn, CommandDialog, DatePicker, InlineCalendar, toast } from '@daiq/ui';
 import { CalendarIcon, XIcon } from 'lucide-react';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { m } from '../../i18n';
 import { copyText } from '../../lib/clipboard';
 import { newId } from '../../lib/ids';
 import { useToday } from '../../lib/use-today';
@@ -61,17 +62,6 @@ export function useTaskActions(): TaskActions {
   if (!context) throw new Error('useTaskActions must be used inside <TaskActionsProvider>');
   return context;
 }
-
-const PICKER_TITLE: Record<PickerKind, string> = {
-  status: 'Change status',
-  priority: 'Set priority',
-  assignee: 'Assign to',
-  labels: 'Labels',
-  project: 'Move to project',
-  dueDate: 'Due date',
-  estimate: 'Set estimate',
-  cycle: 'Move to cycle',
-};
 
 /** Previous values of the patched fields, for undo. */
 function inverse(task: Task | TaskDetail, patch: TaskPatch): TaskPatch {
@@ -119,7 +109,7 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
               ),
             ),
         },
-        tasks.length > 1 ? { toast: `${label} on ${tasks.length} tasks` } : {},
+        tasks.length > 1 ? { toast: m.tasks.undo.onTasks(label, tasks.length) } : {},
       );
     },
     [updateTasks],
@@ -140,7 +130,7 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
           byStatus.set(target, [...(byStatus.get(target) ?? []), task]);
       }
       for (const [target, group] of byStatus)
-        update(group, { statusId: target }, `Status → ${chosen.name}`);
+        update(group, { statusId: target }, m.tasks.undo.status(chosen.name));
     },
     [data.statuses, data.teamsById, update],
   );
@@ -165,12 +155,12 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
 
   const setAssignees = useCallback(
     (tasks: Task[], userIds: string[]) =>
-      setSet(tasks, userIds, 'assigneeIds', setAssigneesMutation, 'Assignees'),
+      setSet(tasks, userIds, 'assigneeIds', setAssigneesMutation, m.tasks.field.assignees),
     [setSet, setAssigneesMutation],
   );
   const setLabels = useCallback(
     (tasks: Task[], labelIds: string[]) =>
-      setSet(tasks, labelIds, 'labelIds', setLabelsMutation, 'Labels'),
+      setSet(tasks, labelIds, 'labelIds', setLabelsMutation, m.tasks.field.labels),
     [setSet, setLabelsMutation],
   );
 
@@ -192,14 +182,16 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
       const ids = tasks.map((task) => task.id);
       deleteTasks.mutate(ids);
       const label =
-        tasks.length === 1 ? `Deleted ${identifier(tasks[0]!)}` : `Deleted ${tasks.length} tasks`;
+        tasks.length === 1
+          ? m.tasks.undo.deleted(identifier(tasks[0]!))
+          : m.tasks.undo.deletedMany(tasks.length);
       pushUndo({ label, undo: () => restoreTasks.mutateAsync(ids) }, { toast: label });
     },
     [deleteTasks, restoreTasks, identifier],
   );
 
   const copyId = useCallback(
-    (task: Task) => copyText(identifier(task), `Copied ${identifier(task)}`),
+    (task: Task) => copyText(identifier(task), m.common.copied(identifier(task))),
     [identifier],
   );
 
@@ -207,7 +199,7 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
     (task: Task) =>
       copyText(
         `${window.location.origin}${import.meta.env.BASE_URL}${workspace.slug}/task/${identifier(task)}`,
-        'Link copied',
+        m.common.linkCopied,
       ),
     [workspace.slug, identifier],
   );
@@ -218,11 +210,11 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
       if (!team) return;
       // Estimates and cycles are team modules: say how to turn them on instead of doing nothing.
       if (kind === 'estimate' && !team.estimatesEnabled) {
-        toast.info(`Estimates are off for ${team.name}. Turn them on in the team's settings.`);
+        toast.info(m.tasks.picker.estimatesOff(team.name));
         return;
       }
       if (kind === 'cycle' && !team.cyclesEnabled) {
-        toast.info(`Cycles are off for ${team.name}. Turn them on in the team's settings.`);
+        toast.info(m.tasks.picker.cyclesOff(team.name));
         return;
       }
       setPicker({ kind, tasks });
@@ -271,20 +263,20 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
       <CommandDialog
         open={picker !== null}
         onOpenChange={(open) => !open && close()}
-        label={picker ? PICKER_TITLE[picker.kind] : ''}
+        label={picker ? m.tasks.picker.title[picker.kind] : ''}
       >
         {picker && first && (
           <>
             <p className="truncate px-4 pt-3 text-xs text-fg-subtle">
               {tasks.length === 1
                 ? `${identifier(first)}  ${first.title}`
-                : `${tasks.length} tasks selected`}
+                : m.tasks.picker.selected(tasks.length)}
             </p>
             {picker.kind === 'status' && (
               <PickerList
                 options={statusOptions(team?.statuses ?? [])}
                 selected={tasks.length === 1 ? [first.statusId] : []}
-                placeholder="Change status to…"
+                placeholder={m.tasks.picker.placeholder.status}
                 onSelect={([id]) => id && setStatus(tasks, id)}
                 onDone={close}
               />
@@ -293,10 +285,10 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
               <PickerList
                 options={priorityOptions()}
                 selected={tasks.length === 1 ? [String(first.priority)] : []}
-                placeholder="Set priority to…"
+                placeholder={m.tasks.picker.placeholder.priority}
                 onSelect={([value]) => {
                   const priority = Number(value);
-                  if (isPriority(priority)) update(tasks, { priority }, 'Priority');
+                  if (isPriority(priority)) update(tasks, { priority }, m.tasks.field.priority);
                 }}
                 onDone={close}
               />
@@ -305,11 +297,13 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
               <PickerList
                 multiple
                 options={memberOptions(
-                  data.members.filter((m) => m.role !== 'guest' || team?.memberIds.includes(m.id)),
+                  data.members.filter(
+                    (member) => member.role !== 'guest' || team?.memberIds.includes(member.id),
+                  ),
                   userId,
                 )}
                 selected={shared('assigneeIds')}
-                placeholder="Assign to…"
+                placeholder={m.tasks.picker.placeholder.assignee}
                 onSelect={(ids) => {
                   setAssignees(tasks, ids);
                   setPicker({
@@ -325,7 +319,7 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
                 multiple
                 options={labelOptions(data.labels)}
                 selected={shared('labelIds')}
-                placeholder="Add labels…"
+                placeholder={m.tasks.picker.placeholder.labels}
                 onSelect={(ids) => {
                   setLabels(tasks, ids);
                   setPicker({ kind: 'labels', tasks: tasks.map((t) => ({ ...t, labelIds: ids })) });
@@ -355,12 +349,12 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
               <PickerList
                 options={projectOptions(data.projects.filter((p) => p.teamId === first.teamId))}
                 selected={[first.projectId ?? NO_VALUE]}
-                placeholder="Move to project…"
+                placeholder={m.tasks.picker.placeholder.project}
                 onSelect={([id]) =>
                   update(
                     tasks.filter((t) => t.teamId === first.teamId),
                     { projectId: id === NO_VALUE || !id ? null : id },
-                    'Project',
+                    m.tasks.field.project,
                   )
                 }
                 onDone={close}
@@ -370,12 +364,12 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
               <PickerList
                 options={estimatePickerOptions(team.estimateScale)}
                 selected={tasks.length === 1 ? [String(first.estimate ?? NO_VALUE)] : []}
-                placeholder="Set estimate to…"
+                placeholder={m.tasks.picker.placeholder.estimate}
                 onSelect={([value]) =>
                   update(
                     sameTeam,
                     { estimate: value && value !== NO_VALUE ? Number(value) : null },
-                    'Estimate',
+                    m.tasks.field.estimate,
                   )
                 }
                 onDone={close}
@@ -385,9 +379,13 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
               <PickerList
                 options={cycleOptions(cycles.data ?? [], today)}
                 selected={tasks.length === 1 ? [first.cycleId ?? NO_VALUE] : []}
-                placeholder="Move to cycle…"
+                placeholder={m.tasks.picker.placeholder.cycle}
                 onSelect={([id]) =>
-                  update(sameTeam, { cycleId: id && id !== NO_VALUE ? id : null }, 'Cycle')
+                  update(
+                    sameTeam,
+                    { cycleId: id && id !== NO_VALUE ? id : null },
+                    m.tasks.field.cycle,
+                  )
                 }
                 onDone={close}
               />
@@ -396,7 +394,11 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
               <DueDatePicker
                 value={tasks.length === 1 ? first.dueDate : null}
                 onChange={(dueDate) => {
-                  update(tasks, { dueDate }, dueDate ? 'Due date' : 'Cleared due date');
+                  update(
+                    tasks,
+                    { dueDate },
+                    dueDate ? m.tasks.field.dueDate : m.tasks.undo.clearedDueDate,
+                  );
                   close();
                 }}
               />
@@ -412,10 +414,10 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
 function useQuickDates() {
   const today = useToday();
   return [
-    { label: 'Today', value: today },
-    { label: 'Tomorrow', value: addDays(today, 1) },
-    { label: 'Next week', value: addDays(startOfWeek(today), 7) },
-    { label: 'In two weeks', value: addDays(today, 14) },
+    { label: m.common.today, value: today },
+    { label: m.common.tomorrow, value: addDays(today, 1) },
+    { label: m.common.nextWeek, value: addDays(startOfWeek(today), 7) },
+    { label: m.common.inTwoWeeks, value: addDays(today, 14) },
   ];
 }
 
@@ -432,10 +434,10 @@ function DueDatePicker({
       <PickerList
         options={[
           ...quick.map((q) => ({ value: q.value, label: q.label, hint: q.value })),
-          ...(value ? [{ value: NO_VALUE, label: 'Remove due date' }] : []),
+          ...(value ? [{ value: NO_VALUE, label: m.tasks.picker.removeDueDate }] : []),
         ]}
         selected={value ? [value] : []}
-        placeholder="Pick a date…"
+        placeholder={m.tasks.picker.placeholder.date}
         onSelect={([date]) => onChange(date === NO_VALUE || !date ? null : date)}
       />
       <div className="flex justify-center border-t border-border p-2">
@@ -467,7 +469,7 @@ export function DateField({
           type="button"
           variant={variant}
           size="sm"
-          aria-label={value ? `${label}: ${shown}` : label}
+          aria-label={value ? m.tasks.dateField.value(label, shown) : label}
           className={cn(
             variant === 'ghost' && 'h-7 px-1.5 font-normal',
             !value && 'text-fg-subtle',
@@ -483,7 +485,7 @@ export function DateField({
           variant="ghost"
           size="icon-sm"
           className="size-6"
-          aria-label={`Clear ${label.toLowerCase()}`}
+          aria-label={m.tasks.dateField.clear(label)}
           onClick={() => onChange(null)}
         >
           <XIcon className="size-3.5" />

@@ -20,16 +20,20 @@ import { UploadIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { NotFoundPanel } from '../../../../components/not-found-panel';
 import { ServiceImport } from '../../../../features/import/service-import';
-import { SOURCES } from '../../../../features/import/sources';
+import { SOURCES, type Source } from '../../../../features/import/sources';
 import { ViewHeader } from '../../../../features/shell/view-header';
 import {
   useWorkspace,
   useWorkspaceData,
   type WorkspaceData,
 } from '../../../../features/workspace/workspace-context';
+import { m } from '../../../../i18n/importer';
 import { newId } from '../../../../lib/ids';
 
-const FROM = ['csv', ...SOURCES.map((s) => s.id)] as const;
+// Listed here, not derived from SOURCES: the search schema stays in the initial route tree.
+const FROM = ['csv', 'linear', 'asana', 'clickup'] as const satisfies readonly (
+  'csv' | Source['id']
+)[];
 type From = (typeof FROM)[number];
 const isFrom = (value: unknown): value is From => FROM.some((f) => f === value);
 
@@ -40,7 +44,6 @@ export const Route = createFileRoute('/$workspace/team/$teamKey/import')({
 });
 
 const MAX_ROWS = 10_000;
-const rowsName = (count: number) => (count === 1 ? '1 row names' : `${count} rows name`);
 type Mapping = Partial<Record<ImportTarget, number>>;
 
 interface Plan {
@@ -57,7 +60,7 @@ const byName = <T,>(items: readonly T[], name: (item: T) => string) =>
 /** Turns CSV rows into tasks for this team, matching names to statuses, people, labels and projects. */
 function plan(rows: string[][], mapping: Mapping, team: Team, data: WorkspaceData): Plan {
   const statuses = byName(team.statuses, (s) => s.name);
-  const members = byName(data.members, (m) => m.displayName);
+  const members = byName(data.members, (member) => member.displayName);
   const labels = byName(data.labels, (l) => l.name);
   const projects = byName(
     data.projects.filter((p) => p.teamId === team.id),
@@ -135,7 +138,7 @@ function ImportTasks() {
 
   if (!team) {
     return (
-      <NotFoundPanel title="Team not found" message={`There is no team with the key ${teamKey}.`} />
+      <NotFoundPanel title={m.importer.csv.teamNotFound} message={m.importer.csv.noTeam(teamKey)} />
     );
   }
 
@@ -144,11 +147,11 @@ function ImportTasks() {
     if (!file) return;
     const rows = parseCsv(await file.text());
     if (rows.length < 2) {
-      setError('The file has no rows to import.');
+      setError(m.importer.csv.noRows);
       return;
     }
     if (rows.length - 1 > MAX_ROWS) {
-      setError(`Import at most ${MAX_ROWS.toLocaleString()} tasks at a time; split the file.`);
+      setError(m.importer.csv.tooMany(MAX_ROWS));
       return;
     }
     setFileName(file.name);
@@ -189,7 +192,7 @@ function ImportTasks() {
       setImported(rows.length);
     } catch (e) {
       setError(
-        `${e instanceof Error ? e.message : 'The import stopped.'} Tasks imported before the error stay in ${team.name}.`,
+        `${e instanceof Error ? e.message : m.importer.csv.stopped}${m.importer.csv.errorKept(team.name)}`,
       );
     } finally {
       setProgress(null);
@@ -199,7 +202,7 @@ function ImportTasks() {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <ViewHeader
-        title={`Import into ${team.name}`}
+        title={m.importer.csv.title(team.name)}
         icon={<UploadIcon className="size-4 text-fg-muted" />}
       >
         <Link
@@ -207,13 +210,13 @@ function ImportTasks() {
           params={{ workspace: workspace.slug }}
           className="text-[13px] text-fg-muted hover:text-fg"
         >
-          How importing works
+          {m.importer.csv.howItWorks}
         </Link>
       </ViewHeader>
       <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex max-w-3xl flex-col gap-5 p-4 md:p-6">
           <fieldset className="flex flex-wrap gap-1 self-start rounded-md border border-border p-0.5 text-[13px]">
-            <legend className="sr-only">Import from</legend>
+            <legend className="sr-only">{m.importer.csv.from}</legend>
             {[{ id: 'csv' as const, name: 'CSV' }, ...SOURCES].map((option) => (
               <label
                 key={option.id}
@@ -242,24 +245,21 @@ function ImportTasks() {
           ) : imported !== null ? (
             <section className="flex flex-col items-start gap-3" aria-live="polite">
               <h2 className="text-lg font-semibold font-display">
-                Imported {imported.toLocaleString()} tasks
+                {m.importer.imported(imported)}
               </h2>
               <Link
                 to="/$workspace/team/$teamKey/tasks"
                 params={{ workspace: workspace.slug, teamKey: team.key }}
                 className="text-[13px] text-accent-text underline-offset-4 hover:underline"
               >
-                Open {team.name}’s tasks
+                {m.importer.openTasks(team.name)}
               </Link>
             </section>
           ) : (
             <>
-              <p className="text-[13px] text-fg-muted">
-                Bring tasks into {team.name} from a CSV file, such as a spreadsheet or an export
-                from another tool. Columns are matched by name; check them before importing.
-              </p>
+              <p className="text-[13px] text-fg-muted">{m.importer.csv.intro(team.name)}</p>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="import-file">CSV file</Label>
+                <Label htmlFor="import-file">{m.importer.csv.file}</Label>
                 <input
                   id="import-file"
                   type="file"
@@ -272,7 +272,9 @@ function ImportTasks() {
               {fileName && result && (
                 <>
                   <fieldset className="flex flex-col gap-2">
-                    <legend className="mb-1.5 text-[13px] font-semibold">Columns</legend>
+                    <legend className="mb-1.5 text-[13px] font-semibold">
+                      {m.importer.csv.columns}
+                    </legend>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {IMPORT_TARGETS.map((target) => (
                         <label
@@ -291,11 +293,14 @@ function ImportTasks() {
                             options={[
                               {
                                 value: '',
-                                label: target === 'title' ? 'Choose a column' : 'Don’t import',
+                                label:
+                                  target === 'title'
+                                    ? m.importer.csv.chooseColumn
+                                    : m.importer.csv.skip,
                               },
                               ...columns.map((column) => ({
                                 value: String(column.index),
-                                label: column.name || `Column ${column.index + 1}`,
+                                label: column.name || m.importer.csv.column(column.index + 1),
                               })),
                             ]}
                           />
@@ -304,9 +309,9 @@ function ImportTasks() {
                     </div>
                   </fieldset>
 
-                  <section aria-label="Preview" className="flex flex-col gap-2">
+                  <section aria-label={m.importer.csv.preview} className="flex flex-col gap-2">
                     <h2 className="text-[13px] font-semibold">
-                      Preview: {result.rows.length.toLocaleString()} tasks from {fileName}
+                      {m.importer.csv.previewTitle(result.rows.length, fileName)}
                     </h2>
                     <ul className="flex flex-col divide-y divide-border rounded-lg border border-border text-[13px]">
                       {result.rows.slice(0, 5).map((row) => (
@@ -317,7 +322,7 @@ function ImportTasks() {
                           <span className="min-w-0 flex-1 truncate font-medium">{row.title}</span>
                           <span className="text-xs text-fg-muted">
                             {team.statuses.find((s) => s.id === row.statusId)?.name ??
-                              'Default status'}
+                              m.importer.csv.defaultStatus}
                           </span>
                           {isPriority(row.priority) && row.priority > 0 && (
                             <span className="text-xs text-fg-muted">
@@ -333,20 +338,15 @@ function ImportTasks() {
                     <ul className="text-xs text-fg-muted">
                       {result.unmatched.status > 0 && (
                         <li>
-                          {rowsName(result.unmatched.status)} a status {team.name} doesn’t have:
-                          they get the default status.
+                          {m.importer.csv.unmatchedStatus(result.unmatched.status, team.name)}
                         </li>
                       )}
                       {result.unmatched.assignee > 0 && (
-                        <li>
-                          {rowsName(result.unmatched.assignee)} people who aren’t members: they are
-                          left unassigned.
-                        </li>
+                        <li>{m.importer.csv.unmatchedAssignee(result.unmatched.assignee)}</li>
                       )}
                       {result.unmatched.project > 0 && (
                         <li>
-                          {rowsName(result.unmatched.project)} a project {team.name} doesn’t have:
-                          no project is set.
+                          {m.importer.csv.unmatchedProject(result.unmatched.project, team.name)}
                         </li>
                       )}
                     </ul>
@@ -358,20 +358,21 @@ function ImportTasks() {
                           onChange={(event) => setCreateLabels(event.target.checked)}
                           className="accent-(--accent)"
                         />
-                        Create {result.missingLabels.length} missing labels (
-                        {result.missingLabels.slice(0, 5).join(', ')}
-                        {result.missingLabels.length > 5 ? ', …' : ''})
+                        {m.importer.csv.createLabels(
+                          result.missingLabels.length,
+                          `${result.missingLabels.slice(0, 5).join(', ')}${result.missingLabels.length > 5 ? ', …' : ''}`,
+                        )}
                       </label>
                     )}
                   </section>
 
                   {mapping.title === undefined && (
-                    <FieldError>Choose the column with the task titles.</FieldError>
+                    <FieldError>{m.importer.csv.chooseTitle}</FieldError>
                   )}
                   {error && <FieldError>{error}</FieldError>}
                   {progress !== null && (
                     <progress
-                      aria-label="Importing"
+                      aria-label={m.importer.importing}
                       max={result.rows.length}
                       value={progress}
                       className="h-1.5 w-full overflow-hidden rounded-full [&::-moz-progress-bar]:bg-accent [&::-webkit-progress-bar]:bg-surface-muted [&::-webkit-progress-value]:bg-accent"
@@ -385,7 +386,7 @@ function ImportTasks() {
                     }
                     onClick={() => void run()}
                   >
-                    Import {result.rows.length.toLocaleString()} tasks
+                    {m.importer.importTasks(result.rows.length)}
                   </Button>
                 </>
               )}

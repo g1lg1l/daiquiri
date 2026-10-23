@@ -20,6 +20,7 @@ import {
   UserPlusIcon,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
+import { m } from '../../i18n';
 import { SHORTCUTS } from '../shortcuts/registry';
 import { useTaskActions, type PickerKind } from './task-actions';
 
@@ -33,13 +34,13 @@ const taskIdOf = (target: EventTarget) => {
   return taskId ?? cardId ?? chipId ?? barId;
 };
 
-const PICKERS: { kind: PickerKind; label: string; icon: ReactNode; keys: string }[] = [
-  { kind: 'status', label: 'Status…', icon: <CircleDashedIcon />, keys: SHORTCUTS.status.keys },
-  { kind: 'priority', label: 'Priority…', icon: <SignalHighIcon />, keys: SHORTCUTS.priority.keys },
-  { kind: 'assignee', label: 'Assignees…', icon: <UserIcon />, keys: SHORTCUTS.assignee.keys },
-  { kind: 'labels', label: 'Labels…', icon: <TagIcon />, keys: SHORTCUTS.labels.keys },
-  { kind: 'dueDate', label: 'Due date…', icon: <CalendarIcon />, keys: SHORTCUTS.dueDate.keys },
-  { kind: 'project', label: 'Project…', icon: <FolderIcon />, keys: SHORTCUTS.project.keys },
+const PICKERS: { kind: PickerKind & keyof typeof m.tasks.menu; icon: ReactNode; keys: string }[] = [
+  { kind: 'status', icon: <CircleDashedIcon />, keys: SHORTCUTS.status.keys },
+  { kind: 'priority', icon: <SignalHighIcon />, keys: SHORTCUTS.priority.keys },
+  { kind: 'assignee', icon: <UserIcon />, keys: SHORTCUTS.assignee.keys },
+  { kind: 'labels', icon: <TagIcon />, keys: SHORTCUTS.labels.keys },
+  { kind: 'dueDate', icon: <CalendarIcon />, keys: SHORTCUTS.dueDate.keys },
+  { kind: 'project', icon: <FolderIcon />, keys: SHORTCUTS.project.keys },
 ];
 
 /**
@@ -78,7 +79,7 @@ export function TaskContextMenu({
           <>
             <MenuItem onClick={() => onOpen(first, 'page')} shortcut={SHORTCUTS.open.keys}>
               <ExternalLinkIcon />
-              Open
+              {m.common.open}
             </MenuItem>
             <MenuSeparator />
           </>
@@ -90,23 +91,23 @@ export function TaskContextMenu({
             shortcut={picker.keys}
           >
             {picker.icon}
-            {picker.label}
+            {m.tasks.menu[picker.kind]}
           </MenuItem>
         ))}
         <MenuItem onClick={() => actions.toggleAssignMe(tasks)} shortcut={SHORTCUTS.assignMe.keys}>
           <UserPlusIcon />
-          Assign to me
+          {m.tasks.menu.assignToMe}
         </MenuItem>
         {first && tasks.length === 1 && (
           <>
             <MenuSeparator />
             <MenuItem onClick={() => actions.copyId(first)} shortcut={SHORTCUTS.copyId.keys}>
               <CopyIcon />
-              Copy ID
+              {m.tasks.copyId}
             </MenuItem>
             <MenuItem onClick={() => actions.copyLink(first)} shortcut={SHORTCUTS.copyLink.keys}>
               <LinkIcon />
-              Copy link
+              {m.tasks.menu.copyLink}
             </MenuItem>
           </>
         )}
@@ -117,7 +118,7 @@ export function TaskContextMenu({
           shortcut={SHORTCUTS.remove.keys}
         >
           <Trash2Icon />
-          {tasks.length > 1 ? `Delete ${tasks.length} tasks` : 'Delete'}
+          {tasks.length > 1 ? m.tasks.menu.deleteMany(tasks.length) : m.common.delete}
         </MenuItem>
       </ContextMenuContent>
     </ContextMenu>

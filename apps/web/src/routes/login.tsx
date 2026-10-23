@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 import { AuthLayout } from '../features/auth/auth-layout';
 import { useSubmit } from '../features/auth/use-form-error';
+import { m } from '../i18n/auth';
 import { formString } from '../lib/forms';
 
 export const Route = createFileRoute('/login')({
@@ -43,29 +44,27 @@ function Login() {
 
   if (linkSent) {
     return (
-      <AuthLayout title="Check your email">
-        <p className="text-fg-muted">
-          We sent you a sign-in link. Open it in this browser to continue.
-        </p>
+      <AuthLayout title={m.auth.login.checkEmail}>
+        <p className="text-fg-muted">{m.auth.login.linkSent}</p>
       </AuthLayout>
     );
   }
 
   return (
     <AuthLayout
-      title="Sign in"
+      title={m.auth.signIn}
       footer={
         <div className="flex flex-col gap-2">
           <span>
-            New to Daiquiri?{' '}
+            {m.auth.login.newHere}{' '}
             <Link to="/signup" className="text-accent-text hover:underline">
-              Create an account
+              {m.auth.login.createAccount}
             </Link>
           </span>
           <span>
-            Just looking?{' '}
+            {m.auth.login.justLooking}{' '}
             <Link to="/demo" className="text-accent-text hover:underline">
-              Try the demo workspace
+              {m.auth.login.tryDemo}
             </Link>
           </span>
         </div>
@@ -73,12 +72,12 @@ function Login() {
     >
       <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate={false}>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{m.auth.email}</Label>
           <Input id="email" name="email" type="email" autoComplete="email" required autoFocus />
         </div>
         {mode === 'password' && (
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{m.auth.password}</Label>
             <Input
               id="password"
               name="password"
@@ -90,7 +89,7 @@ function Login() {
         )}
         {error && <FieldError>{error}</FieldError>}
         <Button type="submit" variant="primary" size="lg" disabled={pending}>
-          {mode === 'password' ? 'Sign in' : 'Email me a sign-in link'}
+          {mode === 'password' ? m.auth.signIn : m.auth.login.sendLink}
         </Button>
         <Button
           type="button"
@@ -98,7 +97,7 @@ function Login() {
           className="self-start"
           onClick={() => setMode(mode === 'password' ? 'link' : 'password')}
         >
-          {mode === 'password' ? 'Use a sign-in link instead' : 'Use a password instead'}
+          {mode === 'password' ? m.auth.login.linkInstead : m.auth.login.passwordInstead}
         </Button>
       </form>
     </AuthLayout>

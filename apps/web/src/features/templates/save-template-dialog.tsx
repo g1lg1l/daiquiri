@@ -13,14 +13,9 @@ import {
   toast,
 } from '@daiq/ui';
 import { useState } from 'react';
+import { m } from '../../i18n';
 import { formString } from '../../lib/forms';
 import { useWorkspace } from '../workspace/workspace-context';
-
-const WHAT: Record<TemplateKind, string> = {
-  task: 'The title, description, properties and sub-tasks are saved. Dates are kept relative to the day the template is used.',
-  project:
-    'The description, milestones and open tasks with their sub-tasks are saved. Dates are kept relative to the project’s start.',
-};
 
 /** Names and saves a task or a project as a template for its team. */
 export function SaveTemplateDialog({
@@ -42,8 +37,8 @@ export function SaveTemplateDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogTitle>Save {kind} as template</DialogTitle>
-        <DialogDescription>{WHAT[kind]}</DialogDescription>
+        <DialogTitle>{m.task.template.title[kind]}</DialogTitle>
+        <DialogDescription>{m.task.template.what[kind]}</DialogDescription>
         <form
           className="flex flex-col gap-4"
           onSubmit={(event) => {
@@ -54,7 +49,7 @@ export function SaveTemplateDialog({
               { kind, sourceId, name },
               {
                 onSuccess: () => {
-                  toast(`Saved template ${name}`);
+                  toast(m.task.template.saved(name));
                   onOpenChange(false);
                 },
                 onError: (e) => setError(e.message),
@@ -63,7 +58,7 @@ export function SaveTemplateDialog({
           }}
         >
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="template-name">Template name</Label>
+            <Label htmlFor="template-name">{m.task.template.name}</Label>
             <Input
               id="template-name"
               name="name"
@@ -76,10 +71,10 @@ export function SaveTemplateDialog({
           {error && <FieldError>{error}</FieldError>}
           <DialogFooter>
             <Button type="button" onClick={() => onOpenChange(false)}>
-              Cancel
+              {m.common.cancel}
             </Button>
             <Button type="submit" variant="primary" disabled={save.isPending}>
-              Save template
+              {m.task.template.save}
             </Button>
           </DialogFooter>
         </form>

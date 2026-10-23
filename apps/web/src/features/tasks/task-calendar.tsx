@@ -27,6 +27,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
+import { locale, m } from '../../i18n';
 import { useToday } from '../../lib/use-today';
 import { useShell } from '../shell/shell-context';
 import { useShortcuts } from '../shortcuts/use-shortcuts';
@@ -49,14 +50,6 @@ const isChipData = (data: Record<string | symbol, unknown>): data is ChipData =>
 /** Drop target data: a day, or `null` for the "No due date" tray. */
 const dayOf = (data: Record<string | symbol, unknown>): string | null | undefined =>
   'day' in data && (typeof data.day === 'string' || data.day === null) ? data.day : undefined;
-
-const dayLabel = new Intl.DateTimeFormat(undefined, {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-});
-const monthLabel = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' });
-const weekdayLabel = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
 
 export interface TaskCalendarProps {
   tasks: Task[];
@@ -88,6 +81,14 @@ export function TaskCalendar({
   const identifier = useIdentifier();
   const rootRef = useRef<HTMLDivElement>(null);
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  const { dayLabel, monthLabel, weekdayLabel } = useMemo(
+    () => ({
+      dayLabel: new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }),
+      monthLabel: new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }),
+      weekdayLabel: new Intl.DateTimeFormat(locale, { weekday: 'short' }),
+    }),
+    [],
+  );
 
   const current = month ?? monthOf(today);
   const weeks = useMemo(() => monthGrid(current), [current]);
@@ -105,11 +106,11 @@ export function TaskCalendar({
   const move = (task: Task, day: string | null) => {
     if (task.dueDate === day) return;
     const patch = day ? reschedule(task, day) : { dueDate: null };
-    actions.update([task], patch, day ? 'Reschedule' : 'Clear due date');
+    actions.update([task], patch, day ? m.tasks.undo.reschedule : m.tasks.undo.clearDueDate);
     announce(
       day
-        ? `${identifier(task)} moved to ${dayLabel.format(parseIsoDate(day))}`
-        : `${identifier(task)} no longer has a due date`,
+        ? m.tasks.calendar.movedTo(identifier(task), dayLabel.format(parseIsoDate(day)))
+        : m.tasks.calendar.noDueDate(identifier(task)),
     );
     // Follow the task when it leaves the month on screen.
     if (day && monthOf(day) !== current) setSearch({ month: monthOf(day) });
@@ -217,11 +218,11 @@ export function TaskCalendar({
       <h2 className="mr-auto text-[13px] font-semibold font-display" aria-live="polite">
         {monthLabel.format(parseIsoDate(`${current}-01`))}
       </h2>
-      <Tooltip label="Previous month">
+      <Tooltip label={m.tasks.calendar.previousMonth}>
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Previous month"
+          aria-label={m.tasks.calendar.previousMonth}
           onClick={() => setSearch({ month: addMonths(current, -1) })}
         >
           <ChevronLeftIcon />
@@ -233,13 +234,13 @@ export function TaskCalendar({
         onClick={() => setSearch({ month: undefined })}
         disabled={current === monthOf(today)}
       >
-        Today
+        {m.common.today}
       </Button>
-      <Tooltip label="Next month">
+      <Tooltip label={m.tasks.calendar.nextMonth}>
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label="Next month"
+          aria-label={m.tasks.calendar.nextMonth}
           onClick={() => setSearch({ month: addMonths(current, 1) })}
         >
           <ChevronRightIcon />
@@ -257,7 +258,7 @@ export function TaskCalendar({
         {toolbar}
         <div className="flex flex-col gap-4 p-3">
           {agenda.length === 0 && (
-            <p className="px-1 text-[13px] text-fg-muted">Nothing is due this month.</p>
+            <p className="px-1 text-[13px] text-fg-muted">{m.tasks.calendar.nothingDue}</p>
           )}
           {agenda.map((day) => (
             <section key={day.date} aria-label={dayLabel.format(parseIsoDate(day.date))}>
@@ -281,7 +282,7 @@ export function TaskCalendar({
   return (
     <div ref={rootRef} className="flex min-h-0 flex-1">
       <section
-        aria-label={`Calendar, ${monthLabel.format(parseIsoDate(`${current}-01`))}`}
+        aria-label={m.tasks.calendar.label(monthLabel.format(parseIsoDate(`${current}-01`)))}
         className="flex min-w-0 flex-1 flex-col"
       >
         {toolbar}
@@ -293,7 +294,7 @@ export function TaskCalendar({
           ))}
         </div>
         <ol
-          aria-label="Days"
+          aria-label={m.tasks.calendar.days}
           className="grid min-h-0 flex-1 grid-cols-7 overflow-y-auto scrollbar-thin"
           style={{ gridTemplateRows: `repeat(${weeks.length}, minmax(7.5rem, 1fr))` }}
         >
@@ -304,7 +305,7 @@ export function TaskCalendar({
               <DayCell
                 key={day.date}
                 day={day.date}
-                label={`${label}, ${dayTasks.length} ${dayTasks.length === 1 ? 'task' : 'tasks'}`}
+                label={m.tasks.calendar.day(label, dayTasks.length)}
                 className={cn(
                   'group/day flex min-h-0 flex-col gap-1 border-r border-b border-border p-1.5 [&:nth-child(7n)]:border-r-0',
                   !day.inMonth && 'bg-surface-subtle/60',
@@ -320,12 +321,12 @@ export function TaskCalendar({
                   >
                     {parseIsoDate(day.date).getDate()}
                   </span>
-                  <Tooltip label={`Create task due ${label}`}>
+                  <Tooltip label={m.tasks.calendar.createDue(label)}>
                     <Button
                       variant="ghost"
                       size="icon-sm"
                       className="opacity-0 group-hover/day:opacity-100 focus-visible:opacity-100"
-                      aria-label={`Create task due ${label}`}
+                      aria-label={m.tasks.calendar.createDue(label)}
                       onClick={() => onCreate({ ...composerDefaults, dueDate: day.date })}
                     >
                       <PlusIcon />
@@ -390,14 +391,14 @@ function Tray({ count, children }: { count: number; children: ReactNode }) {
   return (
     <section
       ref={ref}
-      aria-label={`No due date, ${count} ${count === 1 ? 'task' : 'tasks'}`}
+      aria-label={m.tasks.calendar.tray(count)}
       className={cn(
         'flex min-h-24 flex-col gap-1 p-2 transition-colors',
         over && 'bg-accent-subtle/50',
       )}
     >
       <h3 aria-hidden className="px-1 pb-1 text-[11px] font-medium text-fg-subtle">
-        No due date <span className="tabular">{count}</span>
+        {m.tasks.calendar.trayTitle} <span className="tabular">{count}</span>
       </h3>
       {children}
     </section>
@@ -449,7 +450,11 @@ function Chip({
       tabIndex={0}
       data-chip-id={task.id}
       data-day={day}
-      aria-label={`${identifier} ${task.title}${overdue && !closed ? ', overdue' : ''}`}
+      aria-label={
+        overdue && !closed
+          ? m.tasks.calendar.overdue(`${identifier} ${task.title}`)
+          : `${identifier} ${task.title}`
+      }
       title={`${identifier} ${task.title}`}
       onClick={() => onOpen(task, 'peek')}
       onFocus={onFocus}

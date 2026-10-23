@@ -3,7 +3,6 @@ import {
   describeRecurrence,
   isRecurrenceUnit,
   RECURRENCE_UNITS,
-  WEEKDAY_SHORT,
   type RecurrenceRule,
   type Task,
 } from '@daiq/domain';
@@ -19,6 +18,7 @@ import {
 } from '@daiq/ui';
 import { RepeatIcon } from 'lucide-react';
 import { useState } from 'react';
+import { locale, m } from '../../i18n';
 
 const DEFAULT_RULE: RecurrenceRule = {
   unit: 'week',
@@ -28,10 +28,11 @@ const DEFAULT_RULE: RecurrenceRule = {
 };
 // Monday first.
 const WEEK = [1, 2, 3, 4, 5, 6, 0];
-const weekdayName = (day: number) =>
-  new Date(2023, 0, 1 + day).toLocaleDateString(undefined, { weekday: 'long' });
+// 2023-01-01 was a Sunday.
+const weekday = (day: number, style: 'long' | 'short') =>
+  new Date(2023, 0, 1 + day).toLocaleDateString(locale, { weekday: style });
 const formatDay = (iso: string) =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, {
+  new Date(`${iso}T12:00:00`).toLocaleDateString(locale, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -64,7 +65,7 @@ export function RecurrenceEditor({
           <Button variant="ghost" size="sm" className={triggerClassName}>
             <RepeatIcon className={cn(!recurrence && 'text-fg-subtle')} />
             <span className={cn('truncate', !recurrence && 'text-fg-subtle')}>
-              {recurrence ? describeRecurrence(recurrence) : 'Doesn’t repeat'}
+              {recurrence ? describeRecurrence(recurrence) : m.task.recurrence.none}
             </span>
           </Button>
         }
@@ -79,10 +80,10 @@ export function RecurrenceEditor({
           }}
         >
           <fieldset className="flex rounded-md border border-border p-0.5 text-[13px]">
-            <legend className="sr-only">Create the next task</legend>
+            <legend className="sr-only">{m.task.recurrence.mode}</legend>
             {[
-              { value: false, label: 'On a schedule' },
-              { value: true, label: 'After completion' },
+              { value: false, label: m.task.recurrence.schedule },
+              { value: true, label: m.task.recurrence.afterCompletion },
             ].map((mode) => (
               <label
                 key={mode.label}
@@ -105,7 +106,9 @@ export function RecurrenceEditor({
 
           <div className="flex items-end gap-2">
             <div className="flex w-20 flex-col gap-1.5">
-              <Label htmlFor="recurrence-every">{draft.afterCompletion ? 'After' : 'Every'}</Label>
+              <Label htmlFor="recurrence-every">
+                {draft.afterCompletion ? m.task.recurrence.after : m.task.recurrence.every}
+              </Label>
               <Input
                 id="recurrence-every"
                 type="number"
@@ -122,7 +125,7 @@ export function RecurrenceEditor({
               />
             </div>
             <Select
-              aria-label="Unit"
+              aria-label={m.task.recurrence.unit}
               className="flex-1"
               value={draft.unit}
               onValueChange={(unit) => {
@@ -130,14 +133,14 @@ export function RecurrenceEditor({
               }}
               options={RECURRENCE_UNITS.map((unit) => ({
                 value: unit,
-                label: draft.every === 1 ? unit : `${unit}s`,
+                label: m.task.recurrence.units[unit](draft.every),
               }))}
             />
           </div>
 
           {weekly && (
             <fieldset className="flex justify-between gap-1">
-              <legend className="mb-1.5 text-xs text-fg-muted">On</legend>
+              <legend className="mb-1.5 text-xs text-fg-muted">{m.task.recurrence.on}</legend>
               {WEEK.map((day) => (
                 <label
                   key={day}
@@ -146,7 +149,7 @@ export function RecurrenceEditor({
                   <input
                     type="checkbox"
                     className="sr-only"
-                    aria-label={weekdayName(day)}
+                    aria-label={weekday(day, 'long')}
                     checked={draft.weekdays.includes(day)}
                     onChange={(event) =>
                       setDraft({
@@ -157,7 +160,7 @@ export function RecurrenceEditor({
                       })
                     }
                   />
-                  {WEEKDAY_SHORT[day]?.slice(0, 2)}
+                  {weekday(day, 'short').slice(0, 2)}
                 </label>
               ))}
             </fieldset>
@@ -165,10 +168,10 @@ export function RecurrenceEditor({
 
           <p className="text-xs text-fg-subtle">
             {draft.afterCompletion
-              ? 'The next task is created when this one is completed, after the time above.'
+              ? m.task.recurrence.hintAfter
               : recurrence?.nextOn && !recurrence.afterCompletion
-                ? `Next task on ${formatDay(recurrence.nextOn)}. Its due date keeps this task’s rhythm.`
-                : 'Each new task gets this task’s details, with dates moved forward.'}
+                ? m.task.recurrence.hintNext(formatDay(recurrence.nextOn))
+                : m.task.recurrence.hintSchedule}
           </p>
 
           <div className="flex justify-end gap-2">
@@ -180,11 +183,11 @@ export function RecurrenceEditor({
                   setOpen(false);
                 }}
               >
-                Stop repeating
+                {m.task.recurrence.stop}
               </Button>
             )}
             <Button type="submit" variant="primary">
-              {recurrence ? 'Save' : 'Repeat'}
+              {recurrence ? m.common.save : m.task.recurrence.repeat}
             </Button>
           </div>
         </form>

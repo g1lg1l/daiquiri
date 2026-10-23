@@ -9,6 +9,7 @@ import { TaskView } from '../../../../features/tasks/task-view';
 import { SavedViewControls, useActiveSavedView } from '../../../../features/views/saved-views';
 import { useSetSearch } from '../../../../features/views/use-set-search';
 import { useWorkspaceData } from '../../../../features/workspace/workspace-context';
+import { m } from '../../../../i18n/team';
 
 export const Route = createFileRoute('/$workspace/team/$teamKey/tasks')({
   validateSearch: viewSearchSchema,
@@ -27,12 +28,7 @@ function TeamTasks() {
   const view = useActiveSavedView(search.view);
 
   if (!team)
-    return (
-      <NotFoundPanel
-        title="Team not found"
-        message={`There is no team with the key ${teamKey}, or it is private.`}
-      />
-    );
+    return <NotFoundPanel title={m.team.notFound} message={m.team.noTeamOrPrivate(teamKey)} />;
   return (
     <TaskView
       title={

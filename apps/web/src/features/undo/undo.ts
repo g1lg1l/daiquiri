@@ -1,4 +1,5 @@
 import { toast } from '@daiq/ui';
+import { m } from '../../i18n';
 import { logger } from '../../lib/logger';
 
 /*
@@ -20,7 +21,7 @@ export function pushUndo(entry: UndoEntry, options: { toast?: string } = {}): vo
   if (options.toast) {
     toast(options.toast, {
       id: 'undo',
-      action: { label: 'Undo', onClick: () => void runUndo(entry) },
+      action: { label: m.common.undo, onClick: () => void runUndo(entry) },
     });
   }
 }
@@ -30,15 +31,15 @@ async function runUndo(entry: UndoEntry): Promise<void> {
   if (index >= 0) stack.splice(index, 1);
   try {
     await entry.undo();
-    toast(`Undid: ${entry.label}`, { id: 'undo' });
+    toast(m.tasks.undo.undid(entry.label), { id: 'undo' });
   } catch (error) {
     logger.error('undo.failed', error, { label: entry.label });
-    toast.error('That change could not be undone.');
+    toast.error(m.tasks.undo.failed);
   }
 }
 
 export function undoLast(): void {
   const entry = stack.at(-1);
   if (entry) void runUndo(entry);
-  else toast.info('Nothing to undo', { id: 'undo' });
+  else toast.info(m.tasks.undo.nothing, { id: 'undo' });
 }

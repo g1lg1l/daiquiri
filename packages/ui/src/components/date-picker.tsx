@@ -1,6 +1,7 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
 import { lazy, Suspense, useState, type ReactElement } from 'react';
 import { cn } from '../cn';
+import { uiTexts } from '../texts';
 import { PopoverContent } from './popover';
 
 const Calendar = lazy(() => import('./calendar'));
@@ -14,7 +15,7 @@ export function InlineCalendar(props: {
 }) {
   return (
     <Suspense fallback={calendarFallback}>
-      <Calendar locale="en" {...props} autoFocus={false} />
+      <Calendar locale={uiTexts.locale} {...props} autoFocus={false} />
     </Suspense>
   );
 }
@@ -30,7 +31,7 @@ export interface DatePickerProps {
   quickPicks?: readonly { label: string; value: string }[];
   /** Shown, when there is a date, to remove it. */
   clearLabel?: string;
-  /** Language of month and weekday names. */
+  /** Language of month and weekday names; defaults to the app's (`localizeUi`). */
   locale?: string;
   align?: 'start' | 'center' | 'end';
 }
@@ -43,7 +44,7 @@ export function DatePicker({
   label,
   quickPicks,
   clearLabel,
-  locale = 'en',
+  locale = uiTexts.locale,
   align = 'start',
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);

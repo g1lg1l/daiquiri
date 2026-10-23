@@ -4,6 +4,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { AuthLayout } from '../features/auth/auth-layout';
 import { useSubmit } from '../features/auth/use-form-error';
+import { m } from '../i18n/auth';
 import { formString } from '../lib/forms';
 
 export const Route = createFileRoute('/signup')({ component: Signup });
@@ -32,10 +33,10 @@ function Signup() {
 
   if (confirmEmail) {
     return (
-      <AuthLayout title="Confirm your email">
+      <AuthLayout title={m.auth.signup.confirmTitle}>
         <p className="text-fg-muted">
-          We sent a confirmation link to <strong className="text-fg">{confirmEmail}</strong>. Open
-          it to finish creating your account.
+          {m.auth.signup.confirmSentTo} <strong className="text-fg">{confirmEmail}</strong>
+          {m.auth.signup.confirmOpen}
         </p>
       </AuthLayout>
     );
@@ -43,27 +44,27 @@ function Signup() {
 
   return (
     <AuthLayout
-      title="Create your account"
+      title={m.auth.signup.title}
       footer={
         <span>
-          Already have an account?{' '}
+          {m.auth.signup.haveAccount}{' '}
           <Link to="/login" className="text-accent-text hover:underline">
-            Sign in
+            {m.auth.signIn}
           </Link>
         </span>
       }
     >
       <form className="flex flex-col gap-4" onSubmit={onSubmit}>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="name">Your name</Label>
+          <Label htmlFor="name">{m.auth.signup.name}</Label>
           <Input id="name" name="name" autoComplete="name" required maxLength={80} autoFocus />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email">Work email</Label>
+          <Label htmlFor="email">{m.auth.signup.workEmail}</Label>
           <Input id="email" name="email" type="email" autoComplete="email" required />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{m.auth.password}</Label>
           <Input
             id="password"
             name="password"
@@ -72,11 +73,11 @@ function Signup() {
             minLength={8}
             required
           />
-          <p className="text-xs text-fg-subtle">At least 8 characters.</p>
+          <p className="text-xs text-fg-subtle">{m.auth.signup.passwordHint}</p>
         </div>
         {error && <FieldError>{error}</FieldError>}
         <Button type="submit" variant="primary" size="lg" disabled={pending}>
-          Create account
+          {m.auth.signup.submit}
         </Button>
       </form>
     </AuthLayout>

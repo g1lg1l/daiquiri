@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@daiq/ui';
 import { useNavigate } from '@tanstack/react-router';
 import { lazy, Suspense, useCallback, useMemo, type ReactNode } from 'react';
+import { m } from '../../i18n';
 import { downloadText } from '../../lib/download';
 import { useToday } from '../../lib/use-today';
 import { ViewHeader } from '../shell/view-header';
@@ -37,15 +38,17 @@ import { TaskList } from './task-list';
 import { TaskPeek } from './task-peek';
 import { useIdentifier } from './use-identifier';
 
-const TaskBoard = lazy(() => import('./task-board').then((m) => ({ default: m.TaskBoard })));
+const TaskBoard = lazy(() =>
+  import('./task-board').then((module) => ({ default: module.TaskBoard })),
+);
 const TaskCalendar = lazy(() =>
-  import('./task-calendar').then((m) => ({ default: m.TaskCalendar })),
+  import('./task-calendar').then((module) => ({ default: module.TaskCalendar })),
 );
 const TaskTimeline = lazy(() =>
-  import('./task-timeline').then((m) => ({ default: m.TaskTimeline })),
+  import('./task-timeline').then((module) => ({ default: module.TaskTimeline })),
 );
 const TaskInsights = lazy(() =>
-  import('../insights/task-insights').then((m) => ({ default: m.TaskInsights })),
+  import('../insights/task-insights').then((module) => ({ default: module.TaskInsights })),
 );
 
 export interface TaskViewProps {
@@ -107,7 +110,7 @@ export function TaskView({
     );
   }, [tasks, search, layout, userId, today, data.statuses, order]);
 
-  const label = typeof title === 'string' ? title : 'Tasks';
+  const label = typeof title === 'string' ? title : m.tasks.title;
   const onExport = (format: 'csv' | 'json') => {
     const rows = exportRows(visible, {
       identifier,

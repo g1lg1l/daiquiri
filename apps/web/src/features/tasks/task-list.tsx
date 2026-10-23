@@ -28,6 +28,7 @@ import {
   type KeyboardEvent,
   type MouseEvent,
 } from 'react';
+import { m } from '../../i18n';
 import { useToday } from '../../lib/use-today';
 import { memberOptions, priorityOptions, statusOptions } from '../pickers/options';
 import { PickerPopover } from '../pickers/picker-popover';
@@ -185,9 +186,9 @@ export function TaskList({
     actions.update(
       [row.task],
       { sortKey: sortKeyForMove(siblings, from, delta === 1 ? to + 1 : to) },
-      'Reorder',
+      m.tasks.undo.reorder,
     );
-    setAnnouncement(`${row.task.title} moved to position ${to + 1} of ${siblings.length}`);
+    setAnnouncement(m.tasks.list.movedToPosition(row.task.title, to + 1, siblings.length));
   };
 
   useShortcuts({
@@ -369,17 +370,17 @@ export function TaskList({
           </div>
           {taskRows.length === 0 && (
             <div className="flex flex-col items-start gap-2 px-6 py-16 text-[13px] text-fg-muted">
-              <p className="font-medium text-fg">No tasks here</p>
+              <p className="font-medium text-fg">{m.tasks.list.empty}</p>
               <p className="flex items-center gap-1.5">
-                Press <Shortcut keys={SHORTCUTS.create.keys} /> to create one, or adjust the
-                filters.
+                {m.tasks.list.emptyHintBefore} <Shortcut keys={SHORTCUTS.create.keys} />{' '}
+                {m.tasks.list.emptyHintAfter}
               </p>
               <Link
                 to="/$workspace/settings/import"
                 params={{ workspace: workspace.slug }}
                 className="text-accent-text underline-offset-4 hover:underline"
               >
-                Import tasks from Linear, Asana, ClickUp or a CSV file
+                {m.tasks.list.importHint}
               </Link>
             </div>
           )}
@@ -423,7 +424,9 @@ function GroupHeader({
         <button
           type="button"
           onClick={onToggle}
-          aria-label={`${collapsed ? 'Expand' : 'Collapse'} ${group.label}`}
+          aria-label={
+            collapsed ? m.tasks.list.expand(group.label) : m.tasks.list.collapse(group.label)
+          }
           className="flex size-5 items-center justify-center rounded-[4px] text-fg-subtle hover:bg-surface-muted hover:text-fg"
         >
           {collapsed ? (
@@ -438,12 +441,12 @@ function GroupHeader({
         <span className="text-xs text-fg-subtle tabular">{group.tasks.length}</span>
       </div>
       <div role="gridcell">
-        <Tooltip label={`Create in ${group.label}`}>
+        <Tooltip label={m.tasks.createIn(group.label)}>
           <Button
             variant="ghost"
             size="icon-sm"
             className="opacity-0 group-hover/header:opacity-100 focus-visible:opacity-100"
-            aria-label={`Create task in ${group.label}`}
+            aria-label={m.tasks.createTaskIn(group.label)}
             onClick={onCreate}
           >
             <PlusIcon />
@@ -520,7 +523,7 @@ const TaskRow = memo(function TaskRow({
             <button
               type="button"
               className="flex size-6 items-center justify-center rounded-[5px] hover:bg-surface-emphasis"
-              aria-label={`Priority`}
+              aria-label={m.tasks.field.priority}
               tabIndex={-1}
             >
               <PriorityIcon priority={task.priority} />
@@ -528,10 +531,10 @@ const TaskRow = memo(function TaskRow({
           }
           options={priorityOptions()}
           selected={[String(task.priority)]}
-          placeholder="Set priority to…"
+          placeholder={m.tasks.picker.placeholder.priority}
           onSelect={([value]) => {
             const priority = Number(value);
-            if (isPriority(priority)) actions.update([task], { priority }, 'Priority');
+            if (isPriority(priority)) actions.update([task], { priority }, m.tasks.field.priority);
           }}
         />
       </div>
@@ -544,7 +547,7 @@ const TaskRow = memo(function TaskRow({
             <button
               type="button"
               className="flex size-6 items-center justify-center rounded-[5px] hover:bg-surface-emphasis"
-              aria-label={`Status: ${status?.name ?? ''}`}
+              aria-label={m.tasks.list.statusOf(status?.name ?? '')}
               tabIndex={-1}
             >
               {status && <StatusIcon category={status.category} />}
@@ -552,14 +555,18 @@ const TaskRow = memo(function TaskRow({
           }
           options={statusOptions(team?.statuses ?? [])}
           selected={[task.statusId]}
-          placeholder="Change status to…"
+          placeholder={m.tasks.picker.placeholder.status}
           onSelect={([id]) => id && actions.setStatus([task], id)}
         />
       </div>
       <div role="gridcell" className="flex min-w-0 flex-1 items-center gap-2">
         <span className={cn('min-w-0 truncate', closed && 'text-fg-muted')}>{task.title}</span>
         {task.recurring && (
-          <RepeatIcon role="img" aria-label="Repeats" className="size-3 shrink-0 text-fg-subtle" />
+          <RepeatIcon
+            role="img"
+            aria-label={m.tasks.repeats}
+            className="size-3 shrink-0 text-fg-subtle"
+          />
         )}
         <span className="hidden shrink-0 items-center gap-1 @3xl/list:flex">
           {task.labelIds.slice(0, 3).map((id) => {
@@ -591,7 +598,7 @@ const TaskRow = memo(function TaskRow({
         <div
           role="gridcell"
           className="hidden shrink-0 items-center gap-0.5 text-xs text-fg-subtle tabular @2xl/list:flex"
-          aria-label={`${task.attachmentCount} ${task.attachmentCount === 1 ? 'attachment' : 'attachments'}`}
+          aria-label={m.tasks.attachments(task.attachmentCount)}
         >
           <PaperclipIcon aria-hidden className="size-3" />
           {task.attachmentCount}
@@ -613,7 +620,7 @@ const TaskRow = memo(function TaskRow({
             'shrink-0 text-xs tabular',
             overdue ? 'font-medium text-danger' : 'text-fg-subtle',
           )}
-          title={overdue ? 'Overdue' : 'Due date'}
+          title={overdue ? m.tasks.overdue : m.tasks.field.dueDate}
         >
           {formatDueDate(task.dueDate, today)}
         </div>
@@ -625,7 +632,7 @@ const TaskRow = memo(function TaskRow({
               type="button"
               tabIndex={-1}
               className="flex h-6 items-center rounded-full px-0.5 hover:bg-surface-emphasis"
-              aria-label="Assignees"
+              aria-label={m.tasks.field.assignees}
             >
               {task.assigneeIds.length === 0 ? (
                 <span className="size-5 rounded-full border border-dashed border-border-strong" />
@@ -647,7 +654,7 @@ const TaskRow = memo(function TaskRow({
           multiple
           options={memberOptions(data.members, userId)}
           selected={task.assigneeIds}
-          placeholder="Assign to…"
+          placeholder={m.tasks.picker.placeholder.assignee}
           onSelect={(ids) => actions.setAssignees([task], ids)}
         />
       </div>
@@ -669,18 +676,18 @@ function SelectionBar({
   return (
     <div
       role="toolbar"
-      aria-label={`${count} selected`}
+      aria-label={m.tasks.list.selected(count)}
       className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 animate-in items-center gap-1 rounded-xl border border-border bg-overlay p-1 pl-3 text-[13px] shadow-popover duration-150 fade-in-0 slide-in-from-bottom-2"
     >
-      <span className="mr-1 font-medium tabular">{count} selected</span>
+      <span className="mr-1 font-medium tabular">{m.tasks.list.selected(count)}</span>
       <Button variant="ghost" size="sm" onClick={() => onAction('status')}>
-        Status <Shortcut keys="S" />
+        {m.tasks.field.status} <Shortcut keys="S" />
       </Button>
       <Button variant="ghost" size="sm" onClick={() => onAction('priority')}>
-        Priority <Shortcut keys="P" />
+        {m.tasks.field.priority} <Shortcut keys="P" />
       </Button>
       <Button variant="ghost" size="sm" onClick={() => onAction('assignee')}>
-        Assign <Shortcut keys="A" />
+        {m.tasks.list.assign} <Shortcut keys="A" />
       </Button>
       <Button
         variant="ghost"
@@ -688,7 +695,7 @@ function SelectionBar({
         className="hidden sm:inline-flex"
         onClick={() => onAction('labels')}
       >
-        Labels <Shortcut keys="L" />
+        {m.tasks.field.labels} <Shortcut keys="L" />
       </Button>
       <Button
         variant="ghost"
@@ -696,9 +703,9 @@ function SelectionBar({
         className="text-danger hover:text-danger"
         onClick={onDelete}
       >
-        Delete
+        {m.common.delete}
       </Button>
-      <Button variant="ghost" size="sm" onClick={onClear} aria-label="Clear selection">
+      <Button variant="ghost" size="sm" onClick={onClear} aria-label={m.tasks.list.clearSelection}>
         Esc
       </Button>
     </div>

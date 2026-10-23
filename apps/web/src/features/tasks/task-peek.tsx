@@ -1,5 +1,6 @@
 import type { Task } from '@daiq/domain';
 import { useEffect } from 'react';
+import { m } from '../../i18n';
 import { TaskDetail } from './task-detail';
 import { useIdentifier } from './use-identifier';
 
@@ -23,7 +24,7 @@ export function TaskPeek({ task, onClose }: { task: Task; onClose: () => void })
 
   return (
     <aside
-      aria-label="Task preview"
+      aria-label={m.tasks.preview}
       className="flex w-[min(46vw,560px)] shrink-0 animate-in flex-col border-l border-border bg-surface duration-200 fade-in-0 slide-in-from-right-4 motion-reduce:animate-none"
     >
       <TaskDetail key={task.id} identifier={identifier(task)} mode="peek" onClose={onClose} />

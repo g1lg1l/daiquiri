@@ -14,6 +14,8 @@ import {
 } from '../../../features/shortcuts/keyboard';
 import { TeamBadge } from '../../../components/team-badge';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
+import { locale, LOCALES, setLocale } from '../../../i18n';
+import { m } from '../../../i18n/settings';
 
 export const Route = createFileRoute('/$workspace/settings/preferences')({
   component: Preferences,
@@ -27,11 +29,7 @@ function readShortcutsEnabled(): boolean {
   }
 }
 
-const LEVELS: { value: NotificationLevel; label: string }[] = [
-  { value: 'all', label: 'All activity' },
-  { value: 'participating', label: 'Only what involves me' },
-  { value: 'mute', label: 'Nothing' },
-];
+const LEVELS: NotificationLevel[] = ['all', 'participating', 'mute'];
 
 /** Per-team notification level (feature spec §5). */
 function NotificationLevels() {
@@ -43,11 +41,10 @@ function NotificationLevels() {
   return (
     <section className="flex flex-col gap-3">
       <header>
-        <h2 className="text-lg font-semibold font-display">Notifications</h2>
-        <p className="text-[13px] text-fg-muted">
-          Choose what reaches your inbox from each team. “Only what involves me” keeps assignments,
-          mentions and activity on tasks you created or are assigned to.
-        </p>
+        <h2 className="text-lg font-semibold font-display">
+          {m.settings.preferences.notifications}
+        </h2>
+        <p className="text-[13px] text-fg-muted">{m.settings.preferences.notificationsIntro}</p>
       </header>
       <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
         {data.myTeams.map((team) => (
@@ -62,7 +59,10 @@ function NotificationLevels() {
               onValueChange={(level) => {
                 if (isNotificationLevel(level)) setLevel.mutate({ teamId: team.id, level });
               }}
-              options={LEVELS}
+              options={LEVELS.map((value) => ({
+                value,
+                label: m.settings.preferences.levels[value],
+              }))}
             />
           </li>
         ))}
@@ -75,7 +75,7 @@ function Preferences() {
   const { workspace, userId } = useWorkspace();
   const { preference, setPreference } = useTheme();
   const members = useMembers(workspace.id);
-  const me = members.data?.find((m) => m.id === userId);
+  const me = members.data?.find((member) => member.id === userId);
   const updateProfile = useUpdateProfile();
   const [name, setName] = useState(me?.displayName ?? '');
   const [shortcuts, setShortcuts] = useState(readShortcutsEnabled);
@@ -83,19 +83,19 @@ function Preferences() {
   return (
     <>
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold font-display">Profile</h2>
+        <h2 className="text-lg font-semibold font-display">{m.settings.preferences.profile}</h2>
         <form
           className="flex items-end gap-2"
           onSubmit={(event) => {
             event.preventDefault();
             updateProfile.mutate(
               { userId, displayName: name.trim() },
-              { onSuccess: () => toast('Name updated') },
+              { onSuccess: () => toast(m.settings.preferences.nameUpdated) },
             );
           }}
         >
           <div className="flex flex-1 flex-col gap-1.5">
-            <Label htmlFor="display-name">Display name</Label>
+            <Label htmlFor="display-name">{m.settings.preferences.displayName}</Label>
             <Input
               id="display-name"
               value={name}
@@ -109,19 +109,19 @@ function Preferences() {
             variant="primary"
             disabled={!name.trim() || name.trim() === me?.displayName}
           >
-            Save
+            {m.common.save}
           </Button>
         </form>
       </section>
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold font-display">Appearance</h2>
+        <h2 className="text-lg font-semibold font-display">{m.settings.preferences.appearance}</h2>
         <fieldset className="flex gap-2">
-          <legend className="sr-only">Theme</legend>
+          <legend className="sr-only">{m.settings.preferences.theme}</legend>
           {(['system', 'light', 'dark'] as const satisfies readonly ThemePreference[]).map(
             (value) => (
               <label
                 key={value}
-                className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-[13px] capitalize has-checked:border-accent has-checked:bg-accent-subtle/60"
+                className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-[13px] has-checked:border-accent has-checked:bg-accent-subtle/60"
               >
                 <input
                   type="radio"
@@ -130,15 +130,28 @@ function Preferences() {
                   onChange={() => setPreference(value)}
                   className="accent-(--accent)"
                 />
-                {value}
+                {m.settings.preferences.themes[value]}
               </label>
             ),
           )}
         </fieldset>
+        <div className="flex flex-col items-start gap-1.5">
+          <Label htmlFor="language">{m.settings.preferences.language}</Label>
+          <Select
+            id="language"
+            value={locale}
+            onValueChange={(value) => {
+              const next = LOCALES.find((l) => l.id === value);
+              if (next) setLocale(next.id);
+            }}
+            options={LOCALES.map((l) => ({ value: l.id, label: l.name }))}
+          />
+          <p className="text-xs text-fg-subtle">{m.settings.preferences.languageHint}</p>
+        </div>
       </section>
       <NotificationLevels />
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold font-display">Keyboard</h2>
+        <h2 className="text-lg font-semibold font-display">{m.settings.preferences.keyboard}</h2>
         <label className="flex items-start gap-2 text-[13px]">
           <input
             type="checkbox"
@@ -156,9 +169,9 @@ function Preferences() {
             className="mt-0.5 accent-(--accent)"
           />
           <span>
-            Single-key shortcuts
+            {m.settings.preferences.shortcuts}
             <span className="block text-xs text-fg-subtle">
-              Turn off if you use speech input or switch devices. Shortcuts with ⌘/Ctrl always work.
+              {m.settings.preferences.shortcutsHint}
             </span>
           </span>
         </label>

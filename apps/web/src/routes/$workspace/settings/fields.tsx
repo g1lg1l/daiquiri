@@ -24,6 +24,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
+import { m } from '../../../i18n/settings';
 import { formString } from '../../../lib/forms';
 import { newId } from '../../../lib/ids';
 
@@ -61,11 +62,8 @@ function FieldsSettings() {
   return (
     <section className="flex flex-col gap-4">
       <header>
-        <h2 className="text-lg font-semibold font-display">Custom fields</h2>
-        <p className="text-[13px] text-fg-muted">
-          Fields are shared by the workspace. Each team turns on the ones it needs (up to 12) in its
-          settings.
-        </p>
+        <h2 className="text-lg font-semibold font-display">{m.settings.fields.title}</h2>
+        <p className="text-[13px] text-fg-muted">{m.settings.fields.intro}</p>
       </header>
 
       {admin ? (
@@ -78,7 +76,7 @@ function FieldsSettings() {
             const name = formString(form, 'name').trim();
             const options = hasOptions(kind) ? parseOptions(formString(form, 'options'), []) : [];
             if (hasOptions(kind) && options.length === 0) {
-              setError('Add at least one option, one per line.');
+              setError(m.settings.fields.needOption);
               return;
             }
             const formElement = event.currentTarget;
@@ -93,11 +91,17 @@ function FieldsSettings() {
         >
           <div className="flex flex-wrap items-end gap-2">
             <div className="flex min-w-48 flex-1 flex-col gap-1.5">
-              <Label htmlFor="field-name">New field</Label>
-              <Input id="field-name" name="name" required maxLength={60} placeholder="Severity" />
+              <Label htmlFor="field-name">{m.settings.fields.newField}</Label>
+              <Input
+                id="field-name"
+                name="name"
+                required
+                maxLength={60}
+                placeholder={m.settings.fields.namePlaceholder}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="field-kind">Type</Label>
+              <Label htmlFor="field-kind">{m.settings.fields.type}</Label>
               <Select
                 id="field-kind"
                 value={kind}
@@ -109,28 +113,28 @@ function FieldsSettings() {
               />
             </div>
             <Button type="submit" variant="primary">
-              Add field
+              {m.settings.fields.add}
             </Button>
           </div>
           {hasOptions(kind) && (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="field-options">Options, one per line</Label>
+              <Label htmlFor="field-options">{m.settings.fields.options}</Label>
               <Textarea
                 id="field-options"
                 name="options"
                 rows={3}
-                placeholder={'Minor\nMajor\nCritical'}
+                placeholder={m.settings.fields.optionsPlaceholder}
               />
             </div>
           )}
           {error && <FieldError>{error}</FieldError>}
         </form>
       ) : (
-        <p className="text-[13px] text-fg-muted">Only admins can add or change fields.</p>
+        <p className="text-[13px] text-fg-muted">{m.settings.fields.adminsOnly}</p>
       )}
 
       {data.fields.length === 0 ? (
-        <p className="text-[13px] text-fg-subtle">No custom fields yet.</p>
+        <p className="text-[13px] text-fg-subtle">{m.settings.fields.empty}</p>
       ) : (
         <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
           {data.fields.map((field) => {
@@ -143,18 +147,20 @@ function FieldsSettings() {
                     {FIELD_KIND_LABEL[field.kind]}
                     {hasOptions(field.kind) && ` · ${field.options.map((o) => o.name).join(', ')}`}
                     {' · '}
-                    {teams.length ? `Used by ${teams.join(', ')}` : 'Not used by any team'}
+                    {teams.length
+                      ? m.settings.fields.usedBy(teams.join(', '))
+                      : m.settings.fields.unused}
                   </span>
                 </span>
                 {admin && (
                   <>
                     <Button variant="ghost" size="sm" onClick={() => setEditing(field)}>
-                      Edit
+                      {m.common.edit}
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      aria-label={`Delete ${field.name}`}
+                      aria-label={m.settings.deleteNamed(field.name)}
                       onClick={() => setDeleting(field)}
                     >
                       <Trash2Icon />
@@ -169,7 +175,7 @@ function FieldsSettings() {
 
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
         <DialogContent>
-          <DialogTitle>Edit {editing?.name}</DialogTitle>
+          <DialogTitle>{m.settings.fields.editTitle(editing?.name ?? '')}</DialogTitle>
           {editing && (
             <form
               className="flex flex-col gap-4"
@@ -189,7 +195,7 @@ function FieldsSettings() {
               }}
             >
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="edit-field-name">Name</Label>
+                <Label htmlFor="edit-field-name">{m.settings.name}</Label>
                 <Input
                   id="edit-field-name"
                   name="name"
@@ -200,24 +206,22 @@ function FieldsSettings() {
               </div>
               {hasOptions(editing.kind) && (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="edit-field-options">Options, one per line</Label>
+                  <Label htmlFor="edit-field-options">{m.settings.fields.options}</Label>
                   <Textarea
                     id="edit-field-options"
                     name="options"
                     rows={5}
                     defaultValue={editing.options.map((o) => o.name).join('\n')}
                   />
-                  <p className="text-xs text-fg-subtle">
-                    Removing an option clears it from tasks that use it.
-                  </p>
+                  <p className="text-xs text-fg-subtle">{m.settings.fields.removeOptionNote}</p>
                 </div>
               )}
               <DialogFooter>
                 <Button type="button" onClick={() => setEditing(null)}>
-                  Cancel
+                  {m.common.cancel}
                 </Button>
                 <Button type="submit" variant="primary">
-                  Save
+                  {m.common.save}
                 </Button>
               </DialogFooter>
             </form>
@@ -227,12 +231,10 @@ function FieldsSettings() {
 
       <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
         <DialogContent>
-          <DialogTitle>Delete {deleting?.name}?</DialogTitle>
-          <DialogDescription>
-            Its values are removed from every task, in every team. This can’t be undone.
-          </DialogDescription>
+          <DialogTitle>{m.settings.deleteTitle(deleting?.name ?? '')}</DialogTitle>
+          <DialogDescription>{m.settings.fields.deleteDescription}</DialogDescription>
           <DialogFooter>
-            <Button onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button onClick={() => setDeleting(null)}>{m.common.cancel}</Button>
             <Button
               variant="danger"
               onClick={() => {
@@ -240,7 +242,7 @@ function FieldsSettings() {
                 setDeleting(null);
               }}
             >
-              Delete field
+              {m.settings.fields.deleteConfirm}
             </Button>
           </DialogFooter>
         </DialogContent>

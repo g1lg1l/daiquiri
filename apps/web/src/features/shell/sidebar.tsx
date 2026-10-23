@@ -48,9 +48,10 @@ import {
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Wordmark } from '../../components/wordmark';
+import { m } from '../../i18n';
 import { nowIso } from '../../lib/use-today';
 import { usePalette } from '../command-palette/palette';
-import { SHORTCUTS } from '../shortcuts/registry';
+import { shortcutLabel, SHORTCUTS } from '../shortcuts/registry';
 import { useComposer } from '../tasks/composer';
 import { RunningTimer } from '../time/running-timer';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
@@ -172,7 +173,7 @@ function TeamSection({
               depth={1}
               excludeSavedViews
             >
-              Tasks
+              {m.shell.sidebar.tasks}
             </NavLink>
           </li>
           <li>
@@ -182,7 +183,7 @@ function TeamSection({
               icon={<FolderIcon />}
               depth={1}
             >
-              Projects
+              {m.shell.sidebar.projects}
             </NavLink>
           </li>
           {team.cyclesEnabled && (
@@ -193,7 +194,7 @@ function TeamSection({
                 icon={<RefreshCcwIcon />}
                 depth={1}
               >
-                Cycles
+                {m.shell.sidebar.cycles}
               </NavLink>
             </li>
           )}
@@ -240,7 +241,7 @@ function WorkspaceMenu() {
         render={
           <button
             type="button"
-            aria-label={`Workspace menu: ${workspace.name}`}
+            aria-label={m.shell.sidebar.workspaceMenu(workspace.name)}
             className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 text-left hover:bg-surface-muted aria-expanded:bg-surface-muted"
           />
         }
@@ -256,7 +257,7 @@ function WorkspaceMenu() {
             void navigate({ to: '/$workspace', params: { workspace: slug } })
           }
         >
-          <MenuLabel>Workspaces</MenuLabel>
+          <MenuLabel>{m.shell.sidebar.workspaces}</MenuLabel>
           {workspaces.data?.map((w) => (
             <MenuRadioItem key={w.id} value={w.slug}>
               <Avatar name={w.name} size="xs" square />
@@ -265,7 +266,7 @@ function WorkspaceMenu() {
           ))}
         </MenuRadioGroup>
         <MenuItem onClick={() => void navigate({ to: '/onboarding' })}>
-          <PlusIcon /> Create workspace
+          <PlusIcon /> {m.shell.sidebar.createWorkspace}
         </MenuItem>
         <MenuSeparator />
         <MenuItem
@@ -276,7 +277,7 @@ function WorkspaceMenu() {
             })
           }
         >
-          <UserPlusIcon /> Invite people
+          <UserPlusIcon /> {m.shell.sidebar.invite}
         </MenuItem>
         <MenuItem
           onClick={() =>
@@ -286,7 +287,7 @@ function WorkspaceMenu() {
             })
           }
         >
-          <UploadIcon /> Import tasks
+          <UploadIcon /> {m.shell.nav.importTasks}
         </MenuItem>
         <MenuItem
           shortcut={SHORTCUTS.goSettings.keys}
@@ -294,27 +295,27 @@ function WorkspaceMenu() {
             void navigate({ to: '/$workspace/settings', params: { workspace: workspace.slug } })
           }
         >
-          <SettingsIcon /> Settings
+          <SettingsIcon /> {m.shell.nav.settings}
         </MenuItem>
         <MenuSub>
-          <MenuSubTrigger>Theme</MenuSubTrigger>
+          <MenuSubTrigger>{m.shell.sidebar.theme}</MenuSubTrigger>
           <MenuContent side="right" align="start" sideOffset={4} className="min-w-36">
             <MenuRadioGroup
               value={preference}
               onValueChange={(value: 'light' | 'dark' | 'system') => setPreference(value)}
             >
-              <MenuRadioItem value="system">System</MenuRadioItem>
-              <MenuRadioItem value="light">Light</MenuRadioItem>
-              <MenuRadioItem value="dark">Dark</MenuRadioItem>
+              <MenuRadioItem value="system">{m.shell.sidebar.themes.system}</MenuRadioItem>
+              <MenuRadioItem value="light">{m.shell.sidebar.themes.light}</MenuRadioItem>
+              <MenuRadioItem value="dark">{m.shell.sidebar.themes.dark}</MenuRadioItem>
             </MenuRadioGroup>
           </MenuContent>
         </MenuSub>
         <MenuItem shortcut={SHORTCUTS.help.keys} onClick={palette.showShortcuts}>
-          <KeyboardIcon /> Keyboard shortcuts
+          <KeyboardIcon /> {shortcutLabel('help')}
         </MenuItem>
         <MenuSeparator />
         <MenuItem onClick={() => void signOut()}>
-          <LogOutIcon /> Sign out
+          <LogOutIcon /> {m.shell.nav.signOut}
         </MenuItem>
       </MenuContent>
     </Menu>
@@ -363,17 +364,17 @@ export function Sidebar() {
 
   return (
     <nav
-      aria-label="Workspace"
+      aria-label={m.shell.sidebar.label}
       className="flex h-full w-60 flex-col gap-3 border-r border-border bg-surface-subtle px-2 py-2"
     >
       <div className="flex items-center gap-1">
         <WorkspaceMenu />
         {!isMobile && (
-          <Tooltip label="Hide sidebar" shortcut={SHORTCUTS.toggleSidebar.keys}>
+          <Tooltip label={m.shell.nav.hideSidebar} shortcut={SHORTCUTS.toggleSidebar.keys}>
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Hide sidebar"
+              aria-label={m.shell.nav.hideSidebar}
               onClick={toggleSidebar}
             >
               <PanelLeftIcon />
@@ -389,14 +390,14 @@ export function Sidebar() {
           className="flex-1 justify-start"
           onClick={() => composer()}
         >
-          <PlusIcon /> New task
+          <PlusIcon /> {m.shell.sidebar.newTask}
           <Shortcut keys={SHORTCUTS.create.keys} className="ml-auto" />
         </Button>
-        <Tooltip label="Search" shortcut={SHORTCUTS.palette.keys}>
+        <Tooltip label={m.common.search} shortcut={SHORTCUTS.palette.keys}>
           <Button
             variant="secondary"
             size="icon-sm"
-            aria-label="Search"
+            aria-label={m.common.search}
             onClick={() => palette.open()}
           >
             <SearchIcon />
@@ -416,17 +417,17 @@ export function Sidebar() {
               unread > 0 ? (
                 <span className="rounded-full bg-accent px-1.5 text-[11px] leading-[18px] font-semibold text-accent-fg tabular">
                   {unread}
-                  <span className="sr-only"> unread</span>
+                  <span className="sr-only"> {m.shell.sidebar.unread}</span>
                 </span>
               ) : null
             }
           >
-            Inbox
+            {m.shell.nav.inbox}
           </NavLink>
         </li>
         <li>
           <NavLink to="/$workspace/my-tasks" params={{ workspace: ws }} icon={<CircleUserIcon />}>
-            My tasks
+            {m.shell.nav.myTasks}
           </NavLink>
         </li>
       </ul>
@@ -434,13 +435,17 @@ export function Sidebar() {
       <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
         {favoriteItems.length > 0 && (
           <>
-            <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">Favorites</h2>
+            <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">
+              {m.shell.sidebar.favorites}
+            </h2>
             <ul className="flex flex-col gap-px">{favoriteItems}</ul>
           </>
         )}
         {views.length > 0 && (
           <>
-            <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">Views</h2>
+            <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">
+              {m.shell.sidebar.views}
+            </h2>
             <ul className="flex flex-col gap-px">
               {views.map((view) => (
                 <li key={view.id}>
@@ -454,7 +459,9 @@ export function Sidebar() {
             </ul>
           </>
         )}
-        <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">Your teams</h2>
+        <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">
+          {m.shell.sidebar.yourTeams}
+        </h2>
         <ul className="flex flex-col gap-0.5">
           {data.myTeams.map((team, index) => (
             <TeamSection key={team.id} team={team} ws={ws} defaultExpanded={index < 3} />
@@ -466,7 +473,7 @@ export function Sidebar() {
             params={{ workspace: ws }}
             className="px-2 py-1 text-xs text-fg-subtle hover:text-fg"
           >
-            Browse {otherTeams.length} more {otherTeams.length === 1 ? 'team' : 'teams'}
+            {m.shell.sidebar.browseTeams(otherTeams.length)}
           </Link>
         )}
       </div>
@@ -474,13 +481,13 @@ export function Sidebar() {
       {workspace.isDemo && (
         <div className="rounded-lg border border-border bg-surface p-3 text-xs text-fg-muted">
           <p className="mb-2 flex items-center gap-1.5 font-medium text-fg">
-            <SparklesIcon className="size-3.5 text-accent-text" /> You’re in a demo
+            <SparklesIcon className="size-3.5 text-accent-text" /> {m.shell.sidebar.demo.title}
           </p>
-          This sandbox resets after 24 hours.{' '}
+          {m.shell.sidebar.demo.body}{' '}
           <Link to="/signup" className="text-accent-text hover:underline">
-            Create an account
+            {m.shell.sidebar.demo.signUp}
           </Link>{' '}
-          to keep your work.
+          {m.shell.sidebar.demo.keep}
         </div>
       )}
 
@@ -488,7 +495,7 @@ export function Sidebar() {
         href="https://github.com/g1lg1l/daiquiri"
         target="_blank"
         rel="noreferrer"
-        aria-label="Daiquiri source code on GitHub"
+        aria-label={m.shell.sidebar.source}
         className="self-start rounded-md px-2 py-1 text-fg-muted transition-colors hover:text-fg"
       >
         <Wordmark className="text-[15px] text-inherit" />

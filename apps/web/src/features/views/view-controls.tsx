@@ -50,6 +50,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import { useRef, type ReactNode } from 'react';
+import { m } from '../../i18n';
 import { SHORTCUTS } from '../shortcuts/registry';
 import { useShortcuts } from '../shortcuts/use-shortcuts';
 import { PriorityIcon, StatusIcon } from '../tasks/icons';
@@ -57,18 +58,6 @@ import { LABEL_COLOR } from '../tasks/label-colors';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 
 export type SetSearch = (patch: Partial<ViewSearch>) => void;
-
-const GROUP_LABEL: Record<GroupBy, string> = {
-  status: 'Status',
-  priority: 'Priority',
-  assignee: 'Assignee',
-  project: 'Project',
-  milestone: 'Milestone',
-  label: 'Label',
-  field: 'Field',
-  due: 'Due date',
-  none: 'No grouping',
-};
 
 /** Groupable custom fields used by any of the given teams. */
 function viewFields(
@@ -92,36 +81,19 @@ function fieldFilterOptions(
   const values =
     field.kind === 'checkbox'
       ? [
-          { value: 'true', label: 'Yes' },
-          { value: 'false', label: 'No' },
+          { value: 'true', label: m.shell.view.yes },
+          { value: 'false', label: m.shell.view.no },
         ]
       : field.kind === 'person'
         ? [
-            { value: ME, label: 'Me' },
+            { value: ME, label: m.shell.view.me },
             ...data.members
-              .filter((m) => m.id !== userId)
-              .map((m) => ({ value: m.id, label: m.displayName })),
+              .filter((member) => member.id !== userId)
+              .map((member) => ({ value: member.id, label: member.displayName })),
           ]
         : field.options.map((o) => ({ value: o.id, label: o.name }));
-  return [...values, { value: NONE, label: `No ${field.name}` }];
+  return [...values, { value: NONE, label: m.shell.view.noValue(field.name) }];
 }
-
-const ORDER_LABEL: Record<OrderBy, string> = {
-  manual: 'Manual',
-  priority: 'Priority',
-  due: 'Due date',
-  created: 'Created',
-  updated: 'Updated',
-  title: 'Title',
-};
-
-const DUE_LABEL: Record<DueFilter, string> = {
-  overdue: 'Overdue',
-  today: 'Due today or earlier',
-  week: 'Due this week',
-  any: 'Has a due date',
-  none: 'No due date',
-};
 
 const CATEGORIES: StatusCategory[] = ['backlog', 'unstarted', 'started', 'completed', 'canceled'];
 const PRIORITIES: Priority[] = [1, 2, 3, 4, 0];
@@ -131,13 +103,6 @@ function toggle<T>(list: readonly T[] | undefined, value: T): T[] | undefined {
   return next.length ? next : undefined;
 }
 
-const LAYOUT_LABEL: Record<Layout, string> = {
-  list: 'List',
-  board: 'Board',
-  calendar: 'Calendar',
-  timeline: 'Timeline',
-  insights: 'Insights',
-};
 const LAYOUT_ICON: Record<Layout, ReactNode> = {
   list: <ListIcon aria-hidden />,
   board: <KanbanSquareIcon aria-hidden />,
@@ -151,11 +116,11 @@ export function LayoutToggle({ layout, setSearch }: { layout: Layout; setSearch:
   useShortcuts({ toggleLayout: () => setSearch({ layout: next }) });
   return (
     <fieldset className="flex rounded-md border border-border p-0.5">
-      <legend className="sr-only">Layout</legend>
+      <legend className="sr-only">{m.shell.view.layout}</legend>
       {LAYOUTS.map((value) => (
         <Tooltip
           key={value}
-          label={LAYOUT_LABEL[value]}
+          label={m.shell.view.layouts[value]}
           shortcut={value === 'list' || value === 'board' ? SHORTCUTS.toggleLayout.keys : undefined}
         >
           <label
@@ -171,7 +136,7 @@ export function LayoutToggle({ layout, setSearch }: { layout: Layout; setSearch:
               checked={layout === value}
               onChange={() => setSearch({ layout: value })}
               className="sr-only"
-              aria-label={LAYOUT_LABEL[value]}
+              aria-label={m.shell.view.layouts[value]}
             />
             {LAYOUT_ICON[value]}
           </label>
@@ -209,7 +174,7 @@ export function DisplayMenu({
   return (
     <Menu>
       <MenuTrigger render={<Button ref={trigger} variant="ghost" size="sm" />}>
-        <SlidersHorizontalIcon /> <span className="max-md:sr-only">Display</span>
+        <SlidersHorizontalIcon /> <span className="max-md:sr-only">{m.shell.view.display}</span>
       </MenuTrigger>
       <MenuContent align="end" className="w-56">
         {/* The calendar groups by day itself; insights chart every task in the view. */}
@@ -226,12 +191,12 @@ export function DisplayMenu({
                 }
               }}
             >
-              <MenuLabel>Group by</MenuLabel>
+              <MenuLabel>{m.shell.view.groupBy}</MenuLabel>
               {allowedGroups
                 .filter((g) => g !== 'field')
                 .map((g) => (
                   <MenuRadioItem key={g} value={g}>
-                    {GROUP_LABEL[g]}
+                    {m.shell.view.groups[g]}
                   </MenuRadioItem>
                 ))}
               {fields.map((field) => (
@@ -252,12 +217,14 @@ export function DisplayMenu({
                 setSearch({ subgroup: next && next !== 'none' ? next : undefined });
               }}
             >
-              <MenuLabel>{layout === 'board' ? 'Swimlanes' : 'Sub-group by'}</MenuLabel>
+              <MenuLabel>
+                {layout === 'board' ? m.shell.view.swimlanes : m.shell.view.subgroupBy}
+              </MenuLabel>
               {allowedGroups
                 .filter((g) => g !== 'field' && g !== group)
                 .map((g) => (
                   <MenuRadioItem key={g} value={g}>
-                    {GROUP_LABEL[g]}
+                    {m.shell.view.groups[g]}
                   </MenuRadioItem>
                 ))}
             </MenuRadioGroup>
@@ -270,10 +237,10 @@ export function DisplayMenu({
               value={order}
               onValueChange={(value: OrderBy) => setSearch({ order: value })}
             >
-              <MenuLabel>Order by</MenuLabel>
+              <MenuLabel>{m.shell.view.orderBy}</MenuLabel>
               {ORDER_BY.map((o) => (
                 <MenuRadioItem key={o} value={o}>
-                  {ORDER_LABEL[o]}
+                  {m.shell.view.orders[o]}
                 </MenuRadioItem>
               ))}
             </MenuRadioGroup>
@@ -282,16 +249,16 @@ export function DisplayMenu({
               value={completed}
               onValueChange={(value: 'all' | 'week' | 'none') => setSearch({ completed: value })}
             >
-              <MenuLabel>Completed tasks</MenuLabel>
-              <MenuRadioItem value="week">Past week</MenuRadioItem>
-              <MenuRadioItem value="all">All</MenuRadioItem>
-              <MenuRadioItem value="none">None</MenuRadioItem>
+              <MenuLabel>{m.shell.view.completed}</MenuLabel>
+              <MenuRadioItem value="week">{m.shell.view.completedRange.week}</MenuRadioItem>
+              <MenuRadioItem value="all">{m.shell.view.completedRange.all}</MenuRadioItem>
+              <MenuRadioItem value="none">{m.shell.view.completedRange.none}</MenuRadioItem>
             </MenuRadioGroup>
             <MenuSeparator />
           </>
         )}
         <MenuGroup>
-          <MenuLabel>Export tasks in this view</MenuLabel>
+          <MenuLabel>{m.shell.view.export}</MenuLabel>
           <MenuItem onClick={() => onExport('csv')}>
             <DownloadIcon /> CSV
           </MenuItem>
@@ -323,11 +290,11 @@ export function FilterMenu({
   return (
     <Menu>
       <MenuTrigger render={<Button ref={trigger} variant="ghost" size="sm" />}>
-        <ListFilterIcon /> <span className="max-md:sr-only">Filter</span>
+        <ListFilterIcon /> <span className="max-md:sr-only">{m.shell.view.filter}</span>
       </MenuTrigger>
       <MenuContent align="end" className="w-52">
         <MenuSub>
-          <MenuSubTrigger>Status</MenuSubTrigger>
+          <MenuSubTrigger>{m.shell.view.filters.status}</MenuSubTrigger>
           <MenuContent side="right" align="start" sideOffset={4} className="w-48">
             {CATEGORIES.map((category) => (
               <MenuCheckboxItem
@@ -342,7 +309,7 @@ export function FilterMenu({
           </MenuContent>
         </MenuSub>
         <MenuSub>
-          <MenuSubTrigger>Priority</MenuSubTrigger>
+          <MenuSubTrigger>{m.shell.view.filters.priority}</MenuSubTrigger>
           <MenuContent side="right" align="start" sideOffset={4} className="w-48">
             {PRIORITIES.map((priority) => (
               <MenuCheckboxItem
@@ -357,14 +324,14 @@ export function FilterMenu({
           </MenuContent>
         </MenuSub>
         <MenuSub>
-          <MenuSubTrigger>Assignee</MenuSubTrigger>
+          <MenuSubTrigger>{m.shell.view.filters.assignee}</MenuSubTrigger>
           <MenuContent side="right" align="start" sideOffset={4} className="max-h-80 w-56">
             {[
-              { id: ME, name: 'Me' },
-              { id: NONE, name: 'No assignee' },
+              { id: ME, name: m.shell.view.me },
+              { id: NONE, name: m.shell.view.noAssignee },
               ...data.members
-                .filter((m) => m.id !== userId)
-                .map((m) => ({ id: m.id, name: m.displayName })),
+                .filter((member) => member.id !== userId)
+                .map((member) => ({ id: member.id, name: member.displayName })),
             ].map((person) => (
               <MenuCheckboxItem
                 key={person.id}
@@ -388,7 +355,7 @@ export function FilterMenu({
           </MenuContent>
         </MenuSub>
         <MenuSub>
-          <MenuSubTrigger>Label</MenuSubTrigger>
+          <MenuSubTrigger>{m.shell.view.filters.label}</MenuSubTrigger>
           <MenuContent side="right" align="start" sideOffset={4} className="max-h-80 w-48">
             {data.labels.map((label) => (
               <MenuCheckboxItem
@@ -408,11 +375,11 @@ export function FilterMenu({
         </MenuSub>
         {projects.length > 0 && (
           <MenuSub>
-            <MenuSubTrigger>Project</MenuSubTrigger>
+            <MenuSubTrigger>{m.shell.view.filters.project}</MenuSubTrigger>
             <MenuContent side="right" align="start" sideOffset={4} className="max-h-80 w-56">
               {[
                 ...projects.map((p) => ({ id: p.id, name: p.name })),
-                { id: NONE, name: 'No project' },
+                { id: NONE, name: m.shell.view.noProject },
               ].map((project) => (
                 <MenuCheckboxItem
                   key={project.id}
@@ -447,7 +414,7 @@ export function FilterMenu({
           </MenuSub>
         ))}
         <MenuSub>
-          <MenuSubTrigger>Due date</MenuSubTrigger>
+          <MenuSubTrigger>{m.shell.view.filters.due}</MenuSubTrigger>
           <MenuContent side="right" align="start" sideOffset={4} className="w-52">
             <MenuRadioGroup
               value={search.due ?? ''}
@@ -455,7 +422,7 @@ export function FilterMenu({
             >
               {DUE_FILTERS.map((due) => (
                 <MenuRadioItem key={due} value={due}>
-                  {DUE_LABEL[due]}
+                  {m.shell.view.due[due]}
                 </MenuRadioItem>
               ))}
             </MenuRadioGroup>
@@ -473,7 +440,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`Remove filter ${label}`}
+        aria-label={m.shell.view.removeFilter(label)}
         className="flex size-5 items-center justify-center rounded-[4px] text-fg-subtle hover:bg-surface-muted hover:text-fg"
       >
         <XIcon className="size-3" />
@@ -484,7 +451,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
 
 function names(ids: readonly string[], lookup: (id: string) => string | undefined): string {
   return ids
-    .map((id) => (id === ME ? 'Me' : id === NONE ? 'None' : (lookup(id) ?? '…')))
+    .map((id) => (id === ME ? m.shell.view.me : id === NONE ? m.common.none : (lookup(id) ?? '…')))
     .join(', ');
 }
 
@@ -511,45 +478,45 @@ export function FilterChips({ search, setSearch }: { search: ViewSearch; setSear
           size="sm"
           variant="ghost"
           className="h-6 px-1.5 text-xs text-fg-muted"
-          title="Switch between matching all filters and any filter"
+          title={m.shell.view.matchHint}
           onClick={() => setSearch({ match: search.match === 'any' ? undefined : 'any' })}
         >
-          Match {search.match === 'any' ? 'any filter' : 'all filters'}
+          {search.match === 'any' ? m.shell.view.matchAny : m.shell.view.matchAll}
         </Button>
       )}
       {search.category?.length ? (
         <Chip
-          label={`Status: ${search.category.map((c) => STATUS_CATEGORY_LABEL[c]).join(', ')}`}
+          label={`${m.shell.view.filters.status}: ${search.category.map((c) => STATUS_CATEGORY_LABEL[c]).join(', ')}`}
           onRemove={() => setSearch({ category: undefined })}
         />
       ) : null}
       {search.status?.length ? (
         <Chip
-          label={`Status: ${names(search.status, (id) => data.statuses.get(id)?.name)}`}
+          label={`${m.shell.view.filters.status}: ${names(search.status, (id) => data.statuses.get(id)?.name)}`}
           onRemove={() => setSearch({ status: undefined })}
         />
       ) : null}
       {search.priority?.length ? (
         <Chip
-          label={`Priority: ${search.priority.map((p) => (isPriority(p) ? PRIORITY_LABEL[p] : p)).join(', ')}`}
+          label={`${m.shell.view.filters.priority}: ${search.priority.map((p) => (isPriority(p) ? PRIORITY_LABEL[p] : p)).join(', ')}`}
           onRemove={() => setSearch({ priority: undefined })}
         />
       ) : null}
       {search.assignee?.length ? (
         <Chip
-          label={`Assignee: ${names(search.assignee, (id) => data.membersById.get(id)?.displayName)}`}
+          label={`${m.shell.view.filters.assignee}: ${names(search.assignee, (id) => data.membersById.get(id)?.displayName)}`}
           onRemove={() => setSearch({ assignee: undefined })}
         />
       ) : null}
       {search.label?.length ? (
         <Chip
-          label={`Label: ${names(search.label, (id) => data.labelsById.get(id)?.name)}`}
+          label={`${m.shell.view.filters.label}: ${names(search.label, (id) => data.labelsById.get(id)?.name)}`}
           onRemove={() => setSearch({ label: undefined })}
         />
       ) : null}
       {search.project?.length ? (
         <Chip
-          label={`Project: ${names(search.project, (id) => data.projectsById.get(id)?.name)}`}
+          label={`${m.shell.view.filters.project}: ${names(search.project, (id) => data.projectsById.get(id)?.name)}`}
           onRemove={() => setSearch({ project: undefined })}
         />
       ) : null}
@@ -570,7 +537,7 @@ export function FilterChips({ search, setSearch }: { search: ViewSearch; setSear
         );
       })}
       {search.due && (
-        <Chip label={DUE_LABEL[search.due]} onRemove={() => setSearch({ due: undefined })} />
+        <Chip label={m.shell.view.due[search.due]} onRemove={() => setSearch({ due: undefined })} />
       )}
       {search.q && <Chip label={`“${search.q}”`} onRemove={() => setSearch({ q: undefined })} />}
       <Button
@@ -590,7 +557,7 @@ export function FilterChips({ search, setSearch }: { search: ViewSearch; setSear
           })
         }
       >
-        Clear
+        {m.shell.view.clear}
       </Button>
     </div>
   );

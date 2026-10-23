@@ -1,14 +1,6 @@
 import { PROJECT_HEALTH_LABEL, type ProjectHealth, type ProjectStatus } from '@daiq/domain';
 import { cn } from '@daiq/ui';
 
-export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
-  planned: 'Planned',
-  active: 'Active',
-  paused: 'Paused',
-  completed: 'Completed',
-  canceled: 'Canceled',
-};
-
 export const PROJECT_STATUSES: ProjectStatus[] = [
   'planned',
   'active',

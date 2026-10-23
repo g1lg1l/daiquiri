@@ -21,16 +21,17 @@ import {
   Tooltip,
 } from '@daiq/ui';
 import { MoreHorizontalIcon, SmilePlusIcon } from 'lucide-react';
-import { lazy, Suspense, useState, type ReactNode } from 'react';
+import { Children, lazy, Suspense, useState, type ReactNode } from 'react';
+import { m } from '../../i18n';
 import { newId } from '../../lib/ids';
 import { formatDateTime, timeAgo } from '../../lib/time';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 
 const RichTextEditor = lazy(() =>
-  import('@daiq/editor/editor').then((m) => ({ default: m.RichTextEditor })),
+  import('@daiq/editor/editor').then((mod) => ({ default: mod.RichTextEditor })),
 );
 const RichTextView = lazy(() =>
-  import('@daiq/editor/editor').then((m) => ({ default: m.RichTextView })),
+  import('@daiq/editor/editor').then((mod) => ({ default: mod.RichTextView })),
 );
 
 const QUICK_REACTIONS = ['👍', '🎉', '❤️', '👀', '🚀', '✅'];
@@ -39,108 +40,74 @@ function str(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
-function describe(entry: ActivityEntry, name: (id: string) => string): ReactNode | null {
+function describe(
+  entry: ActivityEntry,
+  actor: ReactNode,
+  name: (id: string) => string,
+): ReactNode[] | null {
+  const t = m.task.activity;
   const data = entry.data;
   const today = toIsoDate(new Date());
   switch (entry.kind) {
     case 'task.created':
-      return 'created the task';
+      return t.created(actor);
     case 'task.status_changed':
-      return (
-        <>
-          changed status from <strong>{str(data.from)}</strong> to <strong>{str(data.to)}</strong>
-        </>
+      return t.statusChanged(
+        actor,
+        <strong>{str(data.from)}</strong>,
+        <strong>{str(data.to)}</strong>,
       );
     case 'task.priority_changed': {
       const to = Number(data.to);
-      return isPriority(to) ? (
-        to === 0 ? (
-          'removed the priority'
-        ) : (
-          <>
-            set priority to <strong>{PRIORITY_LABEL[to]}</strong>
-          </>
-        )
-      ) : null;
+      return isPriority(to)
+        ? to === 0
+          ? t.priorityRemoved(actor)
+          : t.prioritySet(actor, <strong>{PRIORITY_LABEL[to]}</strong>)
+        : null;
     }
     case 'task.renamed':
-      return <>renamed the task to “{str(data.to)}”</>;
+      return t.renamed(actor, str(data.to));
     case 'task.project_changed':
-      return data.to ? (
-        <>
-          moved the task to <strong>{str(data.to)}</strong>
-        </>
-      ) : (
-        <>
-          removed the task from <strong>{str(data.from)}</strong>
-        </>
-      );
+      return data.to
+        ? t.movedTo(actor, <strong>{str(data.to)}</strong>)
+        : t.removedFrom(actor, <strong>{str(data.from)}</strong>);
     case 'task.due_date_changed':
-      return data.to ? (
-        <>
-          set the due date to <strong>{formatDueDate(str(data.to), today)}</strong>
-        </>
-      ) : (
-        'removed the due date'
-      );
+      return data.to
+        ? t.dueDateSet(actor, <strong>{formatDueDate(str(data.to), today)}</strong>)
+        : t.dueDateRemoved(actor);
     case 'task.assignee_added':
-      return str(data.user_id) === entry.actorId ? (
-        'self-assigned the task'
-      ) : (
-        <>
-          assigned <strong>{name(str(data.user_id))}</strong>
-        </>
-      );
+      return str(data.user_id) === entry.actorId
+        ? t.selfAssigned(actor)
+        : t.assigned(actor, <strong>{name(str(data.user_id))}</strong>);
     case 'task.assignee_removed':
-      return str(data.user_id) === entry.actorId ? (
-        'unassigned themself'
-      ) : (
-        <>
-          unassigned <strong>{name(str(data.user_id))}</strong>
-        </>
-      );
+      return str(data.user_id) === entry.actorId
+        ? t.selfUnassigned(actor)
+        : t.unassigned(actor, <strong>{name(str(data.user_id))}</strong>);
     case 'task.description_changed':
-      return 'updated the description';
+      return t.descriptionUpdated(actor);
     case 'task.parent_changed':
-      return data.to ? 'made this a sub-task' : 'removed the parent task';
+      return data.to ? t.madeSubtask(actor) : t.parentRemoved(actor);
     case 'task.estimate_changed':
-      return typeof data.to === 'number' ? (
-        <>
-          set the estimate to <strong>{data.to}</strong>
-        </>
-      ) : (
-        'removed the estimate'
-      );
-    case 'task.cycle_changed':
+      return typeof data.to === 'number'
+        ? t.estimateSet(actor, <strong>{data.to}</strong>)
+        : t.estimateRemoved(actor);
+    case 'task.cycle_changed': {
+      if (typeof data.to !== 'number')
+        return t.removedFrom(actor, <strong>{t.cycle(String(data.from))}</strong>);
+      const to = <strong>{t.cycle(data.to)}</strong>;
       // A system change (actor null) is the nightly rollover of an ended cycle.
-      return typeof data.to === 'number' ? (
-        <>
-          moved the task to <strong>Cycle {data.to}</strong>
-          {entry.actorId === null && typeof data.from === 'number' && (
-            <> because Cycle {data.from} ended</>
-          )}
-        </>
-      ) : (
-        <>
-          removed the task from <strong>Cycle {String(data.from)}</strong>
-        </>
-      );
+      return entry.actorId === null && typeof data.from === 'number'
+        ? t.rolledOver(actor, to, data.from)
+        : t.movedTo(actor, to);
+    }
     case 'task.attachment_added':
-      return (
-        <>
-          attached <strong>{str(data.file_name)}</strong>
-        </>
-      );
+      return t.attached(actor, <strong>{str(data.file_name)}</strong>);
     case 'task.deleted':
-      return 'deleted the task';
+      return t.deleted(actor);
     case 'task.restored':
-      return 'restored the task';
+      return t.restored(actor);
     case 'task.submitted':
-      return (
-        <>
-          sent it through the form <strong>{str(data.form)}</strong>
-        </>
-      );
+      return t.submitted(actor, <strong>{str(data.form)}</strong>);
     default:
       return null;
   }
@@ -158,10 +125,11 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
   const actions = useCommentActions(task.id, workspace.id, userId);
   const [showActivity, setShowActivity] = useState(true);
   const name = (id: string | null) =>
-    id ? (data.membersById.get(id)?.displayName ?? 'Someone') : 'Daiquiri';
+    id ? (data.membersById.get(id)?.displayName ?? m.common.someone) : 'Daiquiri';
   // Changes made by an automation name it instead of a person.
   const actorName = (entry: ActivityEntry) => {
-    if (typeof entry.data.automation === 'string') return `Automation “${entry.data.automation}”`;
+    if (typeof entry.data.automation === 'string')
+      return m.task.activity.automation(entry.data.automation);
     // Someone outside the workspace, through a public form.
     if (entry.actorId === null && typeof entry.data.email === 'string') return entry.data.email;
     return name(entry.actorId);
@@ -185,7 +153,7 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
     <section aria-labelledby="activity-heading" className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 id="activity-heading" className="text-[13px] font-semibold">
-          Activity
+          {m.task.activity.heading}
         </h2>
         <label className="flex items-center gap-1.5 text-xs text-fg-muted">
           <input
@@ -194,24 +162,27 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
             onChange={(e) => setShowActivity(e.target.checked)}
             className="accent-(--accent)"
           />
-          Show changes
+          {m.task.activity.showChanges}
         </label>
       </div>
       {(activity.isPending || comments.isPending) && <Skeleton className="h-16" />}
       <ol className="flex flex-col gap-3">
         {items.map((item) => {
           if (item.kind === 'activity') {
-            const text = describe(item.entry, (id) => name(id));
-            if (!text) return null;
+            const actor = actorName(item.entry);
+            const parts = describe(
+              item.entry,
+              <span className="font-medium text-fg">{actor}</span>,
+              (id) => name(id),
+            );
+            if (!parts) return null;
             return (
               <li
                 key={`a-${item.entry.id}`}
                 className="flex items-center gap-2 pl-1 text-xs text-fg-muted"
               >
-                <Avatar name={actorName(item.entry)} size="xs" />
-                <span>
-                  <span className="font-medium text-fg">{actorName(item.entry)}</span> {text}
-                </span>
+                <Avatar name={actor} size="xs" />
+                <span>{Children.toArray(parts)}</span>
                 <Tooltip label={formatDateTime(item.at)}>
                   <time dateTime={item.at} className="text-fg-subtle">
                     {timeAgo(item.at)}
@@ -238,10 +209,10 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
       </ol>
       <CommentComposer
         onSubmit={(body) => actions.create.mutate({ id: newId(), body })}
-        mentionables={data.members.map((m) => ({
-          id: m.id,
-          name: m.displayName,
-          avatarUrl: m.avatarUrl,
+        mentionables={data.members.map((member) => ({
+          id: member.id,
+          name: member.displayName,
+          avatarUrl: member.avatarUrl,
         }))}
       />
     </section>
@@ -272,7 +243,7 @@ function CommentCard({
             {timeAgo(comment.createdAt)}
           </time>
         </Tooltip>
-        {comment.editedAt && <span className="text-fg-subtle">(edited)</span>}
+        {comment.editedAt && <span className="text-fg-subtle">{m.task.comments.edited}</span>}
         {comment.authorId === userId && !comment.deletedAt && (
           <Menu>
             <MenuTrigger
@@ -281,7 +252,7 @@ function CommentCard({
                   variant="ghost"
                   size="icon-sm"
                   className="ml-auto opacity-0 group-hover/comment:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100"
-                  aria-label="Comment actions"
+                  aria-label={m.task.comments.actions}
                 />
               }
             >
@@ -292,14 +263,14 @@ function CommentCard({
                 destructive
                 onClick={() => actions.update.mutate({ id: comment.id, deleted: true })}
               >
-                Delete comment
+                {m.task.comments.delete}
               </MenuItem>
             </MenuContent>
           </Menu>
         )}
       </header>
       {comment.deletedAt ? (
-        <p className="text-[13px] text-fg-subtle italic">This comment was deleted.</p>
+        <p className="text-[13px] text-fg-subtle italic">{m.task.comments.deleted}</p>
       ) : (
         <Suspense fallback={<Skeleton className="h-4" />}>
           <RichTextView doc={comment.body} className="text-[13px]" />
@@ -336,7 +307,7 @@ function CommentCard({
                   variant="ghost"
                   size="icon-sm"
                   className="size-6 opacity-0 group-hover/comment:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100"
-                  aria-label="Add reaction"
+                  aria-label={m.task.comments.addReaction}
                 />
               }
             >
@@ -354,7 +325,7 @@ function CommentCard({
                       active: grouped.get(emoji)?.includes(userId) ?? false,
                     })
                   }
-                  aria-label={`React with ${emoji}`}
+                  aria-label={m.task.comments.react(emoji)}
                 >
                   {emoji}
                 </MenuItem>
@@ -402,15 +373,15 @@ function CommentComposer({
           onChange={setDoc}
           debounceMs={0}
           onSubmit={submit}
-          placeholder="Leave a comment… (@ to mention)"
-          ariaLabel="Comment"
+          placeholder={m.task.comments.placeholder}
+          ariaLabel={m.task.comments.label}
           mentionables={mentionables}
           className="min-h-10 text-[13px]"
         />
       </Suspense>
       <div className="mt-1 flex justify-end">
         <Button size="sm" variant="primary" disabled={isEmpty} onClick={submit}>
-          Comment
+          {m.task.comments.submit}
         </Button>
       </div>
     </div>

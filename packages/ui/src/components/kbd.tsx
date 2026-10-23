@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react';
 import { cn } from '../cn';
 import { formatShortcut } from '../shortcut-format';
+import { uiTexts } from '../texts';
 
 export function Kbd({ className, ...props }: ComponentProps<'kbd'>) {
   return (
@@ -22,7 +23,7 @@ export function Shortcut({ keys, className }: { keys: string; className?: string
         key === 'then' ? (
           // oxlint-disable-next-line react/no-array-index-key
           <span key={index} className="px-0.5 text-[10px] text-fg-subtle">
-            then
+            {uiTexts.sequence}
           </span>
         ) : (
           // Static, never reordered list where keys can repeat ("G G"): the index is the identity.

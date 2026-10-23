@@ -1,6 +1,7 @@
 import { cn, Tooltip } from '@daiq/ui';
 import { CheckIcon } from 'lucide-react';
 import { useState } from 'react';
+import { m } from '../../i18n';
 import { copyText } from '../../lib/clipboard';
 import { SHORTCUTS } from '../shortcuts/registry';
 
@@ -20,14 +21,14 @@ export function TaskId({
 }) {
   const [copied, setCopied] = useState(false);
   return (
-    <Tooltip label="Copy ID" shortcut={SHORTCUTS.copyId.keys}>
+    <Tooltip label={m.tasks.copyId} shortcut={SHORTCUTS.copyId.keys}>
       <button
         type="button"
         tabIndex={tabbable ? undefined : -1}
-        aria-label={`Copy ${identifier}`}
+        aria-label={m.tasks.copyIdentifier(identifier)}
         onClick={(event) => {
           event.stopPropagation();
-          copyText(identifier, `Copied ${identifier}`);
+          copyText(identifier, m.common.copied(identifier));
           setCopied(true);
           setTimeout(() => setCopied(false), 1400);
         }}

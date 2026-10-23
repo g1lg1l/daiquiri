@@ -78,9 +78,10 @@ import { DateField, useTaskActions } from './task-actions';
 import { TaskId } from './task-id';
 import { useIdentifier } from './use-identifier';
 import { useToday } from '../../lib/use-today';
+import { m } from '../../i18n';
 
 const RichTextEditor = lazy(() =>
-  import('@daiq/editor/editor').then((m) => ({ default: m.RichTextEditor })),
+  import('@daiq/editor/editor').then((mod) => ({ default: mod.RichTextEditor })),
 );
 
 /** Resolves "ENG-12" to its detail query. */
@@ -113,11 +114,9 @@ export function TaskDetail({
   if (!query.data) {
     return (
       <div className="flex flex-col items-start gap-2 p-8">
-        <h2 className="text-lg font-semibold font-display">Task not found</h2>
-        <p className="text-fg-muted">
-          {identifier} doesn’t exist, was deleted, or is in a team you can’t access.
-        </p>
-        {onClose && <Button onClick={onClose}>Close</Button>}
+        <h2 className="text-lg font-semibold font-display">{m.task.notFound.title}</h2>
+        <p className="text-fg-muted">{m.task.notFound.body(identifier)}</p>
+        {onClose && <Button onClick={onClose}>{m.common.close}</Button>}
       </div>
     );
   }
@@ -158,7 +157,7 @@ function TaskDetailBody({
   const cycles = useCycles(team?.cyclesEnabled ? team.id : undefined);
   const milestones = useMilestones(task.projectId);
   const milestone = task.milestoneId
-    ? milestones.data?.find((m) => m.id === task.milestoneId)
+    ? milestones.data?.find((item) => item.id === task.milestoneId)
     : undefined;
   const cycle = task.cycleId ? cycles.data?.find((c) => c.id === task.cycleId) : undefined;
   const today = useToday();
@@ -177,7 +176,7 @@ function TaskDetailBody({
 
   const saveTitle = () => {
     const next = title.trim();
-    if (next && next !== task.title) actions.update([task], { title: next }, 'Rename');
+    if (next && next !== task.title) actions.update([task], { title: next }, m.common.rename);
     else setTitle(task.title);
   };
 
@@ -220,70 +219,70 @@ function TaskDetailBody({
       {
         id: 'task-status',
         group: ident,
-        label: 'Change status…',
+        label: m.task.palette.status,
         shortcut: SHORTCUTS.status.keys,
         run: () => actions.openPicker('status', [task]),
       },
       {
         id: 'task-priority',
         group: ident,
-        label: 'Set priority…',
+        label: m.task.palette.priority,
         shortcut: SHORTCUTS.priority.keys,
         run: () => actions.openPicker('priority', [task]),
       },
       {
         id: 'task-assignee',
         group: ident,
-        label: 'Assign to…',
+        label: m.task.assignTo,
         shortcut: SHORTCUTS.assignee.keys,
         run: () => actions.openPicker('assignee', [task]),
       },
       {
         id: 'task-me',
         group: ident,
-        label: 'Assign to me',
+        label: m.task.palette.assignMe,
         shortcut: SHORTCUTS.assignMe.keys,
         run: () => actions.toggleAssignMe([task]),
       },
       {
         id: 'task-labels',
         group: ident,
-        label: 'Change labels…',
+        label: m.task.palette.labels,
         shortcut: SHORTCUTS.labels.keys,
         run: () => actions.openPicker('labels', [task]),
       },
       {
         id: 'task-due',
         group: ident,
-        label: 'Set due date…',
+        label: m.task.palette.dueDate,
         shortcut: SHORTCUTS.dueDate.keys,
         run: () => actions.openPicker('dueDate', [task]),
       },
       {
         id: 'task-sub',
         group: ident,
-        label: 'Add sub-task',
+        label: m.task.addSubtask,
         shortcut: SHORTCUTS.subtask.keys,
         run: () => composer({ teamId: task.teamId, parentId: task.id }),
       },
       {
         id: 'task-id',
         group: ident,
-        label: `Copy ID (${ident})`,
+        label: m.task.palette.copyId(ident),
         shortcut: SHORTCUTS.copyId.keys,
         run: () => actions.copyId(task),
       },
       {
         id: 'task-link',
         group: ident,
-        label: 'Copy link',
+        label: m.task.copyLink,
         shortcut: SHORTCUTS.copyLink.keys,
         run: () => actions.copyLink(task),
       },
       {
         id: 'task-delete',
         group: ident,
-        label: 'Delete task',
+        label: m.task.deleteTask,
         shortcut: SHORTCUTS.remove.keys,
         run: () => actions.remove([task]),
       },
@@ -294,7 +293,7 @@ function TaskDetailBody({
 
   const properties = (
     <div className="flex flex-col gap-1.5">
-      <PropertyRow label="Status">
+      <PropertyRow label={m.task.props.status}>
         <PickerPopover
           trigger={
             <Button variant="ghost" size="sm" className={ghostTrigger}>
@@ -304,11 +303,11 @@ function TaskDetailBody({
           }
           options={statusOptions(team?.statuses ?? [])}
           selected={[task.statusId]}
-          placeholder="Change status to…"
+          placeholder={m.task.pick.status}
           onSelect={([id]) => id && actions.setStatus([task], id)}
         />
       </PropertyRow>
-      <PropertyRow label="Priority">
+      <PropertyRow label={m.task.props.priority}>
         <PickerPopover
           trigger={
             <Button variant="ghost" size="sm" className={ghostTrigger}>
@@ -318,20 +317,20 @@ function TaskDetailBody({
           }
           options={priorityOptions()}
           selected={[String(task.priority)]}
-          placeholder="Set priority to…"
+          placeholder={m.task.pick.priority}
           onSelect={([value]) => {
             const priority = Number(value);
-            if (isPriority(priority)) actions.update([task], { priority }, 'Priority');
+            if (isPriority(priority)) actions.update([task], { priority }, m.task.props.priority);
           }}
         />
       </PropertyRow>
-      <PropertyRow label="Assignees">
+      <PropertyRow label={m.task.props.assignees}>
         <PickerPopover
           trigger={
             <Button variant="ghost" size="sm" className={ghostTrigger}>
               {task.assigneeIds.length === 0 ? (
                 <span className="flex items-center gap-1.5 text-fg-subtle">
-                  <UserIcon /> Unassigned
+                  <UserIcon /> {m.task.empty.assignees}
                 </span>
               ) : (
                 <span className="flex min-w-0 items-center gap-1.5">
@@ -347,7 +346,7 @@ function TaskDetailBody({
                   </span>
                   <span className="truncate">
                     {task.assigneeIds
-                      .map((id) => data.membersById.get(id)?.displayName ?? 'Former member')
+                      .map((id) => data.membersById.get(id)?.displayName ?? m.common.formerMember)
                       .join(', ')}
                   </span>
                 </span>
@@ -357,11 +356,11 @@ function TaskDetailBody({
           multiple
           options={memberOptions(data.members, userId)}
           selected={task.assigneeIds}
-          placeholder="Assign to…"
+          placeholder={m.task.assignTo}
           onSelect={(ids) => actions.setAssignees([task], ids)}
         />
       </PropertyRow>
-      <PropertyRow label="Labels">
+      <PropertyRow label={m.task.props.labels}>
         <PickerPopover
           trigger={
             <Button
@@ -371,7 +370,7 @@ function TaskDetailBody({
             >
               {task.labelIds.length === 0 ? (
                 <span className="flex items-center gap-1.5 text-fg-subtle">
-                  <TagIcon /> No labels
+                  <TagIcon /> {m.task.empty.labels}
                 </span>
               ) : (
                 task.labelIds.map((id) => {
@@ -395,101 +394,109 @@ function TaskDetailBody({
           multiple
           options={labelOptions(data.labels)}
           selected={task.labelIds}
-          placeholder="Labels…"
+          placeholder={m.task.pick.labels}
           onSelect={(ids) => actions.setLabels([task], ids)}
         />
       </PropertyRow>
-      <PropertyRow label="Project">
+      <PropertyRow label={m.task.props.project}>
         <PickerPopover
           trigger={
             <Button variant="ghost" size="sm" className={ghostTrigger}>
               {project ? <FolderIcon /> : <CircleDashedIcon className="text-fg-subtle" />}
               <span className={cn('truncate', !project && 'text-fg-subtle')}>
-                {project?.name ?? 'No project'}
+                {project?.name ?? m.task.empty.project}
               </span>
             </Button>
           }
           options={projectOptions(data.projects.filter((p) => p.teamId === task.teamId))}
           selected={[task.projectId ?? NO_VALUE]}
-          placeholder="Move to project…"
+          placeholder={m.task.pick.project}
           onSelect={([id]) =>
-            actions.update([task], { projectId: id && id !== NO_VALUE ? id : null }, 'Project')
+            actions.update(
+              [task],
+              { projectId: id && id !== NO_VALUE ? id : null },
+              m.task.props.project,
+            )
           }
         />
       </PropertyRow>
       {project && (milestones.data?.length ?? 0) > 0 && (
-        <PropertyRow label="Milestone">
+        <PropertyRow label={m.task.props.milestone}>
           <PickerPopover
             trigger={
               <Button variant="ghost" size="sm" className={ghostTrigger}>
                 <DiamondIcon className={cn(!milestone && 'text-fg-subtle')} />
                 <span className={cn('truncate', !milestone && 'text-fg-subtle')}>
-                  {milestone?.name ?? 'No milestone'}
+                  {milestone?.name ?? m.task.empty.milestone}
                 </span>
               </Button>
             }
             options={[
-              { value: NO_VALUE, label: 'No milestone', icon: <CircleDashedIcon /> },
-              ...(milestones.data ?? []).map((m) => ({
-                value: m.id,
-                label: m.name,
+              { value: NO_VALUE, label: m.task.empty.milestone, icon: <CircleDashedIcon /> },
+              ...(milestones.data ?? []).map((item) => ({
+                value: item.id,
+                label: item.name,
                 icon: <DiamondIcon />,
               })),
             ]}
             selected={[task.milestoneId ?? NO_VALUE]}
-            placeholder="Move to milestone…"
+            placeholder={m.task.pick.milestone}
             onSelect={([id]) =>
               actions.update(
                 [task],
                 { milestoneId: id && id !== NO_VALUE ? id : null },
-                'Milestone',
+                m.task.props.milestone,
               )
             }
           />
         </PropertyRow>
       )}
       {team?.estimatesEnabled && (
-        <PropertyRow label="Estimate">
+        <PropertyRow label={m.task.props.estimate}>
           <PickerPopover
             trigger={
               <Button variant="ghost" size="sm" className={ghostTrigger}>
                 <GaugeIcon className={cn(task.estimate === null && 'text-fg-subtle')} />
                 <span className={cn(task.estimate === null && 'text-fg-subtle')}>
                   {task.estimate === null
-                    ? 'No estimate'
+                    ? m.task.empty.estimate
                     : formatEstimate(task.estimate, team.estimateScale)}
                 </span>
               </Button>
             }
             options={estimatePickerOptions(team.estimateScale)}
             selected={[String(task.estimate ?? NO_VALUE)]}
-            placeholder="Set estimate to…"
+            placeholder={m.task.pick.estimate}
             onSelect={([value]) =>
               actions.update(
                 [task],
                 { estimate: value && value !== NO_VALUE ? Number(value) : null },
-                'Estimate',
+                m.task.props.estimate,
               )
             }
           />
         </PropertyRow>
       )}
       {team?.cyclesEnabled && (
-        <PropertyRow label="Cycle">
+        <PropertyRow label={m.task.props.cycle}>
           <PickerPopover
             trigger={
               <Button variant="ghost" size="sm" className={ghostTrigger}>
                 <RefreshCcwIcon className={cn(!cycle && 'text-fg-subtle')} />
                 <span className={cn('truncate', !cycle && 'text-fg-subtle')}>
-                  {cycle ? cycleLabel(cycle) : 'No cycle'}
+                  {cycle ? cycleLabel(cycle) : m.task.empty.cycle}
                 </span>
               </Button>
             }
             options={cycleOptions(cycles.data ?? [], today)}
             selected={[task.cycleId ?? NO_VALUE]}
-            placeholder="Move to cycle…"
+            placeholder={m.task.pick.cycle}
             onSelect={([id]) =>
-              actions.update([task], { cycleId: id && id !== NO_VALUE ? id : null }, 'Cycle')
+              actions.update(
+                [task],
+                { cycleId: id && id !== NO_VALUE ? id : null },
+                m.task.props.cycle,
+              )
             }
           />
         </PropertyRow>
@@ -502,21 +509,21 @@ function TaskDetailBody({
           </PropertyRow>
         ) : null;
       })}
-      <PropertyRow label="Due date">
+      <PropertyRow label={m.task.props.dueDate}>
         <DateField
-          label="Due date"
+          label={m.task.props.dueDate}
           value={task.dueDate}
-          onChange={(dueDate) => actions.update([task], { dueDate }, 'Due date')}
+          onChange={(dueDate) => actions.update([task], { dueDate }, m.task.props.dueDate)}
         />
       </PropertyRow>
-      <PropertyRow label="Start date">
+      <PropertyRow label={m.task.props.startDate}>
         <DateField
-          label="Start date"
+          label={m.task.props.startDate}
           value={task.startDate}
-          onChange={(startDate) => actions.update([task], { startDate }, 'Start date')}
+          onChange={(startDate) => actions.update([task], { startDate }, m.task.props.startDate)}
         />
       </PropertyRow>
-      <PropertyRow label="Repeat">
+      <PropertyRow label={m.task.props.repeat}>
         <RecurrenceEditor task={task} triggerClassName={ghostTrigger} />
       </PropertyRow>
     </div>
@@ -529,7 +536,7 @@ function TaskDetailBody({
     >
       <header className="flex h-12 shrink-0 items-center gap-1 border-b border-border px-3">
         <nav
-          aria-label="Breadcrumb"
+          aria-label={m.task.breadcrumb}
           className="flex min-w-0 items-center gap-1.5 text-xs text-fg-muted"
         >
           {team && (
@@ -558,24 +565,24 @@ function TaskDetailBody({
         </nav>
         <div className="ml-auto flex items-center gap-0.5">
           <Tooltip
-            label={subscription.subscribed ? 'Unsubscribe' : 'Subscribe'}
+            label={subscription.subscribed ? m.task.unsubscribe : m.task.subscribe}
             shortcut={SHORTCUTS.subscribe.keys}
           >
             <Button
               variant="ghost"
               size="icon-sm"
               aria-pressed={subscription.subscribed}
-              aria-label={subscription.subscribed ? 'Unsubscribe' : 'Subscribe'}
+              aria-label={subscription.subscribed ? m.task.unsubscribe : m.task.subscribe}
               onClick={() => subscription.toggle.mutate(!subscription.subscribed)}
             >
               {subscription.subscribed ? <BellIcon /> : <BellOffIcon />}
             </Button>
           </Tooltip>
-          <Tooltip label="Copy link" shortcut={SHORTCUTS.copyLink.keys}>
+          <Tooltip label={m.task.copyLink} shortcut={SHORTCUTS.copyLink.keys}>
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Copy link"
+              aria-label={m.task.copyLink}
               onClick={() => actions.copyLink(task)}
             >
               <LinkIcon />
@@ -583,7 +590,7 @@ function TaskDetailBody({
           </Tooltip>
           <Menu>
             <MenuTrigger
-              render={<Button variant="ghost" size="icon-sm" aria-label="More actions" />}
+              render={<Button variant="ghost" size="icon-sm" aria-label={m.common.moreActions} />}
             >
               <MoreHorizontalIcon />
             </MenuTrigger>
@@ -594,11 +601,11 @@ function TaskDetailBody({
                   composer({ teamId: task.teamId, parentId: task.id, projectId: task.projectId })
                 }
               >
-                <PlusIcon /> Add sub-task
+                <PlusIcon /> {m.task.addSubtask}
               </MenuItem>
               {workspace.role !== 'guest' && (
                 <MenuItem onClick={() => setSavingTemplate(true)}>
-                  <LayoutTemplateIcon /> Save as template
+                  <LayoutTemplateIcon /> {m.task.saveAsTemplate}
                 </MenuItem>
               )}
               <MenuItem
@@ -609,7 +616,7 @@ function TaskDetailBody({
                   onClose?.();
                 }}
               >
-                <Trash2Icon /> Delete task
+                <Trash2Icon /> {m.task.deleteTask}
               </MenuItem>
             </MenuContent>
           </Menu>
@@ -622,11 +629,11 @@ function TaskDetailBody({
           />
           {mode === 'peek' && (
             <>
-              <Tooltip label="Open full page" shortcut={SHORTCUTS.open.keys}>
+              <Tooltip label={m.task.openFullPage} shortcut={SHORTCUTS.open.keys}>
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="Open full page"
+                  aria-label={m.task.openFullPage}
                   onClick={() =>
                     void navigate({
                       to: '/$workspace/task/$identifier',
@@ -637,8 +644,13 @@ function TaskDetailBody({
                   <ExpandIcon />
                 </Button>
               </Tooltip>
-              <Tooltip label="Close" shortcut="Escape">
-                <Button variant="ghost" size="icon-sm" aria-label="Close" onClick={onClose}>
+              <Tooltip label={m.common.close} shortcut="Escape">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={m.common.close}
+                  onClick={onClose}
+                >
                   <XIcon />
                 </Button>
               </Tooltip>
@@ -656,7 +668,7 @@ function TaskDetailBody({
         >
           <div className="flex min-w-0 flex-1 flex-col gap-5">
             <label htmlFor={`title-${task.id}`} className="sr-only">
-              Title
+              {m.task.title}
             </label>
             <textarea
               id={`title-${task.id}`}
@@ -682,12 +694,12 @@ function TaskDetailBody({
                 key={task.id}
                 value={task.description}
                 onChange={saveDescription}
-                placeholder="Add a description… Press / for blocks, @ to mention"
-                ariaLabel="Description"
-                mentionables={data.members.map((m) => ({
-                  id: m.id,
-                  name: m.displayName,
-                  avatarUrl: m.avatarUrl,
+                placeholder={m.task.descriptionPlaceholder}
+                ariaLabel={m.task.description}
+                mentionables={data.members.map((member) => ({
+                  id: member.id,
+                  name: member.displayName,
+                  avatarUrl: member.avatarUrl,
                 }))}
                 className="min-h-24"
               />
@@ -724,7 +736,7 @@ function SubTasks({ task }: { task: TaskDetailModel }) {
           composer({ teamId: task.teamId, parentId: task.id, projectId: task.projectId })
         }
       >
-        <PlusIcon /> Add sub-task
+        <PlusIcon /> {m.task.addSubtask}
       </Button>
     );
   }
@@ -732,7 +744,7 @@ function SubTasks({ task }: { task: TaskDetailModel }) {
     <section aria-labelledby={`subtasks-${task.id}`} className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
         <h2 id={`subtasks-${task.id}`} className="text-[13px] font-semibold">
-          Sub-tasks
+          {m.task.subtasks}
         </h2>
         <span className="text-xs text-fg-subtle tabular">
           {done}/{sorted.length}
@@ -741,7 +753,7 @@ function SubTasks({ task }: { task: TaskDetailModel }) {
           variant="ghost"
           size="icon-sm"
           className="ml-auto"
-          aria-label="Add sub-task"
+          aria-label={m.task.addSubtask}
           onClick={() =>
             composer({
               teamId: task.teamId,
@@ -788,14 +800,6 @@ function SubTasks({ task }: { task: TaskDetailModel }) {
   );
 }
 
-const RELATION_LABEL = {
-  blocks: 'Blocks',
-  blockedBy: 'Blocked by',
-  related: 'Related',
-  duplicate: 'Duplicate of',
-  duplicatedBy: 'Duplicated by',
-} as const;
-
 function Relations({ task }: { task: TaskDetailModel }) {
   const { workspace } = useWorkspace();
   const relations = useRelations(task.id);
@@ -806,7 +810,7 @@ function Relations({ task }: { task: TaskDetailModel }) {
   const rows = (relations.data ?? []).map((relation) => {
     const outgoing = relation.taskId === task.id;
     const otherId = outgoing ? relation.relatedTaskId : relation.taskId;
-    const kind: keyof typeof RELATION_LABEL =
+    const kind: 'blocks' | 'blockedBy' | 'related' | 'duplicate' | 'duplicatedBy' =
       relation.kind === 'blocks'
         ? outgoing
           ? 'blocks'
@@ -825,17 +829,17 @@ function Relations({ task }: { task: TaskDetailModel }) {
     <section aria-labelledby={`relations-${task.id}`} className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
         <h2 id={`relations-${task.id}`} className="text-[13px] font-semibold">
-          Relations
+          {m.task.relations.heading}
         </h2>
         <PickerPopover
           trigger={
             <Button variant="ghost" size="sm" className="ml-auto text-fg-muted">
-              <PlusIcon /> Blocked by
+              <PlusIcon /> {m.task.relations.blockedBy}
             </Button>
           }
           options={options}
           selected={[]}
-          placeholder="Blocked by task…"
+          placeholder={m.task.relations.pickBlockedBy}
           onSelect={([id]) =>
             id && relationActions.add.mutate({ relatedTaskId: id, kind: 'blocks', inverse: true })
           }
@@ -843,12 +847,12 @@ function Relations({ task }: { task: TaskDetailModel }) {
         <PickerPopover
           trigger={
             <Button variant="ghost" size="sm" className="text-fg-muted">
-              <PlusIcon /> Related
+              <PlusIcon /> {m.task.relations.related}
             </Button>
           }
           options={options}
           selected={[]}
-          placeholder="Related task…"
+          placeholder={m.task.relations.pickRelated}
           onSelect={([id]) =>
             id && relationActions.add.mutate({ relatedTaskId: id, kind: 'related' })
           }
@@ -867,7 +871,7 @@ function Relations({ task }: { task: TaskDetailModel }) {
                   kind === 'blockedBy' ? 'font-medium text-danger' : 'text-fg-subtle',
                 )}
               >
-                {RELATION_LABEL[kind]}
+                {m.task.relations[kind]}
               </span>
               {other ? (
                 <Link
@@ -881,13 +885,13 @@ function Relations({ task }: { task: TaskDetailModel }) {
                   <span className="truncate">{other.title}</span>
                 </Link>
               ) : (
-                <span className="flex-1 text-fg-subtle">A task in another team</span>
+                <span className="flex-1 text-fg-subtle">{m.task.relations.otherTeam}</span>
               )}
               <Button
                 variant="ghost"
                 size="icon-sm"
                 className="opacity-0 group-hover/rel:opacity-100 focus-visible:opacity-100"
-                aria-label="Remove relation"
+                aria-label={m.task.relations.remove}
                 onClick={() => relationActions.remove.mutate(relation.id)}
               >
                 <XIcon />

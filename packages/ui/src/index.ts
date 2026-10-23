@@ -1,6 +1,8 @@
 export { cn } from './cn';
 export { duration, ease, transitions } from './motion';
 export { formatShortcut } from './shortcut-format';
+export { localizeUi } from './texts';
+export type { UiTexts } from './texts';
 export { ThemeProvider, useTheme } from './theme';
 export type { ThemePreference, ResolvedTheme } from './theme';
 export { Avatar } from './components/avatar';

@@ -8,15 +8,18 @@ import { NotFoundPanel } from '../../../../components/not-found-panel';
 import { TeamBadge } from '../../../../components/team-badge';
 import { ViewHeader } from '../../../../features/shell/view-header';
 import { useWorkspace, useWorkspaceData } from '../../../../features/workspace/workspace-context';
+import { locale } from '../../../../i18n';
+import { m } from '../../../../i18n/team';
 import { useToday } from '../../../../lib/use-today';
 
 export const Route = createFileRoute('/$workspace/team/$teamKey/cycles')({
   component: TeamCycles,
 });
 
-const dates = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
-export const cycleDates = (cycle: Pick<Cycle, 'startsOn' | 'endsOn'>) =>
-  `${dates.format(parseIsoDate(cycle.startsOn))} – ${dates.format(parseIsoDate(cycle.endsOn))}`;
+export const cycleDates = (cycle: Pick<Cycle, 'startsOn' | 'endsOn'>) => {
+  const dates = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
+  return `${dates.format(parseIsoDate(cycle.startsOn))} – ${dates.format(parseIsoDate(cycle.endsOn))}`;
+};
 
 function TeamCycles() {
   const { teamKey } = Route.useParams();
@@ -41,39 +44,39 @@ function TeamCycles() {
     return map;
   }, [tasks.data, data.statuses]);
 
-  if (!team)
-    return (
-      <NotFoundPanel title="Team not found" message={`There is no team with the key ${teamKey}.`} />
-    );
+  if (!team) return <NotFoundPanel title={m.team.notFound} message={m.team.noTeam(teamKey)} />;
 
   const sorted = (cycles.data ?? []).toSorted((a, b) => b.number - a.number);
+  const t = m.team.cycles;
   const sections = [
-    { title: 'Current', items: sorted.filter((c) => cycleState(c, today) === 'current') },
     {
-      title: 'Upcoming',
+      key: 'current',
+      title: t.current,
+      items: sorted.filter((c) => cycleState(c, today) === 'current'),
+    },
+    {
+      key: 'upcoming',
+      title: t.upcoming,
       items: sorted.filter((c) => cycleState(c, today) === 'upcoming').toReversed(),
     },
-    { title: 'Past', items: sorted.filter((c) => cycleState(c, today) === 'past') },
+    { key: 'past', title: t.past, items: sorted.filter((c) => cycleState(c, today) === 'past') },
   ];
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <ViewHeader title={`${team.name} cycles`} icon={<TeamBadge teamKey={team.key} />} />
+      <ViewHeader title={t.title(team.name)} icon={<TeamBadge teamKey={team.key} />} />
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6 scrollbar-thin md:px-6">
         {!team.cyclesEnabled ? (
           <div className="flex max-w-md flex-col items-start gap-3 py-10">
             <RefreshCcwIcon className="size-5 text-fg-subtle" aria-hidden />
-            <p className="font-medium">Cycles are off for {team.name}</p>
-            <p className="text-[13px] text-fg-muted">
-              Cycles plan work in fixed periods of one to four weeks. Unfinished tasks move to the
-              next cycle on their own.
-            </p>
+            <p className="font-medium">{t.off(team.name)}</p>
+            <p className="text-[13px] text-fg-muted">{t.offHint}</p>
             <Link
               to="/$workspace/settings/teams/$teamKey"
               params={{ workspace: workspace.slug, teamKey: team.key }}
               className={buttonVariants({ variant: 'primary', size: 'sm' })}
             >
-              Turn on cycles
+              {t.turnOn}
             </Link>
           </div>
         ) : (
@@ -81,9 +84,9 @@ function TeamCycles() {
             {sections.map(
               (section) =>
                 section.items.length > 0 && (
-                  <section key={section.title} aria-labelledby={`cycles-${section.title}`}>
+                  <section key={section.key} aria-labelledby={`cycles-${section.key}`}>
                     <h2
-                      id={`cycles-${section.title}`}
+                      id={`cycles-${section.key}`}
                       className="mb-2 text-xs font-medium text-fg-subtle"
                     >
                       {section.title}
@@ -105,16 +108,14 @@ function TeamCycles() {
                               }}
                               className={cn(
                                 'flex items-center gap-4 px-4 py-3 text-[13px] hover:bg-surface-subtle',
-                                section.title === 'Current' && 'py-4',
+                                section.key === 'current' && 'py-4',
                               )}
                             >
                               <RefreshCcwIcon
                                 aria-hidden
                                 className={cn(
                                   'size-4 shrink-0',
-                                  section.title === 'Current'
-                                    ? 'text-accent-text'
-                                    : 'text-fg-subtle',
+                                  section.key === 'current' ? 'text-accent-text' : 'text-fg-subtle',
                                 )}
                               />
                               <span className="min-w-0 flex-1">
@@ -135,7 +136,7 @@ function TeamCycles() {
                                 </span>
                                 <span className="w-16 text-right text-xs text-fg-muted tabular">
                                   {count.done}/{count.total}
-                                  <span className="sr-only"> tasks done</span>
+                                  <span className="sr-only"> {t.tasksDone}</span>
                                 </span>
                               </span>
                             </Link>

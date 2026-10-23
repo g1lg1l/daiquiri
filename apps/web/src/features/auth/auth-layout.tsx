@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Wordmark } from '../../components/wordmark';
+import { m } from '../../i18n/auth';
 
 /**
  * Shell for signed-out screens. The tagline is the hero: Daiq's promise in
@@ -20,10 +21,10 @@ export function AuthLayout({
         <header className="flex flex-col justify-between gap-10 lg:py-6">
           <Wordmark />
           <p className="hidden max-w-[16ch] text-[clamp(2.4rem,5vw,4.2rem)] leading-[1.02] font-[620] font-display text-balance text-fg lg:block">
-            Everything your team needs.
-            <span className="block text-fg-subtle">Nothing it doesn’t.</span>
+            {m.auth.layout.tagline}
+            <span className="block text-fg-subtle">{m.auth.layout.taglineRest}</span>
           </p>
-          <p className="hidden text-sm text-fg-subtle lg:block">Open source and self-hostable</p>
+          <p className="hidden text-sm text-fg-subtle lg:block">{m.auth.layout.openSource}</p>
         </header>
         <main className="flex flex-col justify-center pb-16 lg:pb-0">
           <h1 className="mb-6 text-2xl font-semibold font-display">{title}</h1>

@@ -21,7 +21,12 @@ const sqlStateToCode: Record<string, DaiqErrorCode> = {
   PGRST116: 'not_found',
 };
 
-const fallbackMessage: Record<DaiqErrorCode, string> = {
+export interface ErrorTexts extends Record<DaiqErrorCode, string> {
+  fileTooLarge: (name: string, size: string, max: string) => string;
+}
+
+/** Messages people see (in toasts), read when an error is made. English by default. */
+export const errorTexts: ErrorTexts = {
   unauthenticated: 'Your session has expired. Please sign in again.',
   forbidden: 'You don’t have permission to do that.',
   not_found: 'That item no longer exists or you can’t access it.',
@@ -30,7 +35,12 @@ const fallbackMessage: Record<DaiqErrorCode, string> = {
   rate_limited: 'Too many requests. Please wait a moment and try again.',
   network: 'You appear to be offline. Changes will retry when you reconnect.',
   unknown: 'Something unexpected happened. Please try again.',
+  fileTooLarge: (name, size, max) => `${name} is ${size}; files can be up to ${max}.`,
 };
+
+export function localizeErrors(texts: ErrorTexts): void {
+  Object.assign(errorTexts, texts);
+}
 
 /**
  * Maps Supabase/PostgREST/Auth errors to a typed DaiqError. Messages raised
@@ -39,7 +49,7 @@ const fallbackMessage: Record<DaiqErrorCode, string> = {
 export function toDaiqError(error: unknown): DaiqError {
   if (error instanceof DaiqError) return error;
   if (error instanceof TypeError && /fetch|network/i.test(error.message)) {
-    return new DaiqError('network', fallbackMessage.network, { cause: error });
+    return new DaiqError('network', errorTexts.network, { cause: error });
   }
   const pg = (typeof error === 'object' && error !== null ? error : {}) as PostgresLikeError;
   const code: DaiqErrorCode =
@@ -51,7 +61,7 @@ export function toDaiqError(error: unknown): DaiqError {
     pg.code === 'PT429' ||
     pg.code === '42501' ||
     pg.code === '23514';
-  const message = raisedByUs && pg.message ? pg.message : fallbackMessage[code];
+  const message = raisedByUs && pg.message ? pg.message : errorTexts[code];
   return new DaiqError(code, message, { cause: error });
 }
 
@@ -73,7 +83,7 @@ interface SupabaseResult {
 export function unwrap<R extends SupabaseResult>(response: R): NonNullable<R['data']> {
   if (response.error) throw toDaiqError(response.error);
   const { data } = response;
-  if (data === null || data === undefined) throw new DaiqError('unknown', fallbackMessage.unknown);
+  if (data === null || data === undefined) throw new DaiqError('unknown', errorTexts.unknown);
   return data;
 }
 

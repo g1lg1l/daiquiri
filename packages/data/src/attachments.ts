@@ -10,7 +10,7 @@ import {
 } from '@daiq/domain';
 import { patchTask } from './cache';
 import { useDaiqClient } from './context';
-import { ensureOk, toDaiqError, unwrap } from './errors';
+import { ensureOk, errorTexts, toDaiqError, unwrap } from './errors';
 import { keys } from './keys';
 
 const BUCKET = 'attachments';
@@ -93,7 +93,11 @@ export function useAttachmentActions(task: Pick<Task, 'id' | 'workspaceId'>, use
       if (file.size > MAX_ATTACHMENT_BYTES) {
         throw new DaiqError(
           'validation',
-          `${file.name} is ${formatBytes(file.size)}; files can be up to ${formatBytes(MAX_ATTACHMENT_BYTES)}.`,
+          errorTexts.fileTooLarge(
+            file.name,
+            formatBytes(file.size),
+            formatBytes(MAX_ATTACHMENT_BYTES),
+          ),
         );
       }
       const path = attachmentPath(task.workspaceId, task.id, id, file.name);

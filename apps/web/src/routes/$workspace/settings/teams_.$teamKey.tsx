@@ -7,16 +7,19 @@ import type { ReactNode } from 'react';
 import { NotFoundPanel } from '../../../components/not-found-panel';
 import { TeamBadge } from '../../../components/team-badge';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
+import { locale } from '../../../i18n';
+import { m } from '../../../i18n/settings';
 
 export const Route = createFileRoute('/$workspace/settings/teams_/$teamKey')({
   component: TeamSettings,
 });
 
-const WEEKDAYS = Array.from({ length: 7 }, (_, day) => ({
-  value: String(day),
-  // 2023-01-01 was a Sunday: day 0.
-  label: new Date(2023, 0, 1 + day).toLocaleDateString(undefined, { weekday: 'long' }),
-}));
+const weekdays = () =>
+  Array.from({ length: 7 }, (_, day) => ({
+    value: String(day),
+    // 2023-01-01 was a Sunday: day 0.
+    label: new Date(2023, 0, 1 + day).toLocaleDateString(locale, { weekday: 'long' }),
+  }));
 
 function Module({
   title,
@@ -71,8 +74,8 @@ function TeamSettings() {
   if (!team) {
     return (
       <NotFoundPanel
-        title="Team not found"
-        message={`There is no team with the key ${teamKey}, or it is private.`}
+        title={m.settings.team.notFound}
+        message={m.settings.team.notFoundMessage(teamKey)}
       />
     );
   }
@@ -91,21 +94,19 @@ function TeamSettings() {
           params={{ workspace: workspace.slug }}
           className="flex items-center gap-1 text-xs text-fg-muted hover:text-fg"
         >
-          <ChevronLeftIcon className="size-3.5" /> Teams
+          <ChevronLeftIcon className="size-3.5" /> {m.settings.sections.teams}
         </Link>
         <h2 className="flex items-center gap-2 text-lg font-semibold font-display">
           <TeamBadge teamKey={team.key} /> {team.name}
         </h2>
         {!canEdit && (
-          <p className="text-[13px] text-fg-muted">
-            Only admins and members of {team.name} can change these settings.
-          </p>
+          <p className="text-[13px] text-fg-muted">{m.settings.team.readOnly(team.name)}</p>
         )}
       </header>
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="team-name">Name</Label>
+          <Label htmlFor="team-name">{m.settings.name}</Label>
           <Input
             id="team-name"
             defaultValue={team.name}
@@ -119,7 +120,7 @@ function TeamSettings() {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="team-description">Description</Label>
+          <Label htmlFor="team-description">{m.settings.team.description}</Label>
           <Textarea
             id="team-description"
             defaultValue={team.description ?? ''}
@@ -136,16 +137,16 @@ function TeamSettings() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold">Modules</h3>
+        <h3 className="text-sm font-semibold">{m.settings.team.modules}</h3>
         <Module
-          title="Estimates"
-          description="Size tasks in story points or hours. Shown on tasks, lists, boards and cycles."
+          title={m.settings.team.estimates.title}
+          description={m.settings.team.estimates.description}
           enabled={team.estimatesEnabled}
           disabled={!canEdit}
           onToggle={(estimatesEnabled) => save({ estimatesEnabled })}
         >
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="estimate-scale">Scale</Label>
+            <Label htmlFor="estimate-scale">{m.settings.team.estimates.scale}</Label>
             <Select
               id="estimate-scale"
               value={team.estimateScale}
@@ -155,20 +156,20 @@ function TeamSettings() {
               }
               options={(['points', 'hours'] satisfies EstimateScale[]).map((scale) => ({
                 value: scale,
-                label: scale === 'points' ? 'Story points (1, 2, 3, 5, 8, 13)' : 'Hours',
+                label: m.settings.team.estimates[scale],
               }))}
             />
           </div>
         </Module>
         <Module
-          title="Cycles"
-          description="Plan work in fixed periods. Daiquiri keeps the next three cycles ready and moves unfinished tasks into the next cycle when one ends."
+          title={m.settings.team.cycles.title}
+          description={m.settings.team.cycles.description}
           enabled={team.cyclesEnabled}
           disabled={!canEdit}
           onToggle={(cyclesEnabled) => save({ cyclesEnabled })}
         >
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="cycle-length">Length</Label>
+            <Label htmlFor="cycle-length">{m.settings.team.cycles.length}</Label>
             <Select
               id="cycle-length"
               value={String(team.cycleWeeks)}
@@ -176,111 +177,99 @@ function TeamSettings() {
               onValueChange={(value) => save({ cycleWeeks: Number(value) })}
               options={[1, 2, 3, 4].map((weeks) => ({
                 value: String(weeks),
-                label: weeks === 1 ? '1 week' : `${weeks} weeks`,
+                label: m.settings.team.cycles.weeks(weeks),
               }))}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="cycle-start">Starts on</Label>
+            <Label htmlFor="cycle-start">{m.settings.team.cycles.startsOn}</Label>
             <Select
               id="cycle-start"
               value={String(team.cycleStartWeekday)}
               disabled={!canEdit}
               onValueChange={(value) => save({ cycleStartWeekday: Number(value) })}
-              options={WEEKDAYS}
+              options={weekdays()}
             />
           </div>
-          <p className="w-full text-xs text-fg-subtle">
-            Changes apply to cycles scheduled from now on.
-          </p>
+          <p className="w-full text-xs text-fg-subtle">{m.settings.team.cycles.note}</p>
         </Module>
         <Module
-          title="Triage"
-          description="New requests, from people outside the team or from forms, land in a Triage status first, so someone decides where they go."
+          title={m.settings.team.triage.title}
+          description={m.settings.team.triage.description}
           enabled={team.triageEnabled}
           disabled={!canEdit}
           onToggle={(triageEnabled) => save({ triageEnabled })}
         >
-          <p className="text-xs text-fg-subtle">
-            Triage shows first in the team’s list. Turning it off keeps the status and its tasks.
-          </p>
+          <p className="text-xs text-fg-subtle">{m.settings.team.triage.note}</p>
         </Module>
         <Module
-          title="Time tracking"
-          description="Log time on tasks with a timer or by hand. Everyone on the team sees the time logged."
+          title={m.settings.team.timeTracking.title}
+          description={m.settings.team.timeTracking.description}
           enabled={team.timeTrackingEnabled}
           disabled={!canEdit}
           onToggle={(timeTrackingEnabled) => save({ timeTrackingEnabled })}
         >
-          <p className="text-xs text-fg-subtle">
-            Each person runs one timer at a time; starting another stops it.
-          </p>
+          <p className="text-xs text-fg-subtle">{m.settings.team.timeTracking.note}</p>
         </Module>
       </div>
 
       <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-4">
         <div>
-          <h3 className="text-[13px] font-medium">Automations</h3>
-          <p className="text-xs text-fg-muted">
-            Assign, label, reschedule or notify automatically when tasks change.
-          </p>
+          <h3 className="text-[13px] font-medium">{m.settings.team.automations.title}</h3>
+          <p className="text-xs text-fg-muted">{m.settings.team.automations.description}</p>
         </div>
         <Link
           to="/$workspace/team/$teamKey/automations"
           params={{ workspace: workspace.slug, teamKey: team.key }}
           className={buttonVariants({ size: 'sm' })}
         >
-          Manage automations
+          {m.settings.team.automations.manage}
         </Link>
       </div>
 
       <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-4">
         <div>
-          <h3 className="text-[13px] font-medium">Forms</h3>
-          <p className="text-xs text-fg-muted">
-            Collect requests through a link, from members or from anyone, straight into Triage.
-          </p>
+          <h3 className="text-[13px] font-medium">{m.settings.team.forms.title}</h3>
+          <p className="text-xs text-fg-muted">{m.settings.team.forms.description}</p>
         </div>
         <Link
           to="/$workspace/team/$teamKey/forms"
           params={{ workspace: workspace.slug, teamKey: team.key }}
           className={buttonVariants({ size: 'sm' })}
         >
-          Manage forms
+          {m.settings.team.forms.manage}
         </Link>
       </div>
 
       <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-4">
         <div>
-          <h3 className="text-[13px] font-medium">Import tasks</h3>
-          <p className="text-xs text-fg-muted">
-            Straight from Linear, Asana or ClickUp, or from a CSV file.
-          </p>
+          <h3 className="text-[13px] font-medium">{m.settings.team.import.title}</h3>
+          <p className="text-xs text-fg-muted">{m.settings.team.import.description}</p>
         </div>
         <Link
           to="/$workspace/team/$teamKey/import"
           params={{ workspace: workspace.slug, teamKey: team.key }}
           className={buttonVariants({ size: 'sm' })}
         >
-          Import tasks
+          {m.settings.team.import.title}
         </Link>
       </div>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-semibold">Custom fields</legend>
+        <legend className="text-sm font-semibold">{m.settings.team.fields.title}</legend>
         <p className="text-xs text-fg-muted">
-          Turn on the workspace fields this team uses, up to 12. Admins define them in{' '}
+          {m.settings.team.fields.intro}{' '}
           <Link
             to="/$workspace/settings/fields"
             params={{ workspace: workspace.slug }}
             className="underline hover:text-fg"
           >
-            Fields
+            {m.settings.sections.fields}
           </Link>
           .
         </p>
         {data.fields.length === 0 ? (
-          <p className="text-[13px] text-fg-subtle">The workspace has no custom fields yet.</p>
+          <p className="text-[13px] text-fg-subtle">{m.settings.team.fields.empty}</p>
         ) : (
           <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
             {data.fields.map((field) => {

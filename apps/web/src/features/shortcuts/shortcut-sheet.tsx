@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogTitle, Input, Shortcut } from '@daiq/ui';
 import { useState } from 'react';
-import { SHORTCUTS, type ShortcutGroup } from './registry';
+import { m } from '../../i18n';
+import { isShortcutId, shortcutLabel, SHORTCUTS, type ShortcutGroup } from './registry';
 
 const GROUPS: ShortcutGroup[] = ['General', 'Navigation', 'Lists', 'Task', 'Inbox'];
 
@@ -14,15 +15,19 @@ export function ShortcutSheet({
 }) {
   const [query, setQuery] = useState('');
   const term = query.trim().toLowerCase();
-  const entries = Object.values(SHORTCUTS).filter(
-    (s) => !term || s.label.toLowerCase().includes(term) || s.keys.toLowerCase().includes(term),
-  );
+  const entries = Object.entries(SHORTCUTS).flatMap(([id, s]) => {
+    if (!isShortcutId(id)) return [];
+    const label = shortcutLabel(id);
+    const match =
+      !term || label.toLowerCase().includes(term) || s.keys.toLowerCase().includes(term);
+    return match ? [{ id, label, ...s }] : [];
+  });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="top-[10vh] max-h-[80vh] w-[min(100%-2rem,36rem)] gap-3 overflow-hidden">
-        <DialogTitle>Keyboard shortcuts</DialogTitle>
+        <DialogTitle>{shortcutLabel('help')}</DialogTitle>
         <Input
-          placeholder="Search shortcuts"
+          placeholder={m.shell.shortcuts.search}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoFocus
@@ -33,10 +38,12 @@ export function ShortcutSheet({
             if (items.length === 0) return null;
             return (
               <section key={group} className="mb-4">
-                <h3 className="mb-1 text-xs font-medium text-fg-subtle">{group}</h3>
+                <h3 className="mb-1 text-xs font-medium text-fg-subtle">
+                  {m.shell.shortcuts.groups[group]}
+                </h3>
                 <ul>
                   {items.map((s) => (
-                    <li key={s.label} className="flex h-8 items-center justify-between text-[13px]">
+                    <li key={s.id} className="flex h-8 items-center justify-between text-[13px]">
                       {s.label}
                       <Shortcut keys={s.keys} />
                     </li>
@@ -46,10 +53,7 @@ export function ShortcutSheet({
             );
           })}
         </div>
-        <p className="text-xs text-fg-subtle">
-          Single-key shortcuts never fire while you type. You can turn them off in Settings →
-          Preferences.
-        </p>
+        <p className="text-xs text-fg-subtle">{m.shell.shortcuts.hint}</p>
       </DialogContent>
     </Dialog>
   );

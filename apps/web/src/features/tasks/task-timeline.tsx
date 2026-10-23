@@ -22,6 +22,7 @@ import {
   type KeyboardEvent,
   type PointerEvent,
 } from 'react';
+import { locale, m } from '../../i18n';
 import { useToday } from '../../lib/use-today';
 import { useShell } from '../shell/shell-context';
 import { useShortcuts } from '../shortcuts/use-shortcuts';
@@ -39,9 +40,6 @@ const HEADER = 52;
 type Row =
   | { kind: 'group'; key: string; label: string }
   | { kind: 'task'; key: string; task: Task; span: Span };
-
-const short = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
-const monthName = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' });
 
 export interface TaskTimelineProps {
   groups: TaskGroup[];
@@ -66,6 +64,12 @@ export function TaskTimeline({ groups, showGroupHeaders, peekId, onOpen }: TaskT
   const scroller = useRef<HTMLDivElement>(null);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const left = isMobile ? 150 : 280;
+  const short = useMemo(
+    () => new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' }),
+    [],
+  );
+  const shortSpan = (span: Span) =>
+    [short.format(parseIsoDate(span.start)), short.format(parseIsoDate(span.end))] as const;
 
   const { rows, undated } = useMemo(() => {
     const result: Row[] = [];
@@ -111,13 +115,13 @@ export function TaskTimeline({ groups, showGroupHeaders, peekId, onOpen }: TaskT
   const commit = (task: Task, delta: number, edge: SpanEdge) => {
     const dates = moveTaskDates(task, delta, edge);
     if (dates.startDate === task.startDate && dates.dueDate === task.dueDate) return;
-    actions.update([task], dates, edge === 'both' ? 'Move dates' : 'Change dates');
+    actions.update(
+      [task],
+      dates,
+      edge === 'both' ? m.tasks.undo.moveDates : m.tasks.undo.changeDates,
+    );
     const span = taskSpan(dates);
-    if (span) {
-      announce(
-        `${identifier(task)} now runs ${short.format(parseIsoDate(span.start))} to ${short.format(parseIsoDate(span.end))}`,
-      );
-    }
+    if (span) announce(m.tasks.timeline.runs(identifier(task), ...shortSpan(span)));
   };
 
   const focusBar = (index: number) => {
@@ -178,8 +182,8 @@ export function TaskTimeline({ groups, showGroupHeaders, peekId, onOpen }: TaskT
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex h-11 shrink-0 items-center gap-3 border-b border-border px-3 text-xs text-fg-muted md:px-4">
         <span className="mr-auto">
-          {taskRows.length} {taskRows.length === 1 ? 'task' : 'tasks'} with dates
-          {undated > 0 && ` · ${undated} without dates not shown`}
+          {m.tasks.timeline.dated(taskRows.length)}
+          {undated > 0 && ` · ${m.tasks.timeline.undated(undated)}`}
         </span>
         <Button
           variant="ghost"
@@ -188,17 +192,15 @@ export function TaskTimeline({ groups, showGroupHeaders, peekId, onOpen }: TaskT
             if (scroller.current) scroller.current.scrollLeft = todayX - left - 3 * DAY;
           }}
         >
-          Today
+          {m.common.today}
         </Button>
       </div>
       {rows.length === 0 ? (
-        <p className="p-6 text-[13px] text-fg-muted">
-          No task here has a start or due date. Give one a date to place it on the timeline.
-        </p>
+        <p className="p-6 text-[13px] text-fg-muted">{m.tasks.timeline.empty}</p>
       ) : (
         <section
           ref={scroller}
-          aria-label="Timeline"
+          aria-label={m.tasks.timeline.label}
           // Focusable so keyboard users can scroll it.
           // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
           tabIndex={0}
@@ -261,7 +263,10 @@ export function TaskTimeline({ groups, showGroupHeaders, peekId, onOpen }: TaskT
                   <Bar
                     task={row.task}
                     span={row.span}
-                    identifier={identifier(row.task)}
+                    label={m.tasks.timeline.bar(
+                      `${identifier(row.task)} ${row.task.title}`,
+                      ...shortSpan(row.span),
+                    )}
                     left={x(row.span.start)}
                     peeked={peekId === row.task.id}
                     onCommit={commit}
@@ -311,6 +316,7 @@ export function TaskTimeline({ groups, showGroupHeaders, peekId, onOpen }: TaskT
 }
 
 function TimelineHeader({ days, left }: { days: string[]; left: number }) {
+  const monthName = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' });
   const months = days.reduce<{ key: string; label: string; start: number; count: number }[]>(
     (list, day, index) => {
       const key = day.slice(0, 7);
@@ -356,7 +362,7 @@ function TimelineHeader({ days, left }: { days: string[]; left: number }) {
 function Bar({
   task,
   span,
-  identifier,
+  label,
   left,
   peeked,
   onCommit,
@@ -366,7 +372,7 @@ function Bar({
 }: {
   task: Task;
   span: Span;
-  identifier: string;
+  label: string;
   left: number;
   peeked: boolean;
   onCommit: (task: Task, delta: number, edge: SpanEdge) => void;
@@ -412,7 +418,7 @@ function Bar({
       <button
         type="button"
         data-bar-id={task.id}
-        aria-label={`${identifier} ${task.title}, ${short.format(parseIsoDate(span.start))} to ${short.format(parseIsoDate(span.end))}`}
+        aria-label={label}
         onPointerDown={begin('both')}
         onPointerMove={track}
         onPointerUp={end}

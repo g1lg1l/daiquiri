@@ -1,6 +1,7 @@
 import { Button, cn, Tooltip } from '@daiq/ui';
 import { PanelLeftIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { m } from '../../i18n';
 import { SHORTCUTS } from '../shortcuts/registry';
 import { useShell } from './shell-context';
 
@@ -25,8 +26,13 @@ export function ViewHeader({
       )}
     >
       {(!sidebarOpen || isMobile) && (
-        <Tooltip label="Show sidebar" shortcut={SHORTCUTS.toggleSidebar.keys}>
-          <Button variant="ghost" size="icon-sm" aria-label="Show sidebar" onClick={toggleSidebar}>
+        <Tooltip label={m.shell.nav.showSidebar} shortcut={SHORTCUTS.toggleSidebar.keys}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={m.shell.nav.showSidebar}
+            onClick={toggleSidebar}
+          >
             <PanelLeftIcon />
           </Button>
         </Tooltip>

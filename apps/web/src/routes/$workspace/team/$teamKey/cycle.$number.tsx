@@ -26,6 +26,7 @@ import { BurnUp } from '../../../../features/planning/burn-up';
 import { TaskView } from '../../../../features/tasks/task-view';
 import { useSetSearch } from '../../../../features/views/use-set-search';
 import { useWorkspaceData } from '../../../../features/workspace/workspace-context';
+import { m } from '../../../../i18n/team';
 import { formString } from '../../../../lib/forms';
 import { useToday } from '../../../../lib/use-today';
 import { cycleDates } from './cycles';
@@ -58,8 +59,8 @@ function CyclePage() {
   if (!team || (cycles.isSuccess && !cycle)) {
     return (
       <NotFoundPanel
-        title="Cycle not found"
-        message={`${teamKey} has no cycle ${number}, or cycles are off for this team.`}
+        title={m.team.cycle.notFound}
+        message={m.team.cycle.noCycle(teamKey, number)}
       />
     );
   }
@@ -75,30 +76,29 @@ function CyclePage() {
   }).length;
   const state = cycleState(cycle, today);
   const daysLeft = daysBetween(today, cycle.endsOn) + 1;
+  const t = m.team.cycle;
 
   const summary = (
     <div className="flex flex-col gap-4 border-b border-border px-4 py-4 md:flex-row md:items-start md:gap-8 md:px-6">
       <dl className="grid shrink-0 grid-cols-3 gap-6 text-[13px] md:grid-cols-1 md:gap-3">
         <div>
-          <dt className="text-xs text-fg-subtle">Dates</dt>
+          <dt className="text-xs text-fg-subtle">{t.dates}</dt>
           <dd>{cycleDates(cycle)}</dd>
         </div>
         <div>
           <dt className="text-xs text-fg-subtle">
-            {state === 'past' ? 'Ended' : state === 'upcoming' ? 'Starts in' : 'Time left'}
+            {state === 'past' ? t.ended : state === 'upcoming' ? t.startsIn : t.timeLeft}
           </dt>
           <dd>
             {state === 'past'
-              ? 'Closed'
-              : state === 'upcoming'
-                ? `${daysBetween(today, cycle.startsOn)} days`
-                : `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}`}
+              ? t.closed
+              : t.days(state === 'upcoming' ? daysBetween(today, cycle.startsOn) : daysLeft)}
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-fg-subtle">Done</dt>
+          <dt className="text-xs text-fg-subtle">{t.done}</dt>
           <dd className="tabular">
-            {done} of {open.length}
+            {t.doneOf(done, open.length)}
             {open.length > 0 && ` (${Math.round((done / open.length) * 100)}%)`}
           </dd>
         </div>
@@ -129,13 +129,13 @@ function CyclePage() {
         subheader={summary}
         headerExtra={
           <Button variant="ghost" size="sm" onClick={() => setRenaming(true)}>
-            <PencilIcon /> <span className="max-md:sr-only">Rename</span>
+            <PencilIcon /> <span className="max-md:sr-only">{m.common.rename}</span>
           </Button>
         }
       />
       <Dialog open={renaming} onOpenChange={setRenaming}>
         <DialogContent>
-          <DialogTitle>Rename cycle {cycle.number}</DialogTitle>
+          <DialogTitle>{t.renameTitle(cycle.number)}</DialogTitle>
           <form
             className="flex flex-col gap-4"
             onSubmit={(event) => {
@@ -146,23 +146,23 @@ function CyclePage() {
             }}
           >
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cycle-name">Name</Label>
+              <Label htmlFor="cycle-name">{m.team.nameLabel}</Label>
               <Input
                 id="cycle-name"
                 name="name"
                 maxLength={80}
                 autoFocus
                 defaultValue={cycle.name ?? ''}
-                placeholder="Launch week"
+                placeholder={t.namePlaceholder}
               />
-              <p className="text-xs text-fg-subtle">Leave empty to use the number only.</p>
+              <p className="text-xs text-fg-subtle">{t.nameHint}</p>
             </div>
             <DialogFooter>
               <Button type="button" onClick={() => setRenaming(false)}>
-                Cancel
+                {m.common.cancel}
               </Button>
               <Button type="submit" variant="primary">
-                Save
+                {m.common.save}
               </Button>
             </DialogFooter>
           </form>

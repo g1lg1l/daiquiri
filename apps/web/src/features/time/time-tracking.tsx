@@ -3,6 +3,7 @@ import { formatClock, formatDuration, parseDuration, type Task } from '@daiq/dom
 import { Avatar, Button, FieldError, Input, Label } from '@daiq/ui';
 import { PlayIcon, PlusIcon, SquareIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
+import { locale, m } from '../../i18n';
 import { useToday } from '../../lib/use-today';
 import { DateField } from '../tasks/task-actions';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
@@ -12,7 +13,7 @@ const seconds = (start: string, end: string) =>
   (new Date(end).getTime() - new Date(start).getTime()) / 1000;
 
 const day = (iso: string) =>
-  new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  new Date(iso).toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 
 /** Time logged on a task: a timer and manual entries (feature spec §3.5). */
 export function TimeTracking({ task }: { task: Task }) {
@@ -39,27 +40,27 @@ export function TimeTracking({ task }: { task: Task }) {
     <section aria-labelledby="time-heading" className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <h2 id="time-heading" className="text-[13px] font-semibold">
-          Time
+          {m.task.time.heading}
         </h2>
         <span
           className="text-xs text-fg-muted tabular"
-          aria-label={`Total ${formatDuration(total)}`}
+          aria-label={m.task.time.total(formatDuration(total))}
         >
-          {total > 0 ? formatDuration(total) : 'None logged'}
+          {total > 0 ? formatDuration(total) : m.task.time.none}
         </span>
         <span className="ml-auto flex gap-1">
           {runningHere ? (
             <Button size="sm" onClick={() => timer.stop.mutate()}>
-              <SquareIcon className="fill-current" /> Stop
+              <SquareIcon className="fill-current" /> {m.task.time.stop}
               <span className="tabular">{formatClock(elapsed)}</span>
             </Button>
           ) : (
             <Button size="sm" variant="ghost" onClick={() => timer.start.mutate(task)}>
-              <PlayIcon /> Start timer
+              <PlayIcon /> {m.task.time.start}
             </Button>
           )}
           <Button size="sm" variant="ghost" onClick={() => setLogging(!logging)}>
-            <PlusIcon /> Log time
+            <PlusIcon /> {m.task.time.log}
           </Button>
         </span>
       </div>
@@ -71,11 +72,11 @@ export function TimeTracking({ task }: { task: Task }) {
             event.preventDefault();
             const length = parseDuration(duration);
             if (!length) {
-              setError('Enter a duration between 1 minute and 24 hours, like 1h 30m or 45m.');
+              setError(m.task.time.durationError);
               return;
             }
             if (date > today) {
-              setError('Pick today or an earlier day.');
+              setError(m.task.time.futureError);
               return;
             }
             // Today's entries end now; earlier days at the end of a working day.
@@ -99,7 +100,7 @@ export function TimeTracking({ task }: { task: Task }) {
           }}
         >
           <div className="flex w-28 flex-col gap-1.5">
-            <Label htmlFor="time-duration">Duration</Label>
+            <Label htmlFor="time-duration">{m.task.time.duration}</Label>
             <Input
               id="time-duration"
               value={duration}
@@ -110,26 +111,26 @@ export function TimeTracking({ task }: { task: Task }) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-medium">Date</span>
+            <span className="text-[13px] font-medium">{m.task.time.date}</span>
             <DateField
-              label="Date"
+              label={m.task.time.date}
               value={date}
               onChange={(value) => setDate(value ?? today)}
               variant="secondary"
             />
           </div>
           <div className="flex min-w-40 flex-1 flex-col gap-1.5">
-            <Label htmlFor="time-note">Note</Label>
+            <Label htmlFor="time-note">{m.task.time.note}</Label>
             <Input
               id="time-note"
               value={note}
               maxLength={500}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Optional"
+              placeholder={m.common.optional}
             />
           </div>
           <Button type="submit" variant="primary" size="sm">
-            Log
+            {m.task.time.submit}
           </Button>
           {error && <FieldError className="w-full">{error}</FieldError>}
         </form>
@@ -138,7 +139,7 @@ export function TimeTracking({ task }: { task: Task }) {
       {finished.length > 0 && (
         <ul className="flex flex-col gap-1">
           {finished.map((entry) => {
-            const person = data.membersById.get(entry.userId)?.displayName ?? 'Former member';
+            const person = data.membersById.get(entry.userId)?.displayName ?? m.common.formerMember;
             return (
               <li
                 key={entry.id}
@@ -156,7 +157,10 @@ export function TimeTracking({ task }: { task: Task }) {
                     variant="ghost"
                     size="icon-sm"
                     className="ml-auto opacity-0 group-hover/entry:opacity-100 focus-visible:opacity-100"
-                    aria-label={`Delete ${formatDuration(seconds(entry.startedAt, entry.endedAt ?? entry.startedAt))} on ${day(entry.startedAt)}`}
+                    aria-label={m.task.time.deleteEntry(
+                      formatDuration(seconds(entry.startedAt, entry.endedAt ?? entry.startedAt)),
+                      day(entry.startedAt),
+                    )}
                     onClick={() => actions.remove.mutate(entry.id)}
                   >
                     <Trash2Icon />

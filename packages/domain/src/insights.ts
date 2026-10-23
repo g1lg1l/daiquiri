@@ -3,6 +3,7 @@ import { formatFieldValue } from './fields';
 import type { CustomField, Status, Task } from './model';
 import { PRIORITY_LABEL } from './priority';
 import { isClosedCategory } from './status';
+import { formatNumber, words } from './text';
 
 /** Local calendar day of a timestamp. */
 const dayOf = (timestamp: string) => toIsoDate(new Date(timestamp));
@@ -136,9 +137,9 @@ export function summarize(
 
 /** "5 h", "3.5 d": hours below two days, days above. */
 export function formatHours(hours: number): string {
-  if (hours < 48) return `${Math.round(hours)} h`;
+  if (hours < 48) return `${formatNumber(Math.round(hours))} h`;
   const days = hours / 24;
-  return `${days < 10 ? Math.round(days * 10) / 10 : Math.round(days)} d`;
+  return `${formatNumber(days < 10 ? Math.round(days * 10) / 10 : Math.round(days))} ${words.dayUnit}`;
 }
 
 // Export ---------------------------------------------------------------------

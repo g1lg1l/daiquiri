@@ -1,10 +1,12 @@
+import { words } from './text';
+
 /** "1h 30m", "45m", "2h": the time-tracking display (no seconds). */
 export function formatDuration(seconds: number): string {
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 60) return `${minutes}${words.minuteUnit}`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  return rest ? `${hours}h ${rest}m` : `${hours}h`;
+  return rest ? `${hours}h ${rest}${words.minuteUnit}` : `${hours}h`;
 }
 
 /** "00:12:31": a running timer. */
@@ -24,7 +26,7 @@ export function parseDuration(input: string): number | null {
   const text = input.trim().toLowerCase().replace(',', '.');
   let minutes: number | null = null;
   const clock = /^(\d{1,2}):([0-5]\d)$/.exec(text);
-  const units = /^(?:(\d+(?:\.\d+)?)\s*h)?\s*(?:(\d+)\s*m?)?$/.exec(text);
+  const units = /^(?:(\d+(?:\.\d+)?)\s*h)?\s*(?:(\d+)\s*(?:min|m)?)?$/.exec(text);
   if (clock) minutes = Number(clock[1]) * 60 + Number(clock[2]);
   else if (units && (units[1] || units[2])) {
     // A bare number is minutes; after hours it is the minutes part.

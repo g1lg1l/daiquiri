@@ -30,6 +30,7 @@ import {
   UsersIcon,
 } from 'lucide-react';
 import { useState } from 'react';
+import { m } from '../../i18n';
 import { formString } from '../../lib/forms';
 import { newId } from '../../lib/ids';
 import { pushUndo } from '../undo/undo';
@@ -71,13 +72,13 @@ function ViewDialog({
             event.preventDefault();
             const form = new FormData(event.currentTarget);
             const name = formString(form, 'name').trim();
-            if (!name) return setError('Give the view a name.');
+            if (!name) return setError(m.shell.savedViews.nameRequired);
             onSubmit({ name, isShared: form.get('shared') === 'on' });
             onOpenChange(false);
           }}
         >
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="view-name">Name</Label>
+            <Label htmlFor="view-name">{m.shell.savedViews.name}</Label>
             <Input
               id="view-name"
               name="name"
@@ -85,7 +86,7 @@ function ViewDialog({
               maxLength={80}
               autoFocus
               defaultValue={initial.name}
-              placeholder="Open bugs"
+              placeholder={m.shell.savedViews.namePlaceholder}
             />
           </div>
           {/* Guests can only keep private views (enforced by RLS too). */}
@@ -97,13 +98,13 @@ function ViewDialog({
                 defaultChecked={initial.isShared}
                 className="accent-(--accent)"
               />
-              Share with everyone in the workspace
+              {m.shell.savedViews.share}
             </label>
           )}
           {error && <FieldError>{error}</FieldError>}
           <DialogFooter>
             <Button type="button" onClick={() => onOpenChange(false)}>
-              Cancel
+              {m.common.cancel}
             </Button>
             <Button type="submit" variant="primary">
               {submitLabel}
@@ -141,13 +142,13 @@ export function SavedViewControls({
     return (
       <>
         <Button variant="ghost" size="sm" onClick={() => setDialog('create')}>
-          <BookmarkPlusIcon /> <span className="max-md:sr-only">Save view</span>
+          <BookmarkPlusIcon /> <span className="max-md:sr-only">{m.shell.savedViews.save}</span>
         </Button>
         <ViewDialog
           open={dialog === 'create'}
           onOpenChange={(open) => setDialog(open ? 'create' : null)}
-          title="Save view"
-          submitLabel="Save view"
+          title={m.shell.savedViews.save}
+          submitLabel={m.shell.savedViews.save}
           initial={{ name: '', isShared: false }}
           onSubmit={({ name, isShared }) => {
             const id = newId();
@@ -174,9 +175,9 @@ export function SavedViewControls({
     <>
       {modified && (
         <span className="mr-1 flex items-center gap-1 rounded-md bg-surface-muted py-0.5 pr-0.5 pl-2 text-xs text-fg-muted">
-          Modified
+          {m.shell.savedViews.modified}
           <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={reset}>
-            <RotateCcwIcon /> Reset
+            <RotateCcwIcon /> {m.shell.savedViews.reset}
           </Button>
           {canEdit && (
             <Button
@@ -187,15 +188,15 @@ export function SavedViewControls({
                 actions.update.mutate({ id: view.id, patch: { config: toViewConfig(search) } })
               }
             >
-              Save
+              {m.common.save}
             </Button>
           )}
         </span>
       )}
       {view.isShared && (
-        <Tooltip label="Shared with the workspace">
+        <Tooltip label={m.shell.savedViews.shared}>
           <span className="flex size-7 items-center justify-center text-fg-subtle">
-            <UsersIcon className="size-4" aria-label="Shared with the workspace" />
+            <UsersIcon className="size-4" aria-label={m.shell.savedViews.shared} />
           </span>
         </Tooltip>
       )}
@@ -204,13 +205,15 @@ export function SavedViewControls({
         <>
           <Menu>
             <MenuTrigger
-              render={<Button variant="ghost" size="icon-sm" aria-label="View actions" />}
+              render={
+                <Button variant="ghost" size="icon-sm" aria-label={m.shell.savedViews.actions} />
+              }
             >
               <MoreHorizontalIcon />
             </MenuTrigger>
             <MenuContent align="end">
               <MenuItem onClick={() => setDialog('rename')}>
-                <PencilIcon /> Rename or share
+                <PencilIcon /> {m.shell.savedViews.renameOrShare}
               </MenuItem>
               <MenuItem
                 destructive
@@ -223,25 +226,25 @@ export function SavedViewControls({
                   setSearch({ view: undefined });
                   pushUndo(
                     {
-                      label: `Delete view ${view.name}`,
+                      label: m.shell.savedViews.deleteUndo(view.name),
                       undo: async () => {
                         await actions.create.mutateAsync(view);
                         if (favorite) await toggleFavorite.mutateAsync({ favorite, active: false });
                       },
                     },
-                    { toast: `Deleted view ${view.name}` },
+                    { toast: m.shell.savedViews.deleted(view.name) },
                   );
                 }}
               >
-                <Trash2Icon /> Delete view
+                <Trash2Icon /> {m.shell.savedViews.delete}
               </MenuItem>
             </MenuContent>
           </Menu>
           <ViewDialog
             open={dialog === 'rename'}
             onOpenChange={(open) => setDialog(open ? 'rename' : null)}
-            title="Rename view"
-            submitLabel="Save"
+            title={m.shell.savedViews.rename}
+            submitLabel={m.common.save}
             initial={{ name: view.name, isShared: view.isShared }}
             onSubmit={(patch) => actions.update.mutate({ id: view.id, patch })}
           />

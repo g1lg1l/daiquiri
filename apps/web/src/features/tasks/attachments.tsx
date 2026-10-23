@@ -23,6 +23,7 @@ import { containsFiles, getFiles } from '@atlaskit/pragmatic-drag-and-drop/exter
 import { DownloadIcon, FileIcon, PaperclipIcon, Trash2Icon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { m } from '../../i18n';
 import { newId } from '../../lib/ids';
 import { timeAgo } from '../../lib/time';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
@@ -81,12 +82,12 @@ export function Attachments({ task }: { task: Task }) {
     >
       <div className="flex items-center gap-2">
         <h2 id={`attachments-${task.id}`} className="text-[13px] font-semibold">
-          Attachments
+          {m.task.attachments.heading}
         </h2>
         {list.length > 0 && <span className="text-xs text-fg-subtle tabular">{list.length}</span>}
         {anonymous ? (
           <Link to="/signup" className="ml-auto text-xs text-accent-text hover:underline">
-            Sign up to attach files
+            {m.task.attachments.signUp}
           </Link>
         ) : (
           <Button
@@ -95,7 +96,7 @@ export function Attachments({ task }: { task: Task }) {
             className="ml-auto text-fg-muted"
             onClick={() => input.current?.click()}
           >
-            <PaperclipIcon /> Attach files
+            <PaperclipIcon /> {m.task.attachments.attach}
           </Button>
         )}
         <input
@@ -104,7 +105,7 @@ export function Attachments({ task }: { task: Task }) {
           multiple
           className="sr-only"
           tabIndex={-1}
-          aria-label="Attach files"
+          aria-label={m.task.attachments.attach}
           onChange={(event) => {
             uploadAll(event.target.files ?? []);
             event.target.value = '';
@@ -112,7 +113,7 @@ export function Attachments({ task }: { task: Task }) {
         />
       </div>
       {list.length === 0 && !anonymous && (
-        <p className="text-xs text-fg-subtle">Drop files here, up to 25 MB each.</p>
+        <p className="text-xs text-fg-subtle">{m.task.attachments.dropHint}</p>
       )}
       {images.length > 0 && (
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2">
@@ -140,23 +141,21 @@ export function Attachments({ task }: { task: Task }) {
       )}
       <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
         <DialogContent>
-          <DialogTitle>Delete {deleting?.fileName}?</DialogTitle>
-          <DialogDescription>
-            The file is removed for everyone. This can’t be undone.
-          </DialogDescription>
+          <DialogTitle>{m.task.attachments.confirmTitle(deleting?.fileName ?? '')}</DialogTitle>
+          <DialogDescription>{m.task.attachments.confirmBody}</DialogDescription>
           <DialogFooter>
-            <Button onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button onClick={() => setDeleting(null)}>{m.common.cancel}</Button>
             <Button
               variant="danger"
               onClick={() => {
                 if (deleting)
                   actions.remove.mutate(deleting, {
-                    onSuccess: () => toast(`Deleted ${deleting.fileName}`),
+                    onSuccess: () => toast(m.task.attachments.deleted(deleting.fileName)),
                   });
                 setDeleting(null);
               }}
             >
-              Delete file
+              {m.task.attachments.deleteFile}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -168,10 +167,10 @@ export function Attachments({ task }: { task: Task }) {
 function DownloadButton({ attachment }: { attachment: ListedAttachment }) {
   const url = useAttachmentUrl(attachment.uploading ? undefined : attachment, true);
   return (
-    <Tooltip label={`Download ${attachment.fileName}`}>
+    <Tooltip label={m.task.attachments.download(attachment.fileName)}>
       <a
         href={url.data}
-        aria-label={`Download ${attachment.fileName}`}
+        aria-label={m.task.attachments.download(attachment.fileName)}
         aria-disabled={!url.data}
         className="flex size-7 items-center justify-center rounded-md text-fg-muted hover:bg-surface-muted hover:text-fg aria-disabled:pointer-events-none aria-disabled:opacity-50"
       >
@@ -183,8 +182,13 @@ function DownloadButton({ attachment }: { attachment: ListedAttachment }) {
 
 function DeleteButton({ name, onDelete }: { name: string; onDelete: () => void }) {
   return (
-    <Tooltip label="Delete">
-      <Button variant="ghost" size="icon-sm" aria-label={`Delete ${name}`} onClick={onDelete}>
+    <Tooltip label={m.common.delete}>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label={m.task.attachments.delete(name)}
+        onClick={onDelete}
+      >
         <Trash2Icon />
       </Button>
     </Tooltip>

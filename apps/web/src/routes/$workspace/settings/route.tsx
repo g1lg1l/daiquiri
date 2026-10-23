@@ -4,30 +4,34 @@ import { createFileRoute, Link, Outlet } from '@tanstack/react-router';
 import { SettingsIcon } from 'lucide-react';
 import { ViewHeader } from '../../../features/shell/view-header';
 import { useWorkspace } from '../../../features/workspace/workspace-context';
+import { m } from '../../../i18n/settings';
 
 export const Route = createFileRoute('/$workspace/settings')({ component: SettingsLayout });
 
 const SECTIONS = [
-  { to: '/$workspace/settings', label: 'General', exact: true },
-  { to: '/$workspace/settings/members', label: 'Members', exact: false },
-  { to: '/$workspace/settings/teams', label: 'Teams', exact: false },
-  { to: '/$workspace/settings/labels', label: 'Labels', exact: false },
-  { to: '/$workspace/settings/fields', label: 'Fields', exact: false },
-  { to: '/$workspace/settings/templates', label: 'Templates', exact: false },
-  { to: '/$workspace/settings/import', label: 'Import', exact: false },
-  { to: '/$workspace/settings/webhooks', label: 'Webhooks', exact: false },
-  { to: '/$workspace/settings/trash', label: 'Trash', exact: false },
-  { to: '/$workspace/settings/preferences', label: 'Preferences', exact: false },
+  { to: '/$workspace/settings', key: 'general', exact: true },
+  { to: '/$workspace/settings/members', key: 'members', exact: false },
+  { to: '/$workspace/settings/teams', key: 'teams', exact: false },
+  { to: '/$workspace/settings/labels', key: 'labels', exact: false },
+  { to: '/$workspace/settings/fields', key: 'fields', exact: false },
+  { to: '/$workspace/settings/templates', key: 'templates', exact: false },
+  { to: '/$workspace/settings/import', key: 'import', exact: false },
+  { to: '/$workspace/settings/webhooks', key: 'webhooks', exact: false },
+  { to: '/$workspace/settings/trash', key: 'trash', exact: false },
+  { to: '/$workspace/settings/preferences', key: 'preferences', exact: false },
 ] as const;
 
 function SettingsLayout() {
   const { workspace } = useWorkspace();
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <ViewHeader title="Settings" icon={<SettingsIcon className="size-4 text-fg-muted" />} />
+      <ViewHeader
+        title={m.settings.title}
+        icon={<SettingsIcon className="size-4 text-fg-muted" />}
+      />
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <nav
-          aria-label="Settings"
+          aria-label={m.settings.title}
           className="flex shrink-0 gap-1 overflow-x-auto border-b border-border px-3 py-2 md:w-48 md:flex-col md:border-r md:border-b-0"
         >
           {SECTIONS.map((section) => (
@@ -41,12 +45,12 @@ function SettingsLayout() {
               )}
               activeProps={{ className: 'bg-surface-emphasis font-medium text-fg' }}
             >
-              {section.label}
+              {m.settings.sections[section.key]}
             </Link>
           ))}
           {!can(workspace.role, 'settings.advanced') && (
             <p className="hidden px-2 pt-3 text-xs text-fg-subtle md:block">
-              Some settings are only available to admins.
+              {m.settings.adminsOnly}
             </p>
           )}
         </nav>

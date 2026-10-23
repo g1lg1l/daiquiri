@@ -1,3 +1,82 @@
 import type { auth as source } from '../en/auth';
 
-export const auth: typeof source = {};
+export const auth: typeof source = {
+  layout: {
+    tagline: 'Tutto ciò che serve al tuo team.',
+    taglineRest: 'Niente di superfluo.',
+    openSource: 'Open source e installabile sui tuoi server',
+  },
+  email: 'Email',
+  password: 'Password',
+  signIn: 'Accedi',
+  login: {
+    checkEmail: 'Controlla la tua email',
+    linkSent: 'Ti abbiamo inviato un link di accesso. Aprilo in questo browser per continuare.',
+    newHere: 'Nuovo su Daiquiri?',
+    createAccount: 'Crea un account',
+    justLooking: 'Vuoi solo dare un’occhiata?',
+    tryDemo: 'Prova lo spazio di lavoro demo',
+    sendLink: 'Inviami un link di accesso',
+    linkInstead: 'Usa un link di accesso',
+    passwordInstead: 'Usa una password',
+  },
+  signup: {
+    confirmTitle: 'Conferma la tua email',
+    confirmSentTo: 'Abbiamo inviato un link di conferma a',
+    confirmOpen: '. Aprilo per completare la creazione dell’account.',
+    title: 'Crea il tuo account',
+    haveAccount: 'Hai già un account?',
+    name: 'Il tuo nome',
+    workEmail: 'Email di lavoro',
+    passwordHint: 'Almeno 8 caratteri.',
+    submit: 'Crea account',
+  },
+  onboarding: {
+    title: 'Configura il tuo spazio di lavoro',
+    name: 'Nome dello spazio di lavoro',
+    namePlaceholder: 'Acme S.r.l.',
+    address: 'Indirizzo web',
+    slugError: 'Usa da 2 a 40 lettere minuscole, cifre e trattini singoli.',
+    howTeamWorks: 'Come lavora il tuo primo team?',
+    teams: {
+      software: 'Sviluppo',
+      marketing: 'Marketing',
+      operations: 'Operazioni',
+      generic: 'Generale',
+    },
+    firstTeam: 'Primo team',
+    numbered: 'Le attività saranno numerate',
+    submit: 'Crea spazio di lavoro',
+  },
+  invite: {
+    joining: 'Accesso allo spazio di lavoro',
+    unusable: 'Questo invito non può essere usato',
+    unusableHint: 'Potrebbe essere scaduto, revocato o già accettato. Chiedine uno nuovo.',
+    join: (workspace) => `Unisciti a ${workspace}`,
+    invitedAs: 'Ti hanno invitato come',
+    roles: { owner: 'proprietario', admin: 'amministratore', member: 'membro', guest: 'ospite' },
+    accept: 'Accetta l’invito',
+  },
+  demo: {
+    failed: 'Non è stato possibile avviare la demo',
+    preparing: 'Preparazione dello spazio di lavoro demo…',
+    about:
+      'Riceverai una copia privata di un’azienda di esempio con tre team, progetti e attività. Scompare dopo 24 ore.',
+  },
+  intake: {
+    unavailable: 'Questo modulo non è disponibile',
+    unavailableHint:
+      'Il link potrebbe essere sbagliato, il modulo potrebbe essere chiuso o aperto solo ai membri del suo spazio di lavoro. Se sei un membro, accedi e apri di nuovo il link.',
+    thanks: 'Grazie, l’abbiamo ricevuto',
+    willLook: (team, workspace, reference) =>
+      `${team} di ${workspace} lo prenderà in carico${reference ? `. Il tuo riferimento è ${reference}.` : '.'}`,
+    sendAnother: 'Invia un altro',
+    choose: 'Scegli…',
+    subject: 'Oggetto',
+    details: 'Dettagli',
+    urgency: 'Quanto è urgente?',
+    yourEmail: 'La tua email',
+    emailHint: 'Così il team può risponderti. Solo il team la vedrà.',
+    send: 'Invia',
+  },
+};

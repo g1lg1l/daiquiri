@@ -161,6 +161,8 @@ export {
   parseFieldFilter,
 } from './fields';
 export { exportRows, formatHours, median, summarize, toCsv, weeklyThroughput } from './insights';
+export { localizeDomain } from './localize';
+export type { DomainTexts } from './localize';
 export type { ExportContext, ExportRow, InsightSummary, InsightWeek } from './insights';
 export {
   describeRecurrence,

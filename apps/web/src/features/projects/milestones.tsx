@@ -24,13 +24,13 @@ import {
 } from '@daiq/ui';
 import { DiamondIcon, MoreHorizontalIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
+import { locale } from '../../i18n';
+import { m } from '../../i18n/team';
 import { formString } from '../../lib/forms';
 import { newId } from '../../lib/ids';
 import { DateField } from '../tasks/task-actions';
 import { pushUndo } from '../undo/undo';
 import { useWorkspaceData } from '../workspace/workspace-context';
-
-const shortDate = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
 
 function MilestoneForm({
   initial,
@@ -53,7 +53,7 @@ function MilestoneForm({
       }}
     >
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="milestone-name">Name</Label>
+        <Label htmlFor="milestone-name">{m.team.nameLabel}</Label>
         <Input
           id="milestone-name"
           name="name"
@@ -61,13 +61,13 @@ function MilestoneForm({
           maxLength={120}
           autoFocus
           defaultValue={initial?.name}
-          placeholder="Beta"
+          placeholder={m.team.milestones.namePlaceholder}
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <span className="text-[13px] font-medium">Target date</span>
+        <span className="text-[13px] font-medium">{m.team.targetDate}</span>
         <DateField
-          label="Target date"
+          label={m.team.targetDate}
           value={targetDate}
           onChange={setTargetDate}
           variant="secondary"
@@ -91,7 +91,9 @@ export function Milestones({ project, tasks }: { project: Project; tasks: readon
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const list = milestones.data ?? [];
-  const editingMilestone = list.find((m) => m.id === editing);
+  const editingMilestone = list.find((milestone) => milestone.id === editing);
+  const t = m.team.milestones;
+  const shortDate = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
 
   const progress = (id: string) => {
     let done = 0;
@@ -108,7 +110,7 @@ export function Milestones({ project, tasks }: { project: Project; tasks: readon
 
   return (
     <section
-      aria-label="Milestones"
+      aria-label={t.label}
       className="flex items-stretch gap-2 overflow-x-auto border-b border-border px-4 py-2 scrollbar-thin"
     >
       {list.map((milestone) => {
@@ -116,7 +118,7 @@ export function Milestones({ project, tasks }: { project: Project; tasks: readon
         return (
           <article
             key={milestone.id}
-            aria-label={`${milestone.name}, ${done} of ${total} done`}
+            aria-label={t.summary(milestone.name, done, total)}
             className="flex w-52 shrink-0 flex-col gap-1 rounded-lg border border-border bg-surface px-2.5 py-1.5"
           >
             <div className="flex items-center gap-1.5">
@@ -131,28 +133,28 @@ export function Milestones({ project, tasks }: { project: Project; tasks: readon
                       variant="ghost"
                       size="icon-sm"
                       className="size-6"
-                      aria-label={`${milestone.name} actions`}
+                      aria-label={t.actions(milestone.name)}
                     />
                   }
                 >
                   <MoreHorizontalIcon />
                 </MenuTrigger>
                 <MenuContent align="end">
-                  <MenuItem onClick={() => setEditing(milestone.id)}>Edit</MenuItem>
+                  <MenuItem onClick={() => setEditing(milestone.id)}>{m.common.edit}</MenuItem>
                   <MenuItem
                     destructive
                     onClick={() => {
                       actions.remove.mutate(milestone.id);
                       pushUndo(
                         {
-                          label: `Delete milestone ${milestone.name}`,
+                          label: t.deleteUndo(milestone.name),
                           undo: () => actions.create.mutateAsync(milestone),
                         },
-                        { toast: `Deleted milestone ${milestone.name}` },
+                        { toast: t.deleted(milestone.name) },
                       );
                     }}
                   >
-                    Delete
+                    {m.common.delete}
                   </MenuItem>
                 </MenuContent>
               </Menu>
@@ -184,11 +186,11 @@ export function Milestones({ project, tasks }: { project: Project; tasks: readon
         onOpenChange={(open) => !open && setEditing(null)}
       >
         <DialogContent className="w-auto">
-          <DialogTitle>Edit milestone</DialogTitle>
+          <DialogTitle>{t.editTitle}</DialogTitle>
           {editingMilestone && (
             <MilestoneForm
               initial={editingMilestone}
-              submitLabel="Save"
+              submitLabel={m.common.save}
               onSubmit={(patch) => {
                 actions.update.mutate({ id: editingMilestone.id, patch });
                 setEditing(null);
@@ -201,13 +203,13 @@ export function Milestones({ project, tasks }: { project: Project; tasks: readon
         <PopoverTrigger
           render={
             <Button variant="ghost" size="sm" className="shrink-0 self-center">
-              <PlusIcon /> {list.length ? 'Milestone' : 'Add a milestone'}
+              <PlusIcon /> {list.length ? t.milestone : t.add}
             </Button>
           }
         />
         <PopoverContent className="p-3">
           <MilestoneForm
-            submitLabel="Add milestone"
+            submitLabel={t.addSubmit}
             onSubmit={({ name, targetDate }) => {
               actions.create.mutate({
                 id: newId(),

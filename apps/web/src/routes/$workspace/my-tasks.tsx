@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { TaskView } from '../../features/tasks/task-view';
 import { useSetSearch } from '../../features/views/use-set-search';
 import { useWorkspace, useWorkspaceData } from '../../features/workspace/workspace-context';
+import { m } from '../../i18n';
 
 const searchSchema = viewSearchSchema.extend({
   tab: z.enum(['assigned', 'created']).optional().catch(undefined),
@@ -44,7 +45,7 @@ function MyTasks() {
   );
 
   const tabs = (
-    <nav aria-label="My tasks" className="mr-2 flex items-center gap-0.5">
+    <nav aria-label={m.shell.nav.myTasks} className="mr-2 flex items-center gap-0.5">
       {(['assigned', 'created'] as const).map((value) => (
         <Link
           key={value}
@@ -59,7 +60,7 @@ function MyTasks() {
             tab === value && 'bg-surface-emphasis font-medium text-fg',
           )}
         >
-          {value === 'assigned' ? 'Assigned' : 'Created'}
+          {m.shell.myTasks[value]}
         </Link>
       ))}
     </nav>
@@ -67,7 +68,7 @@ function MyTasks() {
 
   return (
     <TaskView
-      title="My tasks"
+      title={m.shell.nav.myTasks}
       icon={<CircleUserIcon className="size-4 text-fg-muted" />}
       tasks={tasks.data}
       search={search}

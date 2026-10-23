@@ -4,6 +4,7 @@ import { TaskDetail } from '../../../features/tasks/task-detail';
 import { Button, Tooltip } from '@daiq/ui';
 import { PanelLeftIcon } from 'lucide-react';
 import { SHORTCUTS } from '../../../features/shortcuts/registry';
+import { m } from '../../../i18n';
 
 export const Route = createFileRoute('/$workspace/task/$identifier')({
   component: TaskPage,
@@ -15,11 +16,11 @@ function TaskPage() {
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       {(!sidebarOpen || isMobile) && (
-        <Tooltip label="Show sidebar" shortcut={SHORTCUTS.toggleSidebar.keys}>
+        <Tooltip label={m.task.showSidebar} shortcut={SHORTCUTS.toggleSidebar.keys}>
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Show sidebar"
+            aria-label={m.task.showSidebar}
             onClick={toggleSidebar}
             className="absolute top-2.5 left-2 z-10"
           >

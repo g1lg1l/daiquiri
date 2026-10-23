@@ -9,6 +9,7 @@ import {
 } from '@daiq/ui';
 import { CheckIcon, PlusIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
+import { m } from '../../i18n';
 
 export interface PickerOption {
   value: string;
@@ -75,7 +76,9 @@ export function PickerList({
         autoFocus={autoFocus}
       />
       <CommandList className="max-h-72">
-        <CommandEmpty>{onCreate ? 'Type a name to create it' : 'No matches'}</CommandEmpty>
+        <CommandEmpty>
+          {onCreate ? m.tasks.picker.typeToCreate : m.tasks.picker.noMatches}
+        </CommandEmpty>
         <CommandGroup>
           {ordered.map((option) => {
             const isSelected = selected.includes(option.value);
@@ -89,7 +92,10 @@ export function PickerList({
                 className={cn(isSelected && 'font-medium')}
                 trailing={
                   isSelected ? (
-                    <CheckIcon className="!text-accent-text" aria-label="Selected" />
+                    <CheckIcon
+                      className="!text-accent-text"
+                      aria-label={m.tasks.picker.selectedMark}
+                    />
                   ) : null
                 }
               >
@@ -104,14 +110,14 @@ export function PickerList({
               onSelect={() => onCreate(trimmed)}
               icon={<PlusIcon />}
             >
-              Create “{trimmed}”
+              {m.tasks.picker.create(trimmed)}
             </CommandItem>
           )}
         </CommandGroup>
       </CommandList>
       {multiple && (
         <p className="border-t border-border px-3 py-2 text-[11px] text-fg-subtle">
-          Enter to toggle, Esc to close
+          {m.tasks.picker.multipleHint}
         </p>
       )}
     </Command>

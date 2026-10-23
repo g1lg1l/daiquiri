@@ -1,3 +1,5 @@
+import { words } from './text';
+
 /*
  * Calendar-date helpers. Due/start dates are ISO calendar days ("2026-10-22"),
  * never instants, so all arithmetic happens on local calendar days.
@@ -62,11 +64,11 @@ export function dueBucket(due: string | null, today: string, weekStartsOn: 0 | 1
 }
 
 /** Short human label: "Today", "Tomorrow", "Yesterday", "Fri", "Oct 30", "Jan 3, 2027". */
-export function formatDueDate(due: string, today: string, locale?: string): string {
+export function formatDueDate(due: string, today: string, locale = words.locale): string {
   const delta = daysBetween(today, due);
-  if (delta === 0) return 'Today';
-  if (delta === 1) return 'Tomorrow';
-  if (delta === -1) return 'Yesterday';
+  if (delta === 0) return words.today;
+  if (delta === 1) return words.tomorrow;
+  if (delta === -1) return words.yesterday;
   const date = parseIsoDate(due);
   if (delta > 1 && delta < 7) return date.toLocaleDateString(locale, { weekday: 'short' });
   const sameYear = due.slice(0, 4) === today.slice(0, 4);

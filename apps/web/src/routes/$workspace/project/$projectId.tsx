@@ -18,7 +18,6 @@ import { PickerPopover } from '../../../features/pickers/picker-popover';
 import { Milestones } from '../../../features/projects/milestones';
 import {
   HealthBadge,
-  PROJECT_STATUS_LABEL,
   PROJECT_STATUSES,
   ProjectStatusIcon,
   progressOf,
@@ -31,13 +30,17 @@ import { TaskView } from '../../../features/tasks/task-view';
 import { FavoriteButton } from '../../../features/views/favorite-button';
 import { useSetSearch } from '../../../features/views/use-set-search';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
+import { locale } from '../../../i18n';
+import { m } from '../../../i18n/team';
 
 // Monday first; 2023-01-01 was a Sunday.
-const REMINDER_DAYS = [
-  { value: '', label: 'Off' },
+const reminderDays = () => [
+  { value: '', label: m.team.project.reminderOff },
   ...[1, 2, 3, 4, 5, 6, 0].map((day) => ({
     value: String(day),
-    label: `${new Date(2023, 0, 1 + day).toLocaleDateString('en', { weekday: 'long' })}s`,
+    label: m.team.project.everyWeekday(
+      new Date(2023, 0, 1 + day).toLocaleDateString(locale, { weekday: 'long' }),
+    ),
   })),
 ];
 
@@ -77,12 +80,7 @@ function ProjectPage() {
   }, [project, workspace.id]);
 
   if (!project)
-    return (
-      <NotFoundPanel
-        title="Project not found"
-        message="It may have been deleted, or it belongs to a team you can’t access."
-      />
-    );
+    return <NotFoundPanel title={m.team.project.notFound} message={m.team.project.notFoundHint} />;
 
   const counts = (tasks.data ?? []).reduce(
     (acc, task) => {
@@ -100,13 +98,14 @@ function ProjectPage() {
   const team = data.teamsById.get(project.teamId);
   const update = (patch: Parameters<typeof updateProject.mutate>[0]['patch']) =>
     updateProject.mutate({ id: project.id, patch });
+  const t = m.team.project;
 
   const tabs = (
-    <nav aria-label="Project" className="flex rounded-md border border-border p-0.5">
+    <nav aria-label={t.nav} className="flex rounded-md border border-border p-0.5">
       {(
         [
-          [undefined, 'Tasks'],
-          ['updates', 'Updates'],
+          [undefined, t.tasks],
+          ['updates', t.updates],
         ] as const
       ).map(([tab, label]) => (
         <Link
@@ -141,16 +140,16 @@ function ProjectPage() {
         trigger={
           <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs">
             <ProjectStatusIcon status={project.status} progress={progress} />
-            {PROJECT_STATUS_LABEL[project.status]}
+            {m.team.projectStatus[project.status]}
           </Button>
         }
         options={PROJECT_STATUSES.map((s) => ({
           value: s,
-          label: PROJECT_STATUS_LABEL[s],
+          label: m.team.projectStatus[s],
           icon: <ProjectStatusIcon status={s} progress={0.6} />,
         }))}
         selected={[project.status]}
-        placeholder="Project status…"
+        placeholder={t.statusPlaceholder}
         onSelect={([value]) => {
           const status = PROJECT_STATUSES.find((s): s is ProjectStatus => s === value);
           if (status) update({ status });
@@ -160,29 +159,29 @@ function ProjectPage() {
         trigger={
           <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs">
             {lead ? <Avatar name={lead.displayName} size="xs" /> : <UserIcon />}
-            {lead ? `Lead: ${lead.displayName}` : 'No lead'}
+            {lead ? t.lead(lead.displayName) : t.noLead}
           </Button>
         }
         options={memberOptions(
-          data.members.filter((m) => m.role !== 'guest'),
+          data.members.filter((member) => member.role !== 'guest'),
           userId,
         )}
         selected={project.leadId ? [project.leadId] : []}
-        placeholder="Project lead…"
+        placeholder={t.leadPlaceholder}
         onSelect={([id]) => update({ leadId: id ?? null })}
       />
       <span className="flex items-center gap-1">
-        Start{' '}
+        {t.start}{' '}
         <DateField
-          label="Start date"
+          label={m.team.startDate}
           value={project.startDate}
           onChange={(startDate) => update({ startDate })}
         />
       </span>
       <span className="flex items-center gap-1">
-        Target{' '}
+        {t.target}{' '}
         <DateField
-          label="Target date"
+          label={m.team.targetDate}
           value={project.targetDate}
           onChange={(targetDate) => update({ targetDate })}
         />
@@ -194,21 +193,19 @@ function ProjectPage() {
             style={{ width: `${progress * 100}%` }}
           />
         </span>
-        <span className="tabular">
-          {counts.done}/{counts.total} done
-        </span>
+        <span className="tabular">{t.done(counts.done, counts.total)}</span>
       </span>
       <label htmlFor="update-reminder" className="flex items-center gap-1">
-        Update reminder
+        {t.reminder}
         <Select
           id="update-reminder"
-          aria-label="Remind the lead to post an update"
+          aria-label={t.reminderLabel}
           size="sm"
           value={String(project.updateReminderDay ?? '')}
           onValueChange={(value) =>
             update({ updateReminderDay: value === '' ? null : Number(value) })
           }
-          options={REMINDER_DAYS}
+          options={reminderDays()}
           className="h-6 border-transparent bg-transparent pl-1 text-xs shadow-none hover:border-border"
         />
       </label>
@@ -220,7 +217,7 @@ function ProjectPage() {
             className="ml-auto h-6 px-1.5 text-xs"
             onClick={() => setSavingTemplate(true)}
           >
-            <LayoutTemplateIcon /> Save as template
+            <LayoutTemplateIcon /> {t.saveTemplate}
           </Button>
           <SaveTemplateDialog
             kind="project"
@@ -238,7 +235,7 @@ function ProjectPage() {
         onClick={() => update({ archivedAt: project.archivedAt ? null : new Date().toISOString() })}
       >
         {project.archivedAt ? <ArchiveRestoreIcon /> : <ArchiveIcon />}
-        {project.archivedAt ? 'Unarchive' : 'Archive'}
+        {project.archivedAt ? t.unarchive : t.archive}
       </Button>
     </div>
   );

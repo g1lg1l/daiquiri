@@ -2,6 +2,7 @@ import { useFavorites, useToggleFavorite, type FavoriteKind } from '@daiq/data';
 import { sortKeyBetween } from '@daiq/domain';
 import { Button, Tooltip } from '@daiq/ui';
 import { StarIcon } from 'lucide-react';
+import { m } from '../../i18n';
 import { useWorkspace } from '../workspace/workspace-context';
 
 /** Star toggle that adds a project or saved view to the sidebar's Favorites. */
@@ -10,7 +11,7 @@ export function FavoriteButton({ kind, id }: { kind: FavoriteKind; id: string })
   const favorites = useFavorites(workspace.id);
   const toggle = useToggleFavorite(workspace.id, userId);
   const current = favorites.data?.find((f) => f.entityKind === kind && f.entityId === id);
-  const label = current ? 'Remove from favorites' : 'Add to favorites';
+  const label = current ? m.shell.favorites.remove : m.shell.favorites.add;
   return (
     <Tooltip label={label}>
       <Button

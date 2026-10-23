@@ -9,6 +9,7 @@ import {
 import { Button, cn } from '@daiq/ui';
 import { CircleDashedIcon, ExternalLinkIcon } from 'lucide-react';
 import { useState } from 'react';
+import { m } from '../../i18n';
 import { memberOptions, NO_VALUE } from '../pickers/options';
 import { PickerPopover } from '../pickers/picker-popover';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
@@ -42,7 +43,7 @@ function InlineInput({
       type={type}
       aria-label={field.name}
       value={draft}
-      placeholder="Empty"
+      placeholder={m.task.fields.empty}
       onChange={(event) => setDraft(event.target.value)}
       onBlur={() => draft !== value && onCommit(draft.trim())}
       onKeyDown={(event) => {
@@ -63,7 +64,7 @@ export function FieldEditor({ field, task }: { field: CustomField; task: Task })
   const save = (next: FieldValue | null) =>
     setField.mutate({ task, fieldId: field.id, value: next });
   const text = formatFieldValue(field, value, data.membersById);
-  const empty = <span className="text-fg-subtle">Empty</span>;
+  const empty = <span className="text-fg-subtle">{m.task.fields.empty}</span>;
 
   switch (field.kind) {
     case 'text':
@@ -101,7 +102,7 @@ export function FieldEditor({ field, task }: { field: CustomField; task: Task })
               href={value}
               target="_blank"
               rel="noreferrer noopener"
-              aria-label={`Open ${field.name}`}
+              aria-label={m.task.fields.open(field.name)}
               className="flex size-6 shrink-0 items-center justify-center rounded-md text-fg-muted hover:bg-surface-muted hover:text-fg"
             >
               <ExternalLinkIcon className="size-3.5" />
@@ -126,7 +127,7 @@ export function FieldEditor({ field, task }: { field: CustomField; task: Task })
             onChange={(event) => save(event.target.checked)}
             className="accent-(--accent)"
           />
-          {value === true ? 'Yes' : 'No'}
+          {value === true ? m.task.fields.yes : m.task.fields.no}
         </label>
       );
     case 'select':
@@ -144,7 +145,7 @@ export function FieldEditor({ field, task }: { field: CustomField; task: Task })
               variant="ghost"
               size="sm"
               className={ghost}
-              aria-label={`${field.name}: ${text || 'empty'}`}
+              aria-label={`${field.name}: ${text || m.task.fields.emptyValue}`}
             >
               {text ? <span className="truncate">{text}</span> : empty}
             </Button>
@@ -154,7 +155,11 @@ export function FieldEditor({ field, task }: { field: CustomField; task: Task })
             multiple
               ? options
               : [
-                  { value: NO_VALUE, label: `No ${field.name}`, icon: <CircleDashedIcon /> },
+                  {
+                    value: NO_VALUE,
+                    label: m.task.fields.none(field.name),
+                    icon: <CircleDashedIcon />,
+                  },
                   ...options,
                 ]
           }

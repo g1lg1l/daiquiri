@@ -13,7 +13,8 @@ export {
   useTaskSubscription,
 } from './collaboration';
 export { DataProvider, useDaiqClient } from './context';
-export { toDaiqError } from './errors';
+export { localizeErrors, toDaiqError } from './errors';
+export type { ErrorTexts } from './errors';
 export { useNotifications, useSearch, useUpdateNotifications } from './inbox';
 export { keys } from './keys';
 export type { TaskScope } from './keys';

@@ -5,6 +5,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { LABEL_COLOR } from '../../../features/tasks/label-colors';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
+import { m } from '../../../i18n/settings';
 import { newId } from '../../../lib/ids';
 
 export const Route = createFileRoute('/$workspace/settings/labels')({ component: LabelsSettings });
@@ -21,10 +22,8 @@ function LabelsSettings() {
   return (
     <section className="flex flex-col gap-4">
       <header>
-        <h2 className="text-lg font-semibold font-display">Labels</h2>
-        <p className="text-[13px] text-fg-muted">
-          Labels are shared by every team. Anyone can create them; admins can rename or delete them.
-        </p>
+        <h2 className="text-lg font-semibold font-display">{m.settings.sections.labels}</h2>
+        <p className="text-[13px] text-fg-muted">{m.settings.labels.intro}</p>
       </header>
       <form
         className="flex flex-wrap items-end gap-2 rounded-lg border border-border p-3"
@@ -37,18 +36,18 @@ function LabelsSettings() {
         }}
       >
         <div className="flex min-w-48 flex-1 flex-col gap-1.5">
-          <Label htmlFor="label-name">New label</Label>
+          <Label htmlFor="label-name">{m.settings.labels.newLabel}</Label>
           <Input
             id="label-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
             maxLength={40}
-            placeholder="Bug"
+            placeholder={m.settings.labels.namePlaceholder}
           />
         </div>
         <fieldset className="flex items-center gap-1">
-          <legend className="sr-only">Colour</legend>
+          <legend className="sr-only">{m.settings.labels.colour}</legend>
           {LABEL_COLORS.map((c) => (
             <label
               key={c}
@@ -61,14 +60,14 @@ function LabelsSettings() {
                 checked={color === c}
                 onChange={() => setColor(c)}
                 className="sr-only"
-                aria-label={c}
+                aria-label={m.settings.labels.colours[c]}
               />
               <span className="block size-4 rounded-full" style={{ background: LABEL_COLOR[c] }} />
             </label>
           ))}
         </fieldset>
         <Button type="submit" variant="primary" disabled={!name.trim()}>
-          Create
+          {m.common.create}
         </Button>
       </form>
       <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
@@ -81,7 +80,7 @@ function LabelsSettings() {
                     <button
                       type="button"
                       className="rounded-full p-1 hover:bg-surface-muted"
-                      aria-label={`Colour of ${label.name}`}
+                      aria-label={m.settings.labels.colourOf(label.name)}
                     />
                   }
                 >
@@ -95,7 +94,7 @@ function LabelsSettings() {
                     <MenuItem
                       key={c}
                       className="size-7 justify-center px-0"
-                      aria-label={c}
+                      aria-label={m.settings.labels.colours[c]}
                       onClick={() => labelActions.update.mutate({ id: label.id, color: c })}
                     >
                       <span
@@ -114,7 +113,7 @@ function LabelsSettings() {
             )}
             {canManage ? (
               <Input
-                aria-label={`Name of ${label.name}`}
+                aria-label={m.settings.labels.nameOf(label.name)}
                 defaultValue={label.name}
                 maxLength={40}
                 className="h-7 flex-1 border-transparent bg-transparent shadow-none hover:border-border"
@@ -135,10 +134,10 @@ function LabelsSettings() {
                 className="text-danger hover:text-danger"
                 onClick={() => labelActions.remove.mutate(label.id)}
               >
-                Delete
+                {m.common.delete}
               </Button>
             ) : (
-              <span className="text-xs text-fg-subtle">Admins can edit</span>
+              <span className="text-xs text-fg-subtle">{m.settings.labels.adminsCanEdit}</span>
             )}
           </li>
         ))}

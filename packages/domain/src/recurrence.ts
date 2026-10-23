@@ -1,3 +1,5 @@
+import { words } from './text';
+
 export const RECURRENCE_UNITS = ['day', 'week', 'month'] as const;
 export type RecurrenceUnit = (typeof RECURRENCE_UNITS)[number];
 export const isRecurrenceUnit = (value: string): value is RecurrenceUnit =>
@@ -18,23 +20,26 @@ export interface Recurrence {
 
 export type RecurrenceRule = Pick<Recurrence, 'unit' | 'every' | 'weekdays' | 'afterCompletion'>;
 
+export const shortWeekdays = (locale: string): string[] =>
+  Array.from({ length: 7 }, (_, day) =>
+    // 2023-01-01 was a Sunday.
+    new Date(2023, 0, 1 + day).toLocaleDateString(locale, { weekday: 'short' }),
+  );
+
 /** Sunday-first, as stored. */
-export const WEEKDAY_SHORT = Array.from({ length: 7 }, (_, day) =>
-  // 2023-01-01 was a Sunday.
-  new Date(2023, 0, 1 + day).toLocaleDateString('en', { weekday: 'short' }),
-);
+export const WEEKDAY_SHORT = shortWeekdays('en');
 
 /** "Every 2 weeks on Mon, Thu", "3 days after completion". */
 export function describeRecurrence(rule: RecurrenceRule): string {
-  const plural = rule.every === 1 ? rule.unit : `${rule.every} ${rule.unit}s`;
-  if (rule.afterCompletion)
-    return `${rule.every === 1 ? `1 ${rule.unit}` : plural} after completion`;
+  if (rule.afterCompletion) return words.afterCompletion(rule.every, rule.unit);
   const days =
     rule.unit === 'week' && rule.weekdays.length > 0
-      ? ` on ${rule.weekdays
-          .toSorted((a, b) => ((a + 6) % 7) - ((b + 6) % 7))
-          .map((day) => WEEKDAY_SHORT[day])
-          .join(', ')}`
+      ? words.onDays(
+          rule.weekdays
+            .toSorted((a, b) => ((a + 6) % 7) - ((b + 6) % 7))
+            .map((day) => WEEKDAY_SHORT[day])
+            .join(', '),
+        )
       : '';
-  return `Every ${plural}${days}`;
+  return `${words.every(rule.every, rule.unit)}${days}`;
 }

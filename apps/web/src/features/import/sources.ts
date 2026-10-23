@@ -6,6 +6,7 @@ import {
   fromLinear,
   type ExternalTask,
 } from '@daiq/domain';
+import { m } from '../../i18n/importer';
 
 /*
  * Reading tasks from Linear, Asana and ClickUp, straight from the browser
@@ -51,7 +52,7 @@ async function request(
   try {
     response = await fetch(url, init);
   } catch {
-    throw new Error(`Could not reach ${source}. Check your connection and the token.`);
+    throw new Error(m.importer.sources.unreachable(source));
   }
   if (response.status === 429 && attempt < 5) {
     const wait = Number(response.headers.get('retry-after')) || 2 ** attempt * 5;
@@ -59,9 +60,9 @@ async function request(
     return request(source, url, init, attempt + 1);
   }
   if (response.status === 401 || response.status === 403) {
-    throw new Error(`${source} did not accept this token.`);
+    throw new Error(m.importer.sources.rejected(source));
   }
-  if (!response.ok) throw new Error(`${source} answered with an error (HTTP ${response.status}).`);
+  if (!response.ok) throw new Error(m.importer.sources.httpError(source, response.status));
   return response.json();
 }
 
@@ -105,7 +106,7 @@ async function linear(token: string, query: string, variables: Record<string, un
   );
   const errors = list(body.errors);
   if (errors.length)
-    throw new Error(`Linear: ${text(record(errors[0]).message) || 'the query failed'}`);
+    throw new Error(`Linear: ${text(record(errors[0]).message) || m.importer.sources.queryFailed}`);
   return record(body.data);
 }
 
@@ -121,17 +122,27 @@ const LINEAR_ISSUE = (comments: boolean) => `
 const linearSource: Source = {
   id: 'linear',
   name: 'Linear',
-  scopeLabel: 'Team',
-  tokenLabel: 'Personal API key',
-  tokenHelp: {
-    text: 'Linear → Settings → Account → Security & access → Personal API keys',
-    url: 'https://linear.app/settings/account/security',
+  get scopeLabel() {
+    return m.importer.sources.linear.scope;
+  },
+  get tokenLabel() {
+    return m.importer.sources.linear.token;
+  },
+  get tokenHelp() {
+    return {
+      text: m.importer.sources.linear.help,
+      url: 'https://linear.app/settings/account/security',
+    };
   },
   scopes: async (token) => {
     const data = await linear(token, 'query { teams(first: 100) { nodes { id key name } } }', {});
     return list(record(data.teams).nodes).map((value) => {
       const team = record(value);
-      return { id: text(team.id), name: `${text(team.name)} (${text(team.key)})`, group: 'Teams' };
+      return {
+        id: text(team.id),
+        name: `${text(team.name)} (${text(team.key)})`,
+        group: m.importer.sources.teams,
+      };
     });
   },
   tasks: async (token, scope, { comments, onProgress }) => {
@@ -149,7 +160,7 @@ const linearSource: Source = {
       );
       const issues = record(record(data.team).issues);
       tasks.push(...list(issues.nodes).flatMap((issue) => fromLinear(issue) ?? []));
-      onProgress(`${tasks.length} issues read`);
+      onProgress(m.importer.sources.issuesRead(tasks.length));
       const page = record(issues.pageInfo);
       if (page.hasNextPage !== true) break;
       after = text(page.endCursor);
@@ -182,11 +193,14 @@ async function asanaPages(token: string, path: string): Promise<unknown[]> {
 const asanaSource: Source = {
   id: 'asana',
   name: 'Asana',
-  scopeLabel: 'Project',
-  tokenLabel: 'Personal access token',
-  tokenHelp: {
-    text: 'Asana → My settings → Apps → Developer apps → Personal access token',
-    url: 'https://app.asana.com/0/my-apps',
+  get scopeLabel() {
+    return m.importer.sources.asana.scope;
+  },
+  get tokenLabel() {
+    return m.importer.sources.asana.token;
+  },
+  get tokenHelp() {
+    return { text: m.importer.sources.asana.help, url: 'https://app.asana.com/0/my-apps' };
   },
   scopes: async (token) => {
     const workspaces = await asanaPages(token, '/workspaces');
@@ -207,7 +221,7 @@ const asanaSource: Source = {
   tasks: async (token, scope, { comments, onProgress }) => {
     const top = await asanaPages(token, `/projects/${scope.id}/tasks?opt_fields=${ASANA_FIELDS}`);
     const tasks = top.flatMap((value) => fromAsana(value, scope.id) ?? []);
-    onProgress(`${tasks.length} tasks read`);
+    onProgress(m.importer.sources.tasksRead(tasks.length));
     // Sub-tasks are not project members: read them per task, two levels down.
     let level = top.filter((value) => Number(record(value).num_subtasks) > 0);
     for (let depth = 0; depth < 2 && level.length; depth++) {
@@ -217,7 +231,7 @@ const asanaSource: Source = {
       );
       const subtasks = found.flat();
       tasks.push(...subtasks.flatMap((value) => fromAsana(value, scope.id) ?? []));
-      onProgress(`${tasks.length} tasks read`);
+      onProgress(m.importer.sources.tasksRead(tasks.length));
       level = subtasks.filter((value) => Number(record(value).num_subtasks) > 0);
     }
     if (comments) {
@@ -229,7 +243,7 @@ const asanaSource: Source = {
         );
         task.comments = asanaComments(stories);
         done += 1;
-        if (done % 10 === 0) onProgress(`Comments: ${done} of ${tasks.length} tasks`);
+        if (done % 10 === 0) onProgress(m.importer.sources.commentsRead(done, tasks.length));
       });
     }
     return tasks;
@@ -247,11 +261,14 @@ const clickUp = (token: string, path: string) =>
 const clickUpSource: Source = {
   id: 'clickup',
   name: 'ClickUp',
-  scopeLabel: 'List',
-  tokenLabel: 'Personal API token',
-  tokenHelp: {
-    text: 'ClickUp → Settings → Apps → API token',
-    url: 'https://app.clickup.com/settings/apps',
+  get scopeLabel() {
+    return m.importer.sources.clickup.scope;
+  },
+  get tokenLabel() {
+    return m.importer.sources.clickup.token;
+  },
+  get tokenHelp() {
+    return { text: m.importer.sources.clickup.help, url: 'https://app.clickup.com/settings/apps' };
   },
   scopes: async (token) => {
     const teams = list((await clickUp(token, '/team')).teams);
@@ -294,7 +311,7 @@ const clickUpSource: Source = {
         `/list/${scope.id}/task?page=${page}&subtasks=true&include_closed=true&include_markdown_description=true`,
       );
       tasks.push(...list(body.tasks).flatMap((task) => fromClickUp(task) ?? []));
-      onProgress(`${tasks.length} tasks read`);
+      onProgress(m.importer.sources.tasksRead(tasks.length));
       if (body.last_page === true || list(body.tasks).length === 0) break;
     }
     if (comments) {
@@ -304,7 +321,7 @@ const clickUpSource: Source = {
           list((await clickUp(token, `/task/${task.sourceId}/comment`)).comments),
         );
         done += 1;
-        if (done % 10 === 0) onProgress(`Comments: ${done} of ${tasks.length} tasks`);
+        if (done % 10 === 0) onProgress(m.importer.sources.commentsRead(done, tasks.length));
       });
     }
     return tasks;

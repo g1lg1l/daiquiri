@@ -21,6 +21,7 @@ Read [docs/product/product-principles.md](docs/product/product-principles.md) fi
 - **Every write produces its side effects in SQL** (activity, notifications, realtime events) so no client can skip them.
 - **No `any`, no unsafe casts.** Narrow with type guards (see `packages/domain/src/model.ts`) or validate with Zod.
 - **Errors are typed and surfaced.** Throw `DaiqError` (or let `toDaiqError` map it); never swallow an exception silently.
+- **Every visible string is translated.** Add it to `apps/web/src/i18n/en/<namespace>.ts` and the same key to `it/<namespace>.ts` (type checking fails until both exist), and read it as `m.<namespace>.<key>` at render time, never in a module-level constant. Sentences with values are functions; plurals use `count()`; dates and numbers use `Intl` with `locale`. See [ADR-0016](docs/adr/0016-ui-components-motion-i18n.md).
 - **Keep it small.** Prefer the platform and existing code over new dependencies and abstractions. A package is extracted when a second consumer exists.
 
 ## Making a database change

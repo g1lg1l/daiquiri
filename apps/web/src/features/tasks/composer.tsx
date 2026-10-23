@@ -22,6 +22,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { m } from '../../i18n';
 import { newId } from '../../lib/ids';
 import {
   labelOptions,
@@ -180,9 +181,9 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
         {
           onSuccess: (task) => {
             if (lines.length === 1) {
-              toast(`Created ${identifier(task)}`, {
+              toast(m.task.composer.created(identifier(task)), {
                 action: {
-                  label: 'Open',
+                  label: m.common.open,
                   onClick: () =>
                     void navigate({
                       to: '/$workspace/task/$identifier',
@@ -195,7 +196,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
         },
       );
     });
-    if (lines.length > 1) toast(`Created ${lines.length} tasks`);
+    if (lines.length > 1) toast(m.task.composer.createdMany(lines.length));
     if (createMore) {
       setTitle('');
       setDescription('');
@@ -223,7 +224,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
             }
             options={data.myTeams.map((t) => ({ value: t.id, label: t.name, hint: t.key }))}
             selected={[teamId]}
-            placeholder="Team…"
+            placeholder={m.task.composer.team}
             onSelect={([id]) => {
               if (!id) return;
               const next = data.teamsById.get(id);
@@ -238,12 +239,14 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
           <span className="px-1.5">{team?.name}</span>
         )}
         <span aria-hidden>›</span>
-        <DialogTitle className="text-xs font-normal text-fg-muted">New task</DialogTitle>
+        <DialogTitle className="text-xs font-normal text-fg-muted">
+          {m.task.composer.title}
+        </DialogTitle>
       </div>
 
       <div className="flex flex-col gap-1 px-5 pt-3 pb-2">
         <label htmlFor="composer-title" className="sr-only">
-          Title
+          {m.task.title}
         </label>
         <textarea
           id="composer-title"
@@ -259,17 +262,17 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
               submit();
             }
           }}
-          placeholder="Task title"
+          placeholder={m.task.composer.titlePlaceholder}
           className="field-sizing-content max-h-48 w-full resize-none bg-transparent text-lg font-medium font-display outline-none placeholder:text-fg-subtle focus-visible:outline-none"
         />
         {lines.length > 1 ? (
           <p className="text-xs text-accent-text" aria-live="polite">
-            {lines.length} lines: one task will be created per line.
+            {m.task.composer.lines(lines.length)}
           </p>
         ) : (
           <>
             <label htmlFor="composer-description" className="sr-only">
-              Description
+              {m.task.description}
             </label>
             <textarea
               id="composer-description"
@@ -282,7 +285,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
                   submit();
                 }
               }}
-              placeholder="Add a description…"
+              placeholder={m.task.composer.descriptionPlaceholder}
               className="field-sizing-content max-h-60 min-h-12 w-full resize-none bg-transparent text-[13px] outline-none placeholder:text-fg-subtle focus-visible:outline-none"
             />
           </>
@@ -294,24 +297,24 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
           trigger={
             <Button type="button" size="sm">
               {status && <StatusIcon category={status.category} />}
-              {status?.name ?? 'Status'}
+              {status?.name ?? m.task.props.status}
             </Button>
           }
           options={statusOptions(team?.statuses ?? [])}
           selected={[statusId]}
-          placeholder="Status…"
+          placeholder={m.task.composer.status}
           onSelect={([id]) => id && setStatusId(id)}
         />
         <PickerPopover
           trigger={
             <Button type="button" size="sm">
               <PriorityIcon priority={priority} />
-              {priority === 0 ? 'Priority' : PRIORITY_LABEL[priority]}
+              {priority === 0 ? m.task.props.priority : PRIORITY_LABEL[priority]}
             </Button>
           }
           options={priorityOptions()}
           selected={[String(priority)]}
-          placeholder="Priority…"
+          placeholder={m.task.composer.priority}
           onSelect={([value]) => {
             const next = Number(value);
             if (isPriority(next)) setPriority(next);
@@ -322,7 +325,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
             <Button type="button" size="sm">
               {assigneeIds.length === 0 ? (
                 <>
-                  <UserIcon /> Assignee
+                  <UserIcon /> {m.task.composer.assignee}
                 </>
               ) : (
                 <span className="flex items-center gap-1.5">
@@ -337,7 +340,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
                   </span>
                   {assigneeIds.length === 1
                     ? data.membersById.get(assigneeIds[0] ?? '')?.displayName
-                    : `${assigneeIds.length} people`}
+                    : m.task.composer.people(assigneeIds.length)}
                 </span>
               )}
             </Button>
@@ -345,7 +348,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
           multiple
           options={memberOptions(data.members, userId)}
           selected={assigneeIds}
-          placeholder="Assign to…"
+          placeholder={m.task.assignTo}
           onSelect={setAssigneeIds}
         />
         <PickerPopover
@@ -366,32 +369,37 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
                 })
               )}
               {labelIds.length === 0
-                ? 'Labels'
+                ? m.task.props.labels
                 : labelIds.length === 1
                   ? data.labelsById.get(labelIds[0] ?? '')?.name
-                  : `${labelIds.length} labels`}
+                  : m.task.composer.labels(labelIds.length)}
             </Button>
           }
           multiple
           options={labelOptions(data.labels)}
           selected={labelIds}
-          placeholder="Labels…"
+          placeholder={m.task.pick.labels}
           onSelect={setLabelIds}
         />
         {teamProjects.length > 0 && (
           <PickerPopover
             trigger={
               <Button type="button" size="sm">
-                <FolderIcon /> {project?.name ?? 'Project'}
+                <FolderIcon /> {project?.name ?? m.task.props.project}
               </Button>
             }
             options={projectOptions(teamProjects)}
             selected={[projectId ?? NO_VALUE]}
-            placeholder="Project…"
+            placeholder={m.task.composer.project}
             onSelect={([id]) => setProjectId(id && id !== NO_VALUE ? id : null)}
           />
         )}
-        <DateField label="Due date" value={dueDate} onChange={setDueDate} variant="secondary" />
+        <DateField
+          label={m.task.props.dueDate}
+          value={dueDate}
+          onChange={setDueDate}
+          variant="secondary"
+        />
       </div>
 
       <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
@@ -403,7 +411,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
               onChange={(event) => setCreateMore(event.target.checked)}
               className="accent-(--accent)"
             />
-            Create more
+            {m.task.composer.createMore}
           </label>
           {taskTemplates.length > 0 && (
             <PickerPopover
@@ -415,24 +423,24 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
                   className="h-6 px-1.5 text-xs text-fg-muted"
                   disabled={templateActions.createTask.isPending}
                 >
-                  <LayoutTemplateIcon /> From template
+                  <LayoutTemplateIcon /> {m.task.composer.fromTemplate}
                 </Button>
               }
               options={taskTemplates.map((t) => ({
                 value: t.id,
                 label: t.name,
                 ...(t.counts.subtasks > 0 && {
-                  hint: `${t.counts.subtasks} sub-task${t.counts.subtasks === 1 ? '' : 's'}`,
+                  hint: m.task.composer.subtasks(t.counts.subtasks),
                 }),
               }))}
               selected={[]}
-              placeholder="Create from template…"
+              placeholder={m.task.composer.pickTemplate}
               onSelect={([id]) => id && fromTemplate(id)}
             />
           )}
         </div>
         <Button type="submit" variant="primary" size="sm" disabled={lines.length === 0 || !team}>
-          {lines.length > 1 ? `Create ${lines.length} tasks` : 'Create task'}
+          {lines.length > 1 ? m.task.composer.createMany(lines.length) : m.task.composer.create}
           <Shortcut
             keys="Mod+Enter"
             className="[&_kbd]:border-transparent [&_kbd]:bg-accent-fg/15 [&_kbd]:text-accent-fg"

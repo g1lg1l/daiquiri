@@ -15,6 +15,7 @@ import {
 } from '@daiq/domain';
 import { Avatar } from '@daiq/ui';
 import { CircleDashedIcon, FolderIcon, GaugeIcon, RefreshCcwIcon } from 'lucide-react';
+import { locale, m } from '../../i18n';
 import { PriorityIcon, StatusIcon } from '../tasks/icons';
 import { LABEL_COLOR } from '../tasks/label-colors';
 import type { PickerOption } from './picker-list';
@@ -42,12 +43,12 @@ export function priorityOptions(): PickerOption[] {
 }
 
 export function memberOptions(members: readonly Member[], userId: string): PickerOption[] {
-  const me = members.filter((m) => m.id === userId);
-  const others = members.filter((m) => m.id !== userId && m.role !== 'guest');
-  const guests = members.filter((m) => m.id !== userId && m.role === 'guest');
+  const me = members.filter((member) => member.id === userId);
+  const others = members.filter((member) => member.id !== userId && member.role !== 'guest');
+  const guests = members.filter((member) => member.id !== userId && member.role === 'guest');
   return [...me, ...others, ...guests].map((member) => ({
     value: member.id,
-    label: member.id === userId ? `${member.displayName} (you)` : member.displayName,
+    label: member.id === userId ? m.tasks.picker.you(member.displayName) : member.displayName,
     icon: <Avatar name={member.displayName} src={member.avatarUrl} size="sm" />,
     keywords: member.id === userId ? ['me'] : [],
   }));
@@ -65,7 +66,7 @@ export function labelOptions(labels: readonly Label[]): PickerOption[] {
 
 export function projectOptions(projects: readonly Project[]): PickerOption[] {
   return [
-    { value: NO_VALUE, label: 'No project', icon: <CircleDashedIcon /> },
+    { value: NO_VALUE, label: m.tasks.picker.noProject, icon: <CircleDashedIcon /> },
     ...projects
       .filter((project) => !project.archivedAt)
       .map((project) => ({ value: project.id, label: project.name, icon: <FolderIcon /> })),
@@ -74,7 +75,7 @@ export function projectOptions(projects: readonly Project[]): PickerOption[] {
 
 export function estimatePickerOptions(scale: EstimateScale): PickerOption[] {
   return [
-    { value: NO_VALUE, label: 'No estimate', icon: <CircleDashedIcon /> },
+    { value: NO_VALUE, label: m.tasks.picker.noEstimate, icon: <CircleDashedIcon /> },
     ...estimateOptions(scale).map((value) => ({
       value: String(value),
       label: formatEstimate(value, scale),
@@ -84,12 +85,11 @@ export function estimatePickerOptions(scale: EstimateScale): PickerOption[] {
   ];
 }
 
-const cycleDates = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
-
 /** The current and upcoming cycles, plus "No cycle". */
 export function cycleOptions(cycles: readonly Cycle[], today: string): PickerOption[] {
+  const cycleDates = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
   return [
-    { value: NO_VALUE, label: 'No cycle', icon: <CircleDashedIcon /> },
+    { value: NO_VALUE, label: m.tasks.picker.noCycle, icon: <CircleDashedIcon /> },
     ...plannableCycles(cycles, today).map((cycle) => ({
       value: cycle.id,
       label: cycleLabel(cycle),

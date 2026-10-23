@@ -3,6 +3,7 @@ import { formatClock, formatIdentifier } from '@daiq/domain';
 import { Button } from '@daiq/ui';
 import { Link } from '@tanstack/react-router';
 import { SquareIcon } from 'lucide-react';
+import { m } from '../../i18n';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { useElapsed } from './use-elapsed';
 
@@ -19,7 +20,7 @@ export function RunningTimer() {
   return (
     // Not a live region: the clock ticks every second.
     <section
-      aria-label={`Timer running on ${identifier}`}
+      aria-label={m.task.time.running(identifier)}
       className="flex items-center gap-2 rounded-md border border-accent/40 bg-accent-subtle/40 px-2 py-1.5 text-xs"
     >
       <span
@@ -37,7 +38,7 @@ export function RunningTimer() {
       <Button
         variant="ghost"
         size="icon-sm"
-        aria-label="Stop timer"
+        aria-label={m.task.time.stopTimer}
         onClick={() => stop.mutate()}
         className="size-6"
       >

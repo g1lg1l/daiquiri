@@ -3,6 +3,7 @@ import { Button } from '@daiq/ui';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { AuthLayout } from '../features/auth/auth-layout';
+import { m } from '../i18n/auth';
 
 export const Route = createFileRoute('/demo')({ component: Demo });
 
@@ -37,18 +38,17 @@ function Demo() {
   }, [signedIn, mutate, navigate]);
 
   return (
-    <AuthLayout title={error ? 'The demo could not start' : 'Preparing your demo workspace…'}>
+    <AuthLayout title={error ? m.auth.demo.failed : m.auth.demo.preparing}>
       {error ? (
         <div className="flex flex-col items-start gap-4">
           <p className="text-fg-muted">{error}</p>
           <Button variant="primary" onClick={() => window.location.reload()}>
-            Try again
+            {m.common.retry}
           </Button>
         </div>
       ) : (
         <p className="text-fg-muted" aria-live="polite">
-          You’ll get a private copy of a sample company with three teams, projects and tasks. It
-          disappears after 24 hours.
+          {m.auth.demo.about}
         </p>
       )}
     </AuthLayout>

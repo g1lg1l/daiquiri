@@ -29,8 +29,9 @@ import {
   UploadIcon,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
+import { m } from '../../i18n';
 import { copyText } from '../../lib/clipboard';
-import { SHORTCUTS } from '../shortcuts/registry';
+import { shortcutLabel, SHORTCUTS } from '../shortcuts/registry';
 import { useComposer } from '../tasks/composer';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import type { PaletteAction } from './palette';
@@ -51,7 +52,7 @@ export function PaletteDialog({
   onShowShortcuts: () => void;
 }) {
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange} label="Command palette">
+    <CommandDialog open={open} onOpenChange={onOpenChange} label={m.shell.palette.label}>
       {open && (
         <Palette
           initialQuery={initialQuery}
@@ -85,6 +86,7 @@ function Palette({
   const deferredQuery = useDeferredValue(query);
   const search = useSearch(workspace.id, deferredQuery);
   const ws = workspace.slug;
+  const groupName = m.shell.palette.groups;
   const identifier = parseIdentifier(query);
   const recent = query ? [] : readRecent(workspace.id);
 
@@ -99,24 +101,24 @@ function Palette({
   contextual.forEach(add);
   add({
     id: 'create',
-    group: 'Create',
-    label: 'Create task',
+    group: groupName.create,
+    label: shortcutLabel('create'),
     icon: <PlusIcon />,
     shortcut: SHORTCUTS.create.keys,
     run: () => composer(),
   });
   add({
     id: 'inbox',
-    group: 'Go to',
-    label: 'Inbox',
+    group: groupName.goTo,
+    label: m.shell.nav.inbox,
     icon: <InboxIcon />,
     shortcut: SHORTCUTS.goInbox.keys,
     run: () => void navigate({ to: '/$workspace/inbox', params: { workspace: ws } }),
   });
   add({
     id: 'my-tasks',
-    group: 'Go to',
-    label: 'My tasks',
+    group: groupName.goTo,
+    label: m.shell.nav.myTasks,
     icon: <CircleUserIcon />,
     shortcut: SHORTCUTS.goMyTasks.keys,
     run: () => void navigate({ to: '/$workspace/my-tasks', params: { workspace: ws } }),
@@ -124,8 +126,8 @@ function Palette({
   for (const team of data.myTeams) {
     add({
       id: `team-${team.id}`,
-      group: 'Go to',
-      label: `${team.name} tasks`,
+      group: groupName.goTo,
+      label: m.shell.palette.teamTasks(team.name),
       icon: <ListTodoIcon />,
       keywords: [team.key],
       run: () =>
@@ -136,8 +138,8 @@ function Palette({
     });
     add({
       id: `projects-${team.id}`,
-      group: 'Go to',
-      label: `${team.name} projects`,
+      group: groupName.goTo,
+      label: m.shell.palette.teamProjects(team.name),
       icon: <FolderIcon />,
       keywords: [team.key],
       run: () =>
@@ -149,53 +151,53 @@ function Palette({
   }
   add({
     id: 'settings',
-    group: 'Go to',
-    label: 'Settings',
+    group: groupName.goTo,
+    label: m.shell.nav.settings,
     icon: <SettingsIcon />,
     shortcut: SHORTCUTS.goSettings.keys,
     run: () => void navigate({ to: '/$workspace/settings', params: { workspace: ws } }),
   });
   add({
     id: 'import',
-    group: 'Go to',
-    label: 'Import tasks',
+    group: groupName.goTo,
+    label: m.shell.nav.importTasks,
     icon: <UploadIcon />,
     keywords: ['linear', 'asana', 'clickup', 'csv'],
     run: () => void navigate({ to: '/$workspace/settings/import', params: { workspace: ws } }),
   });
   add({
     id: 'theme-light',
-    group: 'Preferences',
-    label: 'Use light theme',
+    group: groupName.preferences,
+    label: m.shell.palette.lightTheme,
     icon: <SunIcon />,
     run: () => setPreference('light'),
   });
   add({
     id: 'theme-dark',
-    group: 'Preferences',
-    label: 'Use dark theme',
+    group: groupName.preferences,
+    label: m.shell.palette.darkTheme,
     icon: <MoonIcon />,
     run: () => setPreference('dark'),
   });
   add({
     id: 'theme-system',
-    group: 'Preferences',
-    label: 'Use system theme',
+    group: groupName.preferences,
+    label: m.shell.palette.systemTheme,
     icon: <MonitorIcon />,
     run: () => setPreference('system'),
   });
   add({
     id: 'shortcuts',
-    group: 'Preferences',
-    label: 'Keyboard shortcuts',
+    group: groupName.preferences,
+    label: shortcutLabel('help'),
     icon: <KeyboardIcon />,
     shortcut: SHORTCUTS.help.keys,
     run: onShowShortcuts,
   });
   add({
     id: 'sign-out',
-    group: 'Account',
-    label: 'Sign out',
+    group: groupName.account,
+    label: m.shell.nav.signOut,
     icon: <LogOutIcon />,
     run: () => void signOut(),
   });
@@ -219,33 +221,35 @@ function Palette({
         )?.dataset.ident;
         if (!ident) return;
         event.preventDefault();
-        copyText(ident, `Copied ${ident}`);
+        copyText(ident, m.common.copied(ident));
       }}
     >
       <CommandInput
         value={query}
         onValueChange={setQuery}
-        placeholder="Type a command or search…"
+        placeholder={m.shell.palette.placeholder}
         autoFocus
       />
       <CommandList>
         {!hasServerResults && !identifier && (
-          <CommandEmpty>{search.isFetching ? 'Searching…' : 'No results'}</CommandEmpty>
+          <CommandEmpty>
+            {search.isFetching ? m.shell.palette.searching : m.common.noResults}
+          </CommandEmpty>
         )}
         {identifier && (
-          <CommandGroup heading="Open" forceMount>
+          <CommandGroup heading={m.common.open} forceMount>
             <CommandItem
               forceMount
               value={`open ${query}`}
               icon={<ArrowRightIcon />}
               onSelect={() => run(() => openTask(`${identifier.teamKey}-${identifier.number}`))}
             >
-              Open {identifier.teamKey}-{identifier.number}
+              {m.shell.palette.openTask(`${identifier.teamKey}-${identifier.number}`)}
             </CommandItem>
           </CommandGroup>
         )}
         {recent.length > 0 && (
-          <CommandGroup heading="Recently viewed">
+          <CommandGroup heading={groupName.recent}>
             {recent.map((item) => (
               <CommandItem
                 key={item.id}
@@ -272,7 +276,7 @@ function Palette({
           </CommandGroup>
         )}
         {hasServerResults && (
-          <CommandGroup heading="Search results" forceMount>
+          <CommandGroup heading={groupName.results} forceMount>
             {search.data?.map((result) => (
               <CommandItem
                 key={`${result.kind}-${result.id}`}

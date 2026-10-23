@@ -60,24 +60,24 @@ ClickUp, Asana and Linear each do a lot. Most teams use a small part of it, ever
 
 ## What you get
 
-| Area          | Included today                                                                                                                                                                                                                                  |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Work          | Teams with their own workflows, projects, tasks with identifiers (`ENG-42`), sub-tasks, relations, labels, priorities, due and start dates, custom fields, file attachments with image previews                                                 |
-| Planning      | Estimates in points or hours, cycles of one to four weeks that schedule themselves and roll unfinished work over, burn-up charts, project milestones and status updates with health, recurring tasks, task and project templates, time tracking |
-| Views         | List, board, calendar, timeline (with dependency arrows) and insights, CSV/JSON export, filters (all or any), grouping with sub-groups and ordering in the URL, saved views and favorites, My tasks grouped by due date, undo for every change  |
-| Collaboration | Comments with @mentions and reactions, activity history, inbox notifications, subscriptions, realtime updates                                                                                                                                   |
-| Workspace     | Invitations with roles (owner, admin, member, guest), private teams, team templates, labels, a 30-day trash, intake forms into Triage, automations with a run log, signed webhooks, notification levels per team, theme preferences             |
-| Quality       | Light, dark and system themes, reduced motion, WCAG 2.2 AA contrast, screen-reader labels, full keyboard support                                                                                                                                |
+| Area          | Included today                                                                                                                                                                                                                                                                                                   |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Work          | Teams with their own workflows, projects, tasks with identifiers (`ENG-42`), sub-tasks, relations, labels, priorities, due and start dates, custom fields, file attachments with image previews                                                                                                                  |
+| Planning      | Estimates in points or hours, cycles of one to four weeks that schedule themselves and roll unfinished work over, burn-up charts, project milestones and status updates with health, recurring tasks, task and project templates, time tracking                                                                  |
+| Views         | List, board, calendar, timeline (with dependency arrows) and insights, CSV/JSON export, filters (all or any), grouping with sub-groups and ordering in the URL, saved views and favorites, My tasks grouped by due date, undo for every change                                                                   |
+| Collaboration | Comments with @mentions and reactions, activity history, inbox notifications, subscriptions, realtime updates                                                                                                                                                                                                    |
+| Workspace     | Invitations with roles (owner, admin, member, guest), private teams, team templates, labels, a 30-day trash, intake forms into Triage, automations with a run log, signed webhooks, notification levels per team, theme preferences, import from Linear, Asana, ClickUp or CSV (comments and sub-tasks included) |
+| Quality       | English and Italian, light, dark and system themes, motion that respects reduced motion, WCAG 2.2 AA contrast, screen-reader labels, full keyboard support, right-click menus, one-click copy of any task ID                                                                                                     |
 
 ## Tech stack
 
-| Layer    | Choices                                                                                                                                                  |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Frontend | React 19, Vite 8, TanStack Router and Query (persisted to IndexedDB), TanStack Virtual, Tailwind CSS 4, Base UI, cmdk, Tiptap 3, Pragmatic drag and drop |
-| Backend  | Supabase: Postgres 17 with Row Level Security, PostgREST, GoTrue auth, Realtime broadcast from triggers, pg_cron                                         |
-| Domain   | Pure TypeScript package with Zod 4 schemas: view engine, fractional ordering, identifiers, permissions                                                   |
-| Quality  | TypeScript 7 strict, oxlint (type-aware), Prettier, Vitest, pgTAP for every RLS policy, Playwright with axe                                              |
-| Delivery | pnpm 12 workspaces and Turborepo, GitHub Actions, GitHub Pages demo, Docker Compose with an unprivileged nginx image                                     |
+| Layer    | Choices                                                                                                                                                                                                    |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend | React 19, Vite 8, TanStack Router and Query (persisted to IndexedDB), TanStack Virtual, Tailwind CSS 4, Base UI, cmdk, Tiptap 3, Pragmatic drag and drop, react-day-picker, Sileo toasts, Blobatar avatars |
+| Backend  | Supabase: Postgres 17 with Row Level Security, PostgREST, GoTrue auth, Realtime broadcast from triggers, pg_cron                                                                                           |
+| Domain   | Pure TypeScript package with Zod 4 schemas: view engine, fractional ordering, identifiers, permissions                                                                                                     |
+| Quality  | TypeScript 7 strict, oxlint (type-aware), Prettier, Vitest, pgTAP for every RLS policy, Playwright with axe                                                                                                |
+| Delivery | pnpm 12 workspaces and Turborepo, GitHub Actions, GitHub Pages demo, Docker Compose with an unprivileged nginx image                                                                                       |
 
 Every choice is recorded with its alternatives in the [architecture decision records](docs/adr/README.md).
 
