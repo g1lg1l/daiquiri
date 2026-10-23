@@ -27,6 +27,8 @@ import {
   Menu,
   MenuCheckboxItem,
   MenuContent,
+  MenuGroup,
+  MenuItem,
   MenuLabel,
   MenuRadioGroup,
   MenuRadioItem,
@@ -38,6 +40,8 @@ import {
 } from '@daiq/ui';
 import {
   CalendarDaysIcon,
+  ChartColumnIcon,
+  DownloadIcon,
   GanttChartIcon,
   KanbanSquareIcon,
   ListFilterIcon,
@@ -132,12 +136,14 @@ const LAYOUT_LABEL: Record<Layout, string> = {
   board: 'Board',
   calendar: 'Calendar',
   timeline: 'Timeline',
+  insights: 'Insights',
 };
 const LAYOUT_ICON: Record<Layout, ReactNode> = {
   list: <ListIcon aria-hidden />,
   board: <KanbanSquareIcon aria-hidden />,
   calendar: <CalendarDaysIcon aria-hidden />,
   timeline: <GanttChartIcon aria-hidden />,
+  insights: <ChartColumnIcon aria-hidden />,
 };
 
 export function LayoutToggle({ layout, setSearch }: { layout: Layout; setSearch: SetSearch }) {
@@ -182,6 +188,7 @@ export function DisplayMenu({
   setSearch,
   allowedGroups,
   teamIds,
+  onExport,
 }: {
   layout: Layout;
   search: ViewSearch;
@@ -189,6 +196,8 @@ export function DisplayMenu({
   setSearch: SetSearch;
   allowedGroups: readonly GroupBy[];
   teamIds?: readonly string[];
+  /** Downloads the tasks this view shows. */
+  onExport: (format: 'csv' | 'json') => void;
 }) {
   const data = useWorkspaceData();
   const fields = allowedGroups.includes('field') ? viewFields(data, teamIds) : [];
@@ -203,8 +212,8 @@ export function DisplayMenu({
         <SlidersHorizontalIcon /> <span className="max-md:sr-only">Display</span>
       </MenuTrigger>
       <MenuContent align="end" className="w-56">
-        {/* The calendar groups by day itself. */}
-        {layout !== 'calendar' && (
+        {/* The calendar groups by day itself; insights chart every task in the view. */}
+        {layout !== 'calendar' && layout !== 'insights' && (
           <>
             <MenuRadioGroup
               value={group === 'field' ? `field:${search.groupField ?? ''}` : group}
@@ -234,27 +243,41 @@ export function DisplayMenu({
             <MenuSeparator />
           </>
         )}
-        <MenuRadioGroup
-          value={order}
-          onValueChange={(value: OrderBy) => setSearch({ order: value })}
-        >
-          <MenuLabel>Order by</MenuLabel>
-          {ORDER_BY.map((o) => (
-            <MenuRadioItem key={o} value={o}>
-              {ORDER_LABEL[o]}
-            </MenuRadioItem>
-          ))}
-        </MenuRadioGroup>
-        <MenuSeparator />
-        <MenuRadioGroup
-          value={completed}
-          onValueChange={(value: 'all' | 'week' | 'none') => setSearch({ completed: value })}
-        >
-          <MenuLabel>Completed tasks</MenuLabel>
-          <MenuRadioItem value="week">Past week</MenuRadioItem>
-          <MenuRadioItem value="all">All</MenuRadioItem>
-          <MenuRadioItem value="none">None</MenuRadioItem>
-        </MenuRadioGroup>
+        {layout !== 'insights' && (
+          <>
+            <MenuRadioGroup
+              value={order}
+              onValueChange={(value: OrderBy) => setSearch({ order: value })}
+            >
+              <MenuLabel>Order by</MenuLabel>
+              {ORDER_BY.map((o) => (
+                <MenuRadioItem key={o} value={o}>
+                  {ORDER_LABEL[o]}
+                </MenuRadioItem>
+              ))}
+            </MenuRadioGroup>
+            <MenuSeparator />
+            <MenuRadioGroup
+              value={completed}
+              onValueChange={(value: 'all' | 'week' | 'none') => setSearch({ completed: value })}
+            >
+              <MenuLabel>Completed tasks</MenuLabel>
+              <MenuRadioItem value="week">Past week</MenuRadioItem>
+              <MenuRadioItem value="all">All</MenuRadioItem>
+              <MenuRadioItem value="none">None</MenuRadioItem>
+            </MenuRadioGroup>
+            <MenuSeparator />
+          </>
+        )}
+        <MenuGroup>
+          <MenuLabel>Export tasks in this view</MenuLabel>
+          <MenuItem onClick={() => onExport('csv')}>
+            <DownloadIcon /> CSV
+          </MenuItem>
+          <MenuItem onClick={() => onExport('json')}>
+            <DownloadIcon /> JSON
+          </MenuItem>
+        </MenuGroup>
       </MenuContent>
     </Menu>
   );

@@ -28,7 +28,7 @@ export const GROUP_BY = [
 export const TEAM_GROUP_BY = GROUP_BY.filter((group) => group !== 'milestone');
 export const ORDER_BY = ['manual', 'priority', 'due', 'created', 'updated', 'title'] as const;
 export const COMPLETED_VISIBILITY = ['all', 'week', 'none'] as const;
-export const LAYOUTS = ['list', 'board', 'calendar', 'timeline'] as const;
+export const LAYOUTS = ['list', 'board', 'calendar', 'timeline', 'insights'] as const;
 export const DUE_FILTERS = ['overdue', 'today', 'week', 'none', 'any'] as const;
 
 export type GroupBy = (typeof GROUP_BY)[number];

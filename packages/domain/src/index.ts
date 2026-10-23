@@ -149,3 +149,5 @@ export {
   matchesFieldFilters,
   parseFieldFilter,
 } from './fields';
+export { exportRows, formatHours, median, summarize, toCsv, weeklyThroughput } from './insights';
+export type { ExportContext, ExportRow, InsightSummary, InsightWeek } from './insights';

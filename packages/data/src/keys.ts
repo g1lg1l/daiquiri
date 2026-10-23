@@ -37,6 +37,8 @@ export const keys = {
   latestProjectUpdates: (workspaceId: string) =>
     ['project-updates', 'latest', workspaceId] as const,
   cycleProgress: (cycleId: string) => ['cycles', 'progress', cycleId] as const,
+  statusFlow: (workspaceId: string, fingerprint: string) =>
+    ['status-flow', workspaceId, fingerprint] as const,
   views: (workspaceId: string) => ['views', workspaceId] as const,
   favorites: (workspaceId: string) => ['favorites', workspaceId] as const,
   search: (workspaceId: string, query: string) => ['search', workspaceId, query] as const,

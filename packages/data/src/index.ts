@@ -56,6 +56,8 @@ export {
   useUpdateProfile,
   useWorkspaces,
 } from './workspaces';
+export { useStatusFlow } from './insights';
+export type { StatusFlow } from './insights';
 export { useCycleProgress, useCycles, useRenameCycle, useUpdateTeam } from './planning';
 export type { CycleDay, TeamSettings } from './planning';
 export {

@@ -1584,6 +1584,7 @@ export type Database = {
       };
       set_task_assignees: { Args: { task_id: string; user_ids: string[] }; Returns: undefined };
       set_task_labels: { Args: { label_ids: string[]; task_id: string }; Returns: undefined };
+      status_flow: { Args: { task_ids: string[] }; Returns: Json };
       workspace_member_emails: {
         Args: { workspace_id: string };
         Returns: {

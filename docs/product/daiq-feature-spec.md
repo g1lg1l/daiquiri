@@ -183,7 +183,8 @@ Empty optional fields are hidden in the task view and reachable via the property
 ## 14. Insights — P2
 
 - Fixed, live charts available on any team, project, cycle or saved view: status distribution, created vs completed (throughput), cycle time, time in status, overdue count, open work by assignee, burn-up.
-- Charts are lazily loaded; data comes from SQL aggregate functions with the same filters as the view.
+- Insights are a layout of every task view, so they always use the view's filters. Counts (status mix, throughput, burn-up, overdue, open work by assignee, lead time) come from the view's loaded tasks; time in status and cycle time come from `status_flow()`, which aggregates the activity log for the view's task ids under RLS. The chart code is lazily loaded.
+- Every view exports its tasks as CSV (formula cells neutralised) or JSON.
 
 ## 15. Settings and administration — P1 (core), P3 (advanced)
 

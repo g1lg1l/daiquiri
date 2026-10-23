@@ -14,7 +14,8 @@
   "dependencies": {
     "@daiq/domain": "workspace:*",
     "@supabase/supabase-js": "catalog:",
-    "@tanstack/react-query": "catalog:"
+    "@tanstack/react-query": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:"

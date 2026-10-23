@@ -1,8 +1,11 @@
 import {
+  exportRows,
   filterTasks,
   groupTasks,
+  slugify,
   sortStatuses,
   sortTasks,
+  toCsv,
   type GroupBy,
   type Milestone,
   type Task,
@@ -13,6 +16,7 @@ import {
 import { Skeleton } from '@daiq/ui';
 import { useNavigate } from '@tanstack/react-router';
 import { lazy, Suspense, useCallback, useMemo, type ReactNode } from 'react';
+import { downloadText } from '../../lib/download';
 import { useToday } from '../../lib/use-today';
 import { ViewHeader } from '../shell/view-header';
 import { useShell } from '../shell/shell-context';
@@ -36,6 +40,9 @@ const TaskCalendar = lazy(() =>
 );
 const TaskTimeline = lazy(() =>
   import('./task-timeline').then((m) => ({ default: m.TaskTimeline })),
+);
+const TaskInsights = lazy(() =>
+  import('../insights/task-insights').then((m) => ({ default: m.TaskInsights })),
 );
 
 export interface TaskViewProps {
@@ -86,13 +93,32 @@ export function TaskView({
     : (allowedGroups[0] ?? 'none');
   const order = search.order ?? defaults.order;
 
-  const visible = useMemo<Task[]>(
-    () =>
-      tasks
-        ? sortTasks(filterTasks(tasks, search, { userId, today, statuses: data.statuses }), order)
-        : [],
-    [tasks, search, userId, today, data.statuses, order],
-  );
+  const visible = useMemo<Task[]>(() => {
+    if (!tasks) return [];
+    // Insights need the whole history, not just recently completed work.
+    const filters = layout === 'insights' ? { ...search, completed: 'all' as const } : search;
+    return sortTasks(
+      filterTasks(tasks, filters, { userId, today, statuses: data.statuses }),
+      order,
+    );
+  }, [tasks, search, layout, userId, today, data.statuses, order]);
+
+  const label = typeof title === 'string' ? title : 'Tasks';
+  const onExport = (format: 'csv' | 'json') => {
+    const rows = exportRows(visible, {
+      identifier,
+      statuses: data.statuses,
+      members: data.membersById,
+      labels: data.labelsById,
+      projects: data.projectsById,
+      fields: data.fields.filter((field) =>
+        teamIds.some((id) => data.teamsById.get(id)?.fieldIds.includes(field.id)),
+      ),
+    });
+    const name = `${slugify(`${workspace.slug} ${label}`)}-${today}.${format}`;
+    if (format === 'csv') downloadText(name, toCsv(rows), 'text/csv;charset=utf-8');
+    else downloadText(name, JSON.stringify(rows, null, 2), 'application/json');
+  };
 
   const groups = useMemo<TaskGroup[]>(() => {
     if (!tasks) return [];
@@ -162,6 +188,7 @@ export function TaskView({
             defaults={defaults}
             setSearch={setSearch}
             allowedGroups={allowedGroups}
+            onExport={onExport}
           />
         </ViewHeader>
         {subheader}
@@ -172,6 +199,10 @@ export function TaskView({
               <Skeleton key={i} className="h-7" style={{ width: `${70 + ((i * 13) % 30)}%` }} />
             ))}
           </div>
+        ) : layout === 'insights' ? (
+          <Suspense fallback={null}>
+            <TaskInsights tasks={visible} />
+          </Suspense>
         ) : layout === 'timeline' ? (
           <Suspense fallback={null}>
             <TaskTimeline
@@ -210,7 +241,7 @@ export function TaskView({
           </Suspense>
         ) : (
           <TaskList
-            label={typeof title === 'string' ? title : 'Tasks'}
+            label={label}
             groups={groups}
             showGroupHeaders={group !== 'none'}
             canReorder={order === 'manual'}

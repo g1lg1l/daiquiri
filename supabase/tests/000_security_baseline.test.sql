@@ -37,7 +37,7 @@ select is(
     'accept_invitation', 'create_demo_workspace', 'create_invitation', 'create_task', 'create_team',
     'create_workspace', 'cycle_progress', 'delete_tasks', 'preview_invitation', 'remove_member', 'restore_tasks',
     'revoke_invitation', 'search', 'set_member_role', 'set_task_assignees', 'set_task_labels',
-    'workspace_member_emails'
+    'status_flow', 'workspace_member_emails'
   ]::text[],
   'authenticated can execute exactly the public RPC allow-list'
 );
