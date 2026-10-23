@@ -73,6 +73,7 @@ async function applyTaskEvents(
       predicate: (query) => hasIdIn(query.state.data, ids),
     }),
     queryClient.invalidateQueries({ predicate: keyFor('activity', ids) }),
+    queryClient.invalidateQueries({ predicate: keyFor('attachments', ids) }),
     queryClient.invalidateQueries({ queryKey: ['relations'] }),
   ]);
 }

@@ -42,6 +42,7 @@ export {
 } from './model';
 export type {
   ActivityEntry,
+  Attachment,
   Comment,
   Cycle,
   EstimateScale,
@@ -126,3 +127,10 @@ export {
   plannableCycles,
 } from './planning';
 export type { CycleState } from './planning';
+export {
+  attachmentPath,
+  formatBytes,
+  isPreviewableImage,
+  MAX_ATTACHMENT_BYTES,
+  safeFileName,
+} from './attachments';

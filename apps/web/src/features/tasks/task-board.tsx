@@ -23,7 +23,7 @@ import {
   type TaskPatch,
 } from '@daiq/domain';
 import { Avatar, Button, cn, Tooltip } from '@daiq/ui';
-import { PlusIcon } from 'lucide-react';
+import { PaperclipIcon, PlusIcon } from 'lucide-react';
 import {
   memo,
   useEffect,
@@ -467,6 +467,15 @@ const Card = memo(function Card({
             </span>
           ) : null;
         })}
+        {task.attachmentCount > 0 && (
+          <span
+            className="flex items-center gap-0.5 text-[11px] text-fg-subtle tabular"
+            aria-label={`${task.attachmentCount} ${task.attachmentCount === 1 ? 'attachment' : 'attachments'}`}
+          >
+            <PaperclipIcon aria-hidden className="size-3" />
+            {task.attachmentCount}
+          </span>
+        )}
         {data.teamsById.get(task.teamId)?.estimatesEnabled && task.estimate !== null && (
           <span className="rounded-sm border border-border px-1 text-[11px] text-fg-muted tabular">
             {data.teamsById.get(task.teamId)?.estimateScale === 'hours'

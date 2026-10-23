@@ -100,6 +100,18 @@ export interface ProjectUpdate {
   updatedAt: string;
 }
 
+export interface Attachment {
+  id: string;
+  workspaceId: string;
+  taskId: string;
+  storagePath: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedBy: string | null;
+  createdAt: string;
+}
+
 export interface Team {
   id: string;
   workspaceId: string;
@@ -178,6 +190,8 @@ export interface Task {
   estimate: number | null;
   cycleId: string | null;
   milestoneId: string | null;
+  /** Files attached to the task (read-only; maintained by the database). */
+  attachmentCount: number;
   sortKey: string;
   completedAt: string | null;
   canceledAt: string | null;

@@ -125,6 +125,12 @@ function describe(entry: ActivityEntry, name: (id: string) => string): ReactNode
           removed the task from <strong>Cycle {String(data.from)}</strong>
         </>
       );
+    case 'task.attachment_added':
+      return (
+        <>
+          attached <strong>{str(data.file_name)}</strong>
+        </>
+      );
     case 'task.deleted':
       return 'deleted the task';
     case 'task.restored':

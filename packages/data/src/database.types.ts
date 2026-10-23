@@ -76,6 +76,58 @@ export type Database = {
           },
         ];
       };
+      attachments: {
+        Row: {
+          created_at: string;
+          file_name: string;
+          id: string;
+          mime_type: string;
+          size_bytes: number;
+          storage_path: string;
+          task_id: string;
+          uploaded_by: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          file_name: string;
+          id?: string;
+          mime_type?: string;
+          size_bytes: number;
+          storage_path: string;
+          task_id: string;
+          uploaded_by?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          file_name?: string;
+          id?: string;
+          mime_type?: string;
+          size_bytes?: number;
+          storage_path?: string;
+          task_id?: string;
+          uploaded_by?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'attachments_workspace_id_task_id_fkey';
+            columns: ['workspace_id', 'task_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'attachments_workspace_id_uploaded_by_fkey';
+            columns: ['workspace_id', 'uploaded_by'];
+            isOneToOne: false;
+            referencedRelation: 'workspace_members';
+            referencedColumns: ['workspace_id', 'user_id'];
+          },
+        ];
+      };
       comment_reactions: {
         Row: {
           comment_id: string;

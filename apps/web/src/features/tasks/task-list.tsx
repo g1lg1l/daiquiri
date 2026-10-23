@@ -10,7 +10,7 @@ import {
 } from '@daiq/domain';
 import { Avatar, Button, cn, Shortcut, Tooltip } from '@daiq/ui';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ChevronDownIcon, ChevronRightIcon, PlusIcon } from 'lucide-react';
+import { ChevronDownIcon, ChevronRightIcon, PaperclipIcon, PlusIcon } from 'lucide-react';
 import {
   memo,
   useCallback,
@@ -527,6 +527,16 @@ const TaskRow = memo(function TaskRow({
           className="hidden max-w-40 shrink-0 truncate text-xs text-fg-subtle @4xl/list:block"
         >
           {project.name}
+        </div>
+      )}
+      {task.attachmentCount > 0 && (
+        <div
+          role="gridcell"
+          className="hidden shrink-0 items-center gap-0.5 text-xs text-fg-subtle tabular @2xl/list:flex"
+          aria-label={`${task.attachmentCount} ${task.attachmentCount === 1 ? 'attachment' : 'attachments'}`}
+        >
+          <PaperclipIcon aria-hidden className="size-3" />
+          {task.attachmentCount}
         </div>
       )}
       {team?.estimatesEnabled && task.estimate !== null && (

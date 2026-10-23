@@ -66,3 +66,5 @@ export {
   useProjectUpdates,
 } from './projects';
 export type { LatestUpdate, MilestonePatch } from './projects';
+export { useAttachmentActions, useAttachments, useAttachmentUrl } from './attachments';
+export type { ListedAttachment } from './attachments';

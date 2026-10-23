@@ -17,6 +17,7 @@ const task = (id: string, dueDate: string | null): Task => ({
   estimate: null,
   cycleId: null,
   milestoneId: null,
+  attachmentCount: 0,
   sortKey: 'a0',
   completedAt: null,
   canceledAt: null,

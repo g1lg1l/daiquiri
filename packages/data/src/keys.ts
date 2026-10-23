@@ -27,6 +27,7 @@ export const keys = {
   /** Under 'relations' so realtime relation events refresh it too. */
   dependencies: (workspaceId: string) => ['relations', 'blocks', workspaceId] as const,
   comments: (taskId: string) => ['comments', taskId] as const,
+  attachments: (taskId: string) => ['attachments', taskId] as const,
   activity: (taskId: string) => ['activity', taskId] as const,
   notifications: (workspaceId: string) => ['notifications', workspaceId] as const,
   cycles: (teamId: string) => ['cycles', teamId] as const,

@@ -62,7 +62,7 @@ ClickUp, Asana and Linear each do a lot. Most teams use a small part of it, ever
 
 | Area          | Included today                                                                                                                                                                         |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Work          | Teams with their own workflows, projects, tasks with identifiers (`ENG-42`), sub-tasks, relations, labels, priorities, due and start dates                                             |
+| Work          | Teams with their own workflows, projects, tasks with identifiers (`ENG-42`), sub-tasks, relations, labels, priorities, due and start dates, file attachments with image previews       |
 | Planning      | Estimates in points or hours, cycles of one to four weeks that schedule themselves and roll unfinished work over, burn-up charts, project milestones and status updates with health    |
 | Views         | List, board, calendar and timeline (with dependency arrows), filters, grouping and ordering in the URL, saved views and favorites, My tasks grouped by due date, undo for every change |
 | Collaboration | Comments with @mentions and reactions, activity history, inbox notifications, subscriptions, realtime updates                                                                          |
@@ -150,7 +150,8 @@ Start with [ARCHITECTURE.md](ARCHITECTURE.md), then [docs/plan.md](docs/plan.md)
 - [x] Estimates and cycles with burn-up
 - [x] Project milestones and status updates
 - [ ] Custom fields and time tracking
-- [ ] Attachments, automations, recurring tasks and templates
+- [x] File attachments on private storage
+- [ ] Automations, recurring tasks and templates
 - [ ] Insights and CSV export
 - [ ] Weekly reminders to post a project update
 - [ ] Integrations: webhooks, API tokens, Slack, importers from Linear, Asana and ClickUp

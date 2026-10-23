@@ -213,6 +213,7 @@ export function useCreateTask() {
         estimate: input.estimate ?? null,
         cycleId: input.cycleId ?? null,
         milestoneId: null,
+        attachmentCount: 0,
         sortKey: input.sortKey,
         completedAt: null,
         canceledAt: null,

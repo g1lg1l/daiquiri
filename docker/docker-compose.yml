@@ -46,10 +46,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      # auth and realtime create the auth.users and realtime.messages tables our migrations extend.
+      # auth, realtime and storage create the auth.users, realtime.messages and
+      # storage.objects tables our migrations extend.
       auth:
         condition: service_healthy
       realtime:
+        condition: service_healthy
+      storage:
         condition: service_healthy
 
   api-gw:

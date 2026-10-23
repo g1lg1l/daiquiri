@@ -43,8 +43,8 @@ jobs:
         with:
           version: 2.121.0
       - name: Start Supabase
-        # auth and realtime create schemas our migrations extend; the rest is not needed.
-        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta,storage-api,kong,postgrest
+        # auth, realtime and storage create schemas our migrations extend; the rest is not needed.
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,mailpit,postgres-meta,kong,postgrest
       - run: supabase db lint --local --level error --fail-on error
       - run: supabase test db
       # Prettier needs the repo's config and plugins to format like the committed file.
@@ -77,7 +77,7 @@ jobs:
           version: 2.121.0
       - run: pnpm install --frozen-lockfile
       - name: Start Supabase
-        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta,storage-api,mailpit
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta,mailpit
       - name: Install browsers
         run: pnpm --filter @daiq/web exec playwright install --with-deps chromium
       - run: pnpm test:e2e

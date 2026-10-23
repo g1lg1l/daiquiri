@@ -34,6 +34,7 @@ const task = (overrides: Partial<Task>): Task => ({
   estimate: null,
   cycleId: null,
   milestoneId: null,
+  attachmentCount: 0,
   sortKey: `a${seq}`,
   completedAt: null,
   canceledAt: null,

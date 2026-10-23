@@ -30,8 +30,21 @@ server {
     include /etc/nginx/snippets/security-headers.conf;
   }
 
-  # Supabase APIs on the same origin (auth, PostgREST, realtime websockets, storage).
-  location ~ ^/(auth|rest|realtime|storage)/v1/ {
+  # Uploaded files are served from this origin: never let one run as a page.
+  location /storage/v1/ {
+    proxy_pass http://api-gw:8000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_hide_header Content-Security-Policy;
+    add_header Content-Security-Policy "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; sandbox" always;
+    include /etc/nginx/snippets/security-headers.conf;
+  }
+
+  # Supabase APIs on the same origin (auth, PostgREST, realtime websockets).
+  location ~ ^/(auth|rest|realtime)/v1/ {
     proxy_pass http://api-gw:8000;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;

@@ -65,6 +65,7 @@ import { SHORTCUTS } from '../shortcuts/registry';
 import { useShortcuts } from '../shortcuts/use-shortcuts';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { ActivityFeed } from './activity-feed';
+import { Attachments } from './attachments';
 import { useComposer } from './composer';
 import { PriorityIcon, StatusIcon } from './icons';
 import { LABEL_COLOR } from './label-colors';
@@ -653,6 +654,7 @@ function TaskDetailBody({
                 className="min-h-24"
               />
             </Suspense>
+            <Attachments task={task} />
             <SubTasks task={task} />
             <Relations task={task} />
             <ActivityFeed task={task} />
