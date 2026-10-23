@@ -29,6 +29,9 @@ import { TaskPeek } from './task-peek';
 import { useIdentifier } from './use-identifier';
 
 const TaskBoard = lazy(() => import('./task-board').then((m) => ({ default: m.TaskBoard })));
+const TaskCalendar = lazy(() =>
+  import('./task-calendar').then((m) => ({ default: m.TaskCalendar })),
+);
 
 export interface TaskViewProps {
   title: ReactNode;
@@ -73,13 +76,20 @@ export function TaskView({
     : (allowedGroups[0] ?? 'none');
   const order = search.order ?? defaults.order;
 
+  const visible = useMemo<Task[]>(
+    () =>
+      tasks
+        ? sortTasks(filterTasks(tasks, search, { userId, today, statuses: data.statuses }), order)
+        : [],
+    [tasks, search, userId, today, data.statuses, order],
+  );
+
   const groups = useMemo<TaskGroup[]>(() => {
     if (!tasks) return [];
-    const filtered = filterTasks(tasks, search, { userId, today, statuses: data.statuses });
     const orderedStatuses = sortStatuses(
       teamIds.flatMap((id) => data.teamsById.get(id)?.statuses ?? []),
     );
-    return groupTasks(sortTasks(filtered, order), group, {
+    return groupTasks(visible, group, {
       userId,
       today,
       statuses: data.statuses,
@@ -88,7 +98,7 @@ export function TaskView({
       projects: data.projectsById,
       labels: data.labelsById,
     });
-  }, [tasks, search, userId, data, teamIds, order, group, today]);
+  }, [tasks, visible, userId, data, teamIds, group, today]);
 
   const peekTask = useMemo(
     () => (search.peek ? tasks?.find((task) => identifier(task) === search.peek) : undefined),
@@ -132,6 +142,7 @@ export function TaskView({
           <LayoutToggle layout={layout} setSearch={setSearch} />
           <FilterMenu search={search} setSearch={setSearch} teamIds={teamIds} />
           <DisplayMenu
+            layout={layout}
             search={search}
             defaults={defaults}
             setSearch={setSearch}
@@ -146,6 +157,18 @@ export function TaskView({
               <Skeleton key={i} className="h-7" style={{ width: `${70 + ((i * 13) % 30)}%` }} />
             ))}
           </div>
+        ) : layout === 'calendar' ? (
+          <Suspense fallback={null}>
+            <TaskCalendar
+              tasks={visible}
+              month={search.month}
+              setSearch={setSearch}
+              peekId={peekTask?.id}
+              onOpen={onOpen}
+              onCreate={composer}
+              composerDefaults={composerDefaults}
+            />
+          </Suspense>
         ) : layout === 'board' ? (
           <Suspense fallback={null}>
             <TaskBoard

@@ -141,7 +141,7 @@ export function SavedViewControls({
     return (
       <>
         <Button variant="ghost" size="sm" onClick={() => setDialog('create')}>
-          <BookmarkPlusIcon /> Save view
+          <BookmarkPlusIcon /> <span className="max-md:sr-only">Save view</span>
         </Button>
         <ViewDialog
           open={dialog === 'create'}

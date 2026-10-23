@@ -2,6 +2,7 @@ import {
   DUE_FILTERS,
   hasActiveFilters,
   isPriority,
+  LAYOUTS,
   ME,
   ORDER_BY,
   NONE,
@@ -9,6 +10,7 @@ import {
   STATUS_CATEGORY_LABEL,
   type DueFilter,
   type GroupBy,
+  type Layout,
   type OrderBy,
   type Priority,
   type StatusCategory,
@@ -32,13 +34,14 @@ import {
   Tooltip,
 } from '@daiq/ui';
 import {
+  CalendarDaysIcon,
   KanbanSquareIcon,
   ListFilterIcon,
   ListIcon,
   SlidersHorizontalIcon,
   XIcon,
 } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { SHORTCUTS } from '../shortcuts/registry';
 import { useShortcuts } from '../shortcuts/use-shortcuts';
 import { PriorityIcon, StatusIcon } from '../tasks/icons';
@@ -82,23 +85,24 @@ function toggle<T>(list: readonly T[] | undefined, value: T): T[] | undefined {
   return next.length ? next : undefined;
 }
 
-export function LayoutToggle({
-  layout,
-  setSearch,
-}: {
-  layout: 'list' | 'board';
-  setSearch: SetSearch;
-}) {
-  const next = layout === 'list' ? 'board' : 'list';
+const LAYOUT_LABEL: Record<Layout, string> = { list: 'List', board: 'Board', calendar: 'Calendar' };
+const LAYOUT_ICON: Record<Layout, ReactNode> = {
+  list: <ListIcon aria-hidden />,
+  board: <KanbanSquareIcon aria-hidden />,
+  calendar: <CalendarDaysIcon aria-hidden />,
+};
+
+export function LayoutToggle({ layout, setSearch }: { layout: Layout; setSearch: SetSearch }) {
+  const next = layout === 'board' ? 'list' : 'board';
   useShortcuts({ toggleLayout: () => setSearch({ layout: next }) });
   return (
     <fieldset className="flex rounded-md border border-border p-0.5">
       <legend className="sr-only">Layout</legend>
-      {(['list', 'board'] as const).map((value) => (
+      {LAYOUTS.map((value) => (
         <Tooltip
           key={value}
-          label={value === 'list' ? 'List' : 'Board'}
-          shortcut={SHORTCUTS.toggleLayout.keys}
+          label={LAYOUT_LABEL[value]}
+          shortcut={value === 'calendar' ? undefined : SHORTCUTS.toggleLayout.keys}
         >
           <label
             className={cn(
@@ -113,9 +117,9 @@ export function LayoutToggle({
               checked={layout === value}
               onChange={() => setSearch({ layout: value })}
               className="sr-only"
-              aria-label={value === 'list' ? 'List' : 'Board'}
+              aria-label={LAYOUT_LABEL[value]}
             />
-            {value === 'list' ? <ListIcon aria-hidden /> : <KanbanSquareIcon aria-hidden />}
+            {LAYOUT_ICON[value]}
           </label>
         </Tooltip>
       ))}
@@ -124,11 +128,13 @@ export function LayoutToggle({
 }
 
 export function DisplayMenu({
+  layout,
   search,
   defaults,
   setSearch,
   allowedGroups,
 }: {
+  layout: Layout;
   search: ViewSearch;
   defaults: ViewDefaults;
   setSearch: SetSearch;
@@ -142,21 +148,26 @@ export function DisplayMenu({
   return (
     <Menu>
       <MenuTrigger render={<Button ref={trigger} variant="ghost" size="sm" />}>
-        <SlidersHorizontalIcon /> Display
+        <SlidersHorizontalIcon /> <span className="max-md:sr-only">Display</span>
       </MenuTrigger>
       <MenuContent align="end" className="w-56">
-        <MenuRadioGroup
-          value={group}
-          onValueChange={(value: GroupBy) => setSearch({ group: value })}
-        >
-          <MenuLabel>Group by</MenuLabel>
-          {allowedGroups.map((g) => (
-            <MenuRadioItem key={g} value={g}>
-              {GROUP_LABEL[g]}
-            </MenuRadioItem>
-          ))}
-        </MenuRadioGroup>
-        <MenuSeparator />
+        {/* The calendar groups by day itself. */}
+        {layout !== 'calendar' && (
+          <>
+            <MenuRadioGroup
+              value={group}
+              onValueChange={(value: GroupBy) => setSearch({ group: value })}
+            >
+              <MenuLabel>Group by</MenuLabel>
+              {allowedGroups.map((g) => (
+                <MenuRadioItem key={g} value={g}>
+                  {GROUP_LABEL[g]}
+                </MenuRadioItem>
+              ))}
+            </MenuRadioGroup>
+            <MenuSeparator />
+          </>
+        )}
         <MenuRadioGroup
           value={order}
           onValueChange={(value: OrderBy) => setSearch({ order: value })}
@@ -202,7 +213,7 @@ export function FilterMenu({
   return (
     <Menu>
       <MenuTrigger render={<Button ref={trigger} variant="ghost" size="sm" />}>
-        <ListFilterIcon /> Filter
+        <ListFilterIcon /> <span className="max-md:sr-only">Filter</span>
       </MenuTrigger>
       <MenuContent align="end" className="w-52">
         <MenuSub>

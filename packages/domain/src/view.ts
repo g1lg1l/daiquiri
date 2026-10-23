@@ -22,7 +22,7 @@ export const GROUP_BY = [
 ] as const;
 export const ORDER_BY = ['manual', 'priority', 'due', 'created', 'updated', 'title'] as const;
 export const COMPLETED_VISIBILITY = ['all', 'week', 'none'] as const;
-export const LAYOUTS = ['list', 'board'] as const;
+export const LAYOUTS = ['list', 'board', 'calendar'] as const;
 export const DUE_FILTERS = ['overdue', 'today', 'week', 'none', 'any'] as const;
 
 export type GroupBy = (typeof GROUP_BY)[number];
@@ -57,12 +57,20 @@ export const viewSearchSchema = z.object({
   peek: z.string().max(20).optional().catch(undefined),
   /** Saved view this URL started from; the rest of the params may have drifted from it. */
   view: z.uuid().optional().catch(undefined),
+  /** Calendar month on screen ("YYYY-MM"); defaults to the current month. */
+  month: z
+    .string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+    .optional()
+    .catch(undefined),
 });
 
 export type ViewSearch = z.infer<typeof viewSearchSchema>;
 
 /** What a saved view stores: the view params without per-visit state. */
-export const viewConfigSchema = viewSearchSchema.omit({ peek: true, view: true }).catch({});
+export const viewConfigSchema = viewSearchSchema
+  .omit({ peek: true, view: true, month: true })
+  .catch({});
 export type ViewConfig = z.infer<typeof viewConfigSchema>;
 
 export interface ViewDefaults {

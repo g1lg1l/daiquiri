@@ -64,6 +64,17 @@ Daiq shortcuts follow four rules so users can predict them:
 | `Shift F`                     | Clear filters                                                         |
 | `Shift V`                     | Display options (grouping, ordering, properties)                      |
 
+### Calendar
+
+| Keys               | Action                                                  |
+| ------------------ | ------------------------------------------------------- |
+| `←` `→` / `J` `K`  | Previous / next task, day by day, then the undated tray |
+| `Mod ←` / `Mod →`  | Move the focused task one day earlier / later           |
+| `Mod ↑` / `Mod ↓`  | Move it one week earlier / later                        |
+| `Enter` / `Space`  | Open / peek                                             |
+| Drag onto a day    | Reschedule (a start date keeps its distance to the due) |
+| Drag onto the tray | Remove the due date                                     |
+
 ## Task properties (on target)
 
 | Keys            | Action                                                             |

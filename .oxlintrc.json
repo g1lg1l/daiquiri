@@ -93,6 +93,7 @@
       "files": [
         "apps/web/src/features/tasks/task-list.tsx",
         "apps/web/src/features/tasks/task-board.tsx",
+        "apps/web/src/features/tasks/task-calendar.tsx",
         "packages/editor/src/suggestion.tsx"
       ],
       "rules": {

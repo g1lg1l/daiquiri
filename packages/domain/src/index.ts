@@ -103,3 +103,5 @@ export type {
   ViewDefaults,
   ViewSearch,
 } from './view';
+export { addMonths, isMonth, monthGrid, monthOf, reschedule, tasksByDueDate } from './calendar';
+export type { CalendarDay } from './calendar';
