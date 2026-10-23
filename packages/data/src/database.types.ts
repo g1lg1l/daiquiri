@@ -1770,6 +1770,118 @@ export type Database = {
           },
         ];
       };
+      webhook_deliveries: {
+        Row: {
+          attempts: number;
+          created_at: string;
+          delivered_at: string | null;
+          error: string | null;
+          event: string;
+          id: number;
+          next_attempt_at: string;
+          payload: NonNullable<Json>;
+          request_id: number | null;
+          response_status: number | null;
+          status: string;
+          webhook_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          attempts?: number;
+          created_at?: string;
+          delivered_at?: string | null;
+          error?: string | null;
+          event: string;
+          id?: never;
+          next_attempt_at?: string;
+          payload: NonNullable<Json>;
+          request_id?: number | null;
+          response_status?: number | null;
+          status?: string;
+          webhook_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          attempts?: number;
+          created_at?: string;
+          delivered_at?: string | null;
+          error?: string | null;
+          event?: string;
+          id?: never;
+          next_attempt_at?: string;
+          payload?: NonNullable<Json>;
+          request_id?: number | null;
+          response_status?: number | null;
+          status?: string;
+          webhook_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'webhook_deliveries_workspace_id_webhook_id_fkey';
+            columns: ['workspace_id', 'webhook_id'];
+            isOneToOne: false;
+            referencedRelation: 'webhooks';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      webhooks: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          enabled: boolean;
+          events: string[];
+          id: string;
+          name: string;
+          secret_id: string;
+          updated_at: string;
+          url: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          enabled?: boolean;
+          events: string[];
+          id?: string;
+          name: string;
+          secret_id: string;
+          updated_at?: string;
+          url: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          enabled?: boolean;
+          events?: string[];
+          id?: string;
+          name?: string;
+          secret_id?: string;
+          updated_at?: string;
+          url?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'webhooks_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'webhooks_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       workspace_members: {
         Row: {
           created_at: string;
@@ -2049,6 +2161,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_webhook: {
+        Args: { events: string[]; name: string; url: string; workspace_id: string };
+        Returns: Json;
+      };
       create_workspace: {
         Args: {
           name: string;
@@ -2085,6 +2201,7 @@ export type Database = {
       };
       delete_tasks: { Args: { task_ids: string[] }; Returns: string };
       form_by_slug: { Args: { slug: string }; Returns: Json };
+      ping_webhook: { Args: { webhook_id: string }; Returns: undefined };
       preview_invitation: {
         Args: { token: string };
         Returns: {
@@ -2097,6 +2214,7 @@ export type Database = {
       remove_member: { Args: { user_id: string; workspace_id: string }; Returns: undefined };
       restore_tasks: { Args: { task_ids: string[] }; Returns: number };
       revoke_invitation: { Args: { invitation_id: string }; Returns: undefined };
+      rotate_webhook_secret: { Args: { webhook_id: string }; Returns: string };
       save_project_template: {
         Args: { name: string; project_id: string };
         Returns: {

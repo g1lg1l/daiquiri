@@ -45,6 +45,7 @@ export const automationActionSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('set_due_date'), days: z.number().int().min(0).max(365) }),
   z.object({ kind: z.literal('create_subtask'), template_id: z.uuid() }),
   z.object({ kind: z.literal('notify'), user_ids: z.array(z.uuid()).min(1).max(20) }),
+  z.object({ kind: z.literal('call_webhook'), webhook_id: z.uuid() }),
 ]);
 export type AutomationAction = z.infer<typeof automationActionSchema>;
 export type AutomationActionKind = AutomationAction['kind'];
@@ -96,6 +97,7 @@ export const ACTION_LABEL: Record<AutomationActionKind, string> = {
   set_due_date: 'Set due date',
   create_subtask: 'Add sub-tasks from template',
   notify: 'Notify',
+  call_webhook: 'Call a webhook',
 };
 
 /** A blank action of the given kind, for the builder. */
@@ -115,6 +117,7 @@ export function emptyAction(kind: AutomationActionKind): Partial<AutomationActio
     case 'add_label':
     case 'remove_label':
     case 'create_subtask':
+    case 'call_webhook':
       return { kind };
     default:
       return kind satisfies never;

@@ -35,8 +35,8 @@ select is(
   ),
   array[
     'accept_invitation', 'create_demo_workspace', 'create_invitation', 'create_project_from_template',
-    'create_task', 'create_task_from_template', 'create_team', 'create_workspace', 'cycle_progress',
-    'delete_tasks', 'form_by_slug', 'preview_invitation', 'purge_tasks', 'remove_member', 'restore_tasks', 'revoke_invitation',
+    'create_task', 'create_task_from_template', 'create_team', 'create_webhook', 'create_workspace', 'cycle_progress',
+    'delete_tasks', 'form_by_slug', 'ping_webhook', 'preview_invitation', 'purge_tasks', 'remove_member', 'restore_tasks', 'revoke_invitation', 'rotate_webhook_secret',
     'save_project_template', 'save_task_template', 'search', 'set_member_role', 'set_task_assignees',
     'set_task_labels', 'start_timer', 'status_flow', 'stop_timer', 'submit_form', 'trashed_tasks',
     'workspace_member_emails'

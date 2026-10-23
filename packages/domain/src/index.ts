@@ -190,3 +190,5 @@ export type {
   AutomationTriggerKind,
 } from './automation';
 export { formatClock, formatDuration, parseDuration } from './time';
+export { isSafeWebhookUrl, WEBHOOK_EVENT_LABEL, WEBHOOK_EVENTS } from './webhooks';
+export type { Webhook, WebhookDelivery, WebhookEvent } from './webhooks';

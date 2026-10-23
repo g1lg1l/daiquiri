@@ -30,6 +30,7 @@ import { Route as WorkspaceSettingsPreferencesRouteImport } from './routes/$work
 import { Route as WorkspaceSettingsTeamsRouteImport } from './routes/$workspace/settings/teams'
 import { Route as WorkspaceSettingsTemplatesRouteImport } from './routes/$workspace/settings/templates'
 import { Route as WorkspaceSettingsTrashRouteImport } from './routes/$workspace/settings/trash'
+import { Route as WorkspaceSettingsWebhooksRouteImport } from './routes/$workspace/settings/webhooks'
 import { Route as WorkspaceTaskIdentifierRouteImport } from './routes/$workspace/task/$identifier'
 import { Route as WorkspaceSettingsTeamsTeamKeyRouteImport } from './routes/$workspace/settings/teams_.$teamKey'
 import { Route as WorkspaceTeamTeamKeyAutomationsRouteImport } from './routes/$workspace/team/$teamKey/automations'
@@ -148,6 +149,12 @@ const WorkspaceSettingsTrashRoute = WorkspaceSettingsTrashRouteImport.update({
   path: '/trash',
   getParentRoute: () => WorkspaceSettingsRouteRoute,
 } as any)
+const WorkspaceSettingsWebhooksRoute =
+  WorkspaceSettingsWebhooksRouteImport.update({
+    id: '/webhooks',
+    path: '/webhooks',
+    getParentRoute: () => WorkspaceSettingsRouteRoute,
+  } as any)
 const WorkspaceTaskIdentifierRoute = WorkspaceTaskIdentifierRouteImport.update({
   id: '/task/$identifier',
   path: '/task/$identifier',
@@ -217,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/$workspace/settings/teams': typeof WorkspaceSettingsTeamsRoute
   '/$workspace/settings/templates': typeof WorkspaceSettingsTemplatesRoute
   '/$workspace/settings/trash': typeof WorkspaceSettingsTrashRoute
+  '/$workspace/settings/webhooks': typeof WorkspaceSettingsWebhooksRoute
   '/$workspace/task/$identifier': typeof WorkspaceTaskIdentifierRoute
   '/$workspace/settings/': typeof WorkspaceSettingsIndexRoute
   '/$workspace/settings/teams/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
@@ -246,6 +254,7 @@ export interface FileRoutesByTo {
   '/$workspace/settings/teams': typeof WorkspaceSettingsTeamsRoute
   '/$workspace/settings/templates': typeof WorkspaceSettingsTemplatesRoute
   '/$workspace/settings/trash': typeof WorkspaceSettingsTrashRoute
+  '/$workspace/settings/webhooks': typeof WorkspaceSettingsWebhooksRoute
   '/$workspace/task/$identifier': typeof WorkspaceTaskIdentifierRoute
   '/$workspace/settings': typeof WorkspaceSettingsIndexRoute
   '/$workspace/settings/teams/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
@@ -278,6 +287,7 @@ export interface FileRoutesById {
   '/$workspace/settings/teams': typeof WorkspaceSettingsTeamsRoute
   '/$workspace/settings/templates': typeof WorkspaceSettingsTemplatesRoute
   '/$workspace/settings/trash': typeof WorkspaceSettingsTrashRoute
+  '/$workspace/settings/webhooks': typeof WorkspaceSettingsWebhooksRoute
   '/$workspace/task/$identifier': typeof WorkspaceTaskIdentifierRoute
   '/$workspace/settings/': typeof WorkspaceSettingsIndexRoute
   '/$workspace/settings/teams_/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/teams'
     | '/$workspace/settings/templates'
     | '/$workspace/settings/trash'
+    | '/$workspace/settings/webhooks'
     | '/$workspace/task/$identifier'
     | '/$workspace/settings/'
     | '/$workspace/settings/teams/$teamKey'
@@ -340,6 +351,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/teams'
     | '/$workspace/settings/templates'
     | '/$workspace/settings/trash'
+    | '/$workspace/settings/webhooks'
     | '/$workspace/task/$identifier'
     | '/$workspace/settings'
     | '/$workspace/settings/teams/$teamKey'
@@ -371,6 +383,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/teams'
     | '/$workspace/settings/templates'
     | '/$workspace/settings/trash'
+    | '/$workspace/settings/webhooks'
     | '/$workspace/task/$identifier'
     | '/$workspace/settings/'
     | '/$workspace/settings/teams_/$teamKey'
@@ -542,6 +555,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceSettingsTrashRouteImport
       parentRoute: typeof WorkspaceSettingsRouteRoute
     }
+    '/$workspace/settings/webhooks': {
+      id: '/$workspace/settings/webhooks'
+      path: '/webhooks'
+      fullPath: '/$workspace/settings/webhooks'
+      preLoaderRoute: typeof WorkspaceSettingsWebhooksRouteImport
+      parentRoute: typeof WorkspaceSettingsRouteRoute
+    }
     '/$workspace/task/$identifier': {
       id: '/$workspace/task/$identifier'
       path: '/task/$identifier'
@@ -609,6 +629,7 @@ interface WorkspaceSettingsRouteRouteChildren {
   WorkspaceSettingsTeamsRoute: typeof WorkspaceSettingsTeamsRoute
   WorkspaceSettingsTemplatesRoute: typeof WorkspaceSettingsTemplatesRoute
   WorkspaceSettingsTrashRoute: typeof WorkspaceSettingsTrashRoute
+  WorkspaceSettingsWebhooksRoute: typeof WorkspaceSettingsWebhooksRoute
   WorkspaceSettingsIndexRoute: typeof WorkspaceSettingsIndexRoute
   WorkspaceSettingsTeamsTeamKeyRoute: typeof WorkspaceSettingsTeamsTeamKeyRoute
 }
@@ -622,6 +643,7 @@ const WorkspaceSettingsRouteRouteChildren: WorkspaceSettingsRouteRouteChildren =
     WorkspaceSettingsTeamsRoute: WorkspaceSettingsTeamsRoute,
     WorkspaceSettingsTemplatesRoute: WorkspaceSettingsTemplatesRoute,
     WorkspaceSettingsTrashRoute: WorkspaceSettingsTrashRoute,
+    WorkspaceSettingsWebhooksRoute: WorkspaceSettingsWebhooksRoute,
     WorkspaceSettingsIndexRoute: WorkspaceSettingsIndexRoute,
     WorkspaceSettingsTeamsTeamKeyRoute: WorkspaceSettingsTeamsTeamKeyRoute,
   }

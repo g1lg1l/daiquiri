@@ -4,6 +4,7 @@ import {
   useAutomations,
   useTasks,
   useTemplates,
+  useWebhooks,
 } from '@daiq/data';
 import {
   ACTION_LABEL,
@@ -212,6 +213,8 @@ function describe(automation: Automation, team: Team, data: WorkspaceData): stri
         return 'add sub-tasks from a template';
       case 'notify':
         return `notify ${a.user_ids.map(person).join(', ')}`;
+      case 'call_webhook':
+        return 'call a webhook';
       default:
         return a satisfies never;
     }
@@ -278,6 +281,10 @@ function Builder({
   const { workspace, userId } = useWorkspace();
   const data = useWorkspaceData();
   const actions = useAutomationActions(workspace.id, team.id);
+  // Only admins can list webhooks; everyone else gets an empty list.
+  const webhooks = (
+    useWebhooks(workspace.id, can(workspace.role, 'workspace.update')).data ?? []
+  ).filter((hook) => hook.enabled);
   const templates = (useTemplates(workspace.id).data ?? []).filter(
     (t) => t.kind === 'task' && t.teamId === team.id,
   );
@@ -455,6 +462,18 @@ function Builder({
             options={members}
             selected={strings(action.user_ids)}
             onChange={(values) => setAction(index, { user_ids: values })}
+          />
+        );
+      case 'call_webhook':
+        return (
+          <Choice
+            label="Webhook"
+            empty={
+              webhooks.length ? 'Choose a webhook' : 'No webhooks (admins add them in Settings)'
+            }
+            options={webhooks.map((hook) => ({ value: hook.id, label: hook.name }))}
+            selected={[str(action.webhook_id) ?? ''].filter(Boolean)}
+            onChange={([value]) => setAction(index, { webhook_id: value })}
           />
         );
       case 'unassign':

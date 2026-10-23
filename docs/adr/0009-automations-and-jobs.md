@@ -19,7 +19,7 @@ Automations ("When task created / status changed / date reached… If filters…
 - **Extensibility**: triggers, conditions and actions are a **registry**: each kind has a Zod schema in `packages/domain/src/automation.ts` (used by the builder) and a branch in `app.automation_action()` (plus a check in `app.validate_automation()`, which rejects ids from another team or workspace when an automation is saved). Adding a kind = one schema + one SQL branch + tests; the engine does not change.
 - **Loop protection**: events produced during a run carry the chain depth and the automations already in the chain (transaction-local settings); an automation never runs twice in one chain, and events past depth 3 are not queued.
 - **Date-based triggers** and **recurring tasks**: `pg_cron` job every minute selects due rows with an index on `next_run_at`.
-- **Webhooks** (not built yet; the _call webhook_ action waits for it, with SSRF protection on outbound URLs): `pg_net.http_post` with HMAC signature; responses polled from `net._http_response` by a cron job for retries with exponential backoff.
+- **Webhooks**: row triggers queue `webhook_deliveries`; a `pg_cron` job every 10 s records finished requests from `net._http_response`, then signs due deliveries (HMAC-SHA256 over `<t>.<body>`, secret in Vault) and posts them with `pg_net.http_post`, retrying failures six times with exponential backoff. Automations can queue one with the _call webhook_ action. SSRF rules are in the threat model (T11).
 - **Maintenance jobs**: purge trash (> 30 days), delete demo sandboxes (> 24 h), prune old `automation_runs`.
 
 ## Consequences
