@@ -1,5 +1,5 @@
-import { useLabels, useMembers, useProjects, useTeams } from '@daiq/data';
-import type { Label, Member, Project, Status, Team, Workspace } from '@daiq/domain';
+import { useCustomFields, useLabels, useMembers, useProjects, useTeams } from '@daiq/data';
+import type { CustomField, Label, Member, Project, Status, Team, Workspace } from '@daiq/domain';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 interface WorkspaceContextValue {
@@ -36,6 +36,8 @@ export interface WorkspaceData {
   labelsById: ReadonlyMap<string, Label>;
   projects: Project[];
   projectsById: ReadonlyMap<string, Project>;
+  fields: CustomField[];
+  fieldsById: ReadonlyMap<string, CustomField>;
   ready: boolean;
 }
 
@@ -46,6 +48,7 @@ export function useWorkspaceData(): WorkspaceData {
   const members = useMembers(workspace.id);
   const labels = useLabels(workspace.id);
   const projects = useProjects(workspace.id);
+  const fields = useCustomFields(workspace.id);
 
   return useMemo(() => {
     const teamList = teams.data ?? [];
@@ -63,7 +66,9 @@ export function useWorkspaceData(): WorkspaceData {
       labelsById: new Map((labels.data ?? []).map((label) => [label.id, label])),
       projects: projects.data ?? [],
       projectsById: new Map((projects.data ?? []).map((project) => [project.id, project])),
+      fields: fields.data ?? [],
+      fieldsById: new Map((fields.data ?? []).map((field) => [field.id, field])),
       ready: Boolean(teams.data && members.data && labels.data && projects.data),
     };
-  }, [teams.data, members.data, labels.data, projects.data, userId]);
+  }, [teams.data, members.data, labels.data, projects.data, fields.data, userId]);
 }

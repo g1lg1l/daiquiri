@@ -12,6 +12,7 @@ const SECTIONS = [
   { to: '/$workspace/settings/members', label: 'Members', exact: false },
   { to: '/$workspace/settings/teams', label: 'Teams', exact: false },
   { to: '/$workspace/settings/labels', label: 'Labels', exact: false },
+  { to: '/$workspace/settings/fields', label: 'Fields', exact: false },
   { to: '/$workspace/settings/preferences', label: 'Preferences', exact: false },
 ] as const;
 

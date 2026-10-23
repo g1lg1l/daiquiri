@@ -141,6 +141,9 @@ async function applyEvents(
       case 'cycle':
         work.push(invalidate(['cycles']));
         break;
+      case 'custom_field':
+        work.push(invalidate(keys.customFields(workspaceId)), invalidate(keys.teams(workspaceId)));
+        break;
       case 'milestone':
         work.push(invalidate(['milestones']));
         break;

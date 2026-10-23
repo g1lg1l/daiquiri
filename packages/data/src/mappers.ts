@@ -6,6 +6,7 @@ import {
   isRichDocument,
   type ActivityEntry,
   type Comment,
+  type FieldValue,
   type JsonValue,
   type Label,
   type Notification,
@@ -20,7 +21,7 @@ import {
 import type { Json, Tables, TablesUpdate } from './database.types';
 
 export const TASK_COLUMNS =
-  'id, workspace_id, team_id, number, title, status_id, priority, project_id, parent_id, creator_id, start_date, due_date, estimate, cycle_id, milestone_id, sort_key, completed_at, canceled_at, created_at, updated_at, task_assignees(user_id), task_labels(label_id), attachments(count)';
+  'id, workspace_id, team_id, number, title, status_id, priority, project_id, parent_id, creator_id, start_date, due_date, estimate, cycle_id, milestone_id, sort_key, completed_at, canceled_at, created_at, updated_at, task_assignees(user_id), task_labels(label_id), attachments(count), task_field_values(field_id, value)';
 
 export const TASK_DETAIL_COLUMNS = `${TASK_COLUMNS}, description`;
 
@@ -29,8 +30,9 @@ type TaskRow = Omit<
   'description' | 'description_text' | 'search' | 'deleted_at'
 > & {
   task_assignees: { user_id: string }[];
-  /** Absent on rows that come back from create_task (a new task has no files). */
+  /** Absent on rows that come back from create_task (a new task has no files or fields). */
   attachments?: { count: number }[];
+  task_field_values?: { field_id: string; value: Json }[];
   task_labels: { label_id: string }[];
 };
 
@@ -61,6 +63,7 @@ export function toTask(row: TaskRow): Task {
     cycleId: row.cycle_id,
     milestoneId: row.milestone_id,
     attachmentCount: row.attachments?.[0]?.count ?? 0,
+    fields: toFieldValues(row.task_field_values ?? []),
     sortKey: row.sort_key,
     completedAt: row.completed_at,
     canceledAt: row.canceled_at,
@@ -105,8 +108,30 @@ export function toStatus(row: Tables<'statuses'>): Status {
   };
 }
 
+/** Keeps values with one of the shapes a field value can have (the database checks kinds). */
+function toFieldValues(
+  rows: readonly { field_id: string; value: Json }[],
+): Record<string, FieldValue> {
+  const fields: Record<string, FieldValue> = {};
+  for (const { field_id, value } of rows) {
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      (Array.isArray(value) && value.every((item) => typeof item === 'string'))
+    ) {
+      fields[field_id] = value;
+    }
+  }
+  return fields;
+}
+
 export function toTeam(
-  row: Tables<'teams'> & { statuses: Tables<'statuses'>[]; team_members: { user_id: string }[] },
+  row: Tables<'teams'> & {
+    statuses: Tables<'statuses'>[];
+    team_members: { user_id: string }[];
+    team_custom_fields?: { field_id: string; position: number }[];
+  },
 ): Team {
   return {
     id: row.id,
@@ -120,6 +145,9 @@ export function toTeam(
     cycleStartWeekday: row.cycle_start_weekday,
     estimatesEnabled: row.estimates_enabled,
     estimateScale: isEstimateScale(row.estimate_scale) ? row.estimate_scale : 'points',
+    fieldIds: (row.team_custom_fields ?? [])
+      .toSorted((a, b) => a.position - b.position)
+      .map((f) => f.field_id),
     triageEnabled: row.triage_enabled,
     memberIds: row.team_members.map((m) => m.user_id),
     statuses: row.statuses.map(toStatus),

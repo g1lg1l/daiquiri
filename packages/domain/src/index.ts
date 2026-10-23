@@ -27,12 +27,14 @@ export {
 } from './status';
 export type { StatusCategory, StatusLike } from './status';
 export {
+  CUSTOM_FIELD_KINDS,
   ESTIMATE_SCALES,
   LABEL_COLORS,
   NOTIFICATION_KINDS,
   PROJECT_HEALTH,
   PROJECT_HEALTH_LABEL,
   SEARCH_RESULT_KINDS,
+  isCustomFieldKind,
   isEstimateScale,
   isLabelColor,
   isNotificationKind,
@@ -44,8 +46,12 @@ export type {
   ActivityEntry,
   Attachment,
   Comment,
+  CustomField,
+  CustomFieldKind,
   Cycle,
   EstimateScale,
+  FieldOption,
+  FieldValue,
   JsonValue,
   Label,
   LabelColor,
@@ -134,3 +140,12 @@ export {
   MAX_ATTACHMENT_BYTES,
   safeFileName,
 } from './attachments';
+export {
+  FIELD_KIND_LABEL,
+  fieldKeys,
+  formatFieldValue,
+  isFieldValue,
+  isGroupableField,
+  matchesFieldFilters,
+  parseFieldFilter,
+} from './fields';

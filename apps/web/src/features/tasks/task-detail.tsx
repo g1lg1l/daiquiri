@@ -66,6 +66,7 @@ import { useShortcuts } from '../shortcuts/use-shortcuts';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { ActivityFeed } from './activity-feed';
 import { Attachments } from './attachments';
+import { FieldEditor } from './field-editors';
 import { useComposer } from './composer';
 import { PriorityIcon, StatusIcon } from './icons';
 import { LABEL_COLOR } from './label-colors';
@@ -479,6 +480,14 @@ function TaskDetailBody({
           />
         </PropertyRow>
       )}
+      {team?.fieldIds.map((id) => {
+        const field = data.fieldsById.get(id);
+        return field ? (
+          <PropertyRow key={id} label={field.name}>
+            <FieldEditor field={field} task={task} />
+          </PropertyRow>
+        ) : null;
+      })}
       <PropertyRow label="Due date">
         <DateField
           label="Due date"

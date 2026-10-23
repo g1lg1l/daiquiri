@@ -1,13 +1,16 @@
 import {
   DUE_FILTERS,
   hasActiveFilters,
+  isGroupableField,
   isPriority,
   LAYOUTS,
   ME,
   ORDER_BY,
   NONE,
+  parseFieldFilter,
   PRIORITY_LABEL,
   STATUS_CATEGORY_LABEL,
+  type CustomField,
   type DueFilter,
   type GroupBy,
   type Layout,
@@ -58,9 +61,46 @@ const GROUP_LABEL: Record<GroupBy, string> = {
   project: 'Project',
   milestone: 'Milestone',
   label: 'Label',
+  field: 'Field',
   due: 'Due date',
   none: 'No grouping',
 };
+
+/** Groupable custom fields used by any of the given teams. */
+function viewFields(
+  data: ReturnType<typeof useWorkspaceData>,
+  teamIds: readonly string[] | undefined,
+): CustomField[] {
+  const ids = new Set(
+    (teamIds ?? data.teams.map((t) => t.id)).flatMap(
+      (id) => data.teamsById.get(id)?.fieldIds ?? [],
+    ),
+  );
+  return data.fields.filter((field) => ids.has(field.id) && isGroupableField(field));
+}
+
+/** Options a field filter offers: its values, plus "none". */
+function fieldFilterOptions(
+  field: CustomField,
+  data: ReturnType<typeof useWorkspaceData>,
+  userId: string,
+): { value: string; label: string }[] {
+  const values =
+    field.kind === 'checkbox'
+      ? [
+          { value: 'true', label: 'Yes' },
+          { value: 'false', label: 'No' },
+        ]
+      : field.kind === 'person'
+        ? [
+            { value: ME, label: 'Me' },
+            ...data.members
+              .filter((m) => m.id !== userId)
+              .map((m) => ({ value: m.id, label: m.displayName })),
+          ]
+        : field.options.map((o) => ({ value: o.id, label: o.name }));
+  return [...values, { value: NONE, label: `No ${field.name}` }];
+}
 
 const ORDER_LABEL: Record<OrderBy, string> = {
   manual: 'Manual',
@@ -141,13 +181,17 @@ export function DisplayMenu({
   defaults,
   setSearch,
   allowedGroups,
+  teamIds,
 }: {
   layout: Layout;
   search: ViewSearch;
   defaults: ViewDefaults;
   setSearch: SetSearch;
   allowedGroups: readonly GroupBy[];
+  teamIds?: readonly string[];
 }) {
+  const data = useWorkspaceData();
+  const fields = allowedGroups.includes('field') ? viewFields(data, teamIds) : [];
   const trigger = useRef<HTMLButtonElement>(null);
   useShortcuts({ display: () => trigger.current?.click() });
   const group = search.group ?? defaults.group;
@@ -163,13 +207,27 @@ export function DisplayMenu({
         {layout !== 'calendar' && (
           <>
             <MenuRadioGroup
-              value={group}
-              onValueChange={(value: GroupBy) => setSearch({ group: value })}
+              value={group === 'field' ? `field:${search.groupField ?? ''}` : group}
+              onValueChange={(value: string) => {
+                if (value.startsWith('field:'))
+                  setSearch({ group: 'field', groupField: value.slice('field:'.length) });
+                else {
+                  const next = allowedGroups.find((g) => g === value);
+                  if (next) setSearch({ group: next, groupField: undefined });
+                }
+              }}
             >
               <MenuLabel>Group by</MenuLabel>
-              {allowedGroups.map((g) => (
-                <MenuRadioItem key={g} value={g}>
-                  {GROUP_LABEL[g]}
+              {allowedGroups
+                .filter((g) => g !== 'field')
+                .map((g) => (
+                  <MenuRadioItem key={g} value={g}>
+                    {GROUP_LABEL[g]}
+                  </MenuRadioItem>
+                ))}
+              {fields.map((field) => (
+                <MenuRadioItem key={field.id} value={`field:${field.id}`}>
+                  {field.name}
                 </MenuRadioItem>
               ))}
             </MenuRadioGroup>
@@ -324,6 +382,26 @@ export function FilterMenu({
             </MenuContent>
           </MenuSub>
         )}
+        {viewFields(data, teamIds).map((field) => (
+          <MenuSub key={field.id}>
+            <MenuSubTrigger>{field.name}</MenuSubTrigger>
+            <MenuContent side="right" align="start" sideOffset={4} className="max-h-80 w-52">
+              {fieldFilterOptions(field, data, userId).map((option) => {
+                const entry = `${field.id}:${option.value}`;
+                return (
+                  <MenuCheckboxItem
+                    key={entry}
+                    checked={search.cf?.includes(entry) ?? false}
+                    onCheckedChange={() => setSearch({ cf: toggle(search.cf, entry) })}
+                    closeOnClick={false}
+                  >
+                    {option.label}
+                  </MenuCheckboxItem>
+                );
+              })}
+            </MenuContent>
+          </MenuSub>
+        ))}
         <MenuSub>
           <MenuSubTrigger>Due date</MenuSubTrigger>
           <MenuContent side="right" align="start" sideOffset={4} className="w-52">
@@ -369,6 +447,7 @@ function names(ids: readonly string[], lookup: (id: string) => string | undefine
 /** Active filters as removable chips. Renders nothing when no filter is set. */
 export function FilterChips({ search, setSearch }: { search: ViewSearch; setSearch: SetSearch }) {
   const data = useWorkspaceData();
+  const { userId } = useWorkspace();
   if (!hasActiveFilters(search)) return null;
   return (
     <div className="flex flex-wrap items-center gap-1.5 border-b border-border px-4 py-2">
@@ -408,6 +487,22 @@ export function FilterChips({ search, setSearch }: { search: ViewSearch; setSear
           onRemove={() => setSearch({ project: undefined })}
         />
       ) : null}
+      {[...parseFieldFilter(search.cf ?? [])].map(([fieldId, values]) => {
+        const field = data.fieldsById.get(fieldId);
+        if (!field) return null;
+        const options = fieldFilterOptions(field, data, userId);
+        return (
+          <Chip
+            key={fieldId}
+            label={`${field.name}: ${values.map((v) => options.find((o) => o.value === v)?.label ?? '…').join(', ')}`}
+            onRemove={() =>
+              setSearch({
+                cf: search.cf?.filter((entry) => !entry.startsWith(`${fieldId}:`)),
+              })
+            }
+          />
+        );
+      })}
       {search.due && (
         <Chip label={DUE_LABEL[search.due]} onRemove={() => setSearch({ due: undefined })} />
       )}

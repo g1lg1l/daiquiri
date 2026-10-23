@@ -22,6 +22,7 @@ import { Route as WorkspaceSettingsRouteRouteImport } from './routes/$workspace/
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as WorkspaceProjectProjectIdRouteImport } from './routes/$workspace/project/$projectId'
 import { Route as WorkspaceSettingsIndexRouteImport } from './routes/$workspace/settings/index'
+import { Route as WorkspaceSettingsFieldsRouteImport } from './routes/$workspace/settings/fields'
 import { Route as WorkspaceSettingsLabelsRouteImport } from './routes/$workspace/settings/labels'
 import { Route as WorkspaceSettingsMembersRouteImport } from './routes/$workspace/settings/members'
 import { Route as WorkspaceSettingsPreferencesRouteImport } from './routes/$workspace/settings/preferences'
@@ -99,6 +100,11 @@ const WorkspaceSettingsIndexRoute = WorkspaceSettingsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => WorkspaceSettingsRouteRoute,
 } as any)
+const WorkspaceSettingsFieldsRoute = WorkspaceSettingsFieldsRouteImport.update({
+  id: '/fields',
+  path: '/fields',
+  getParentRoute: () => WorkspaceSettingsRouteRoute,
+} as any)
 const WorkspaceSettingsLabelsRoute = WorkspaceSettingsLabelsRouteImport.update({
   id: '/labels',
   path: '/labels',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof InviteTokenRoute
   '/$workspace/': typeof WorkspaceIndexRoute
   '/$workspace/project/$projectId': typeof WorkspaceProjectProjectIdRoute
+  '/$workspace/settings/fields': typeof WorkspaceSettingsFieldsRoute
   '/$workspace/settings/labels': typeof WorkspaceSettingsLabelsRoute
   '/$workspace/settings/members': typeof WorkspaceSettingsMembersRoute
   '/$workspace/settings/preferences': typeof WorkspaceSettingsPreferencesRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/$workspace': typeof WorkspaceIndexRoute
   '/$workspace/project/$projectId': typeof WorkspaceProjectProjectIdRoute
+  '/$workspace/settings/fields': typeof WorkspaceSettingsFieldsRoute
   '/$workspace/settings/labels': typeof WorkspaceSettingsLabelsRoute
   '/$workspace/settings/members': typeof WorkspaceSettingsMembersRoute
   '/$workspace/settings/preferences': typeof WorkspaceSettingsPreferencesRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/$workspace/': typeof WorkspaceIndexRoute
   '/$workspace/project/$projectId': typeof WorkspaceProjectProjectIdRoute
+  '/$workspace/settings/fields': typeof WorkspaceSettingsFieldsRoute
   '/$workspace/settings/labels': typeof WorkspaceSettingsLabelsRoute
   '/$workspace/settings/members': typeof WorkspaceSettingsMembersRoute
   '/$workspace/settings/preferences': typeof WorkspaceSettingsPreferencesRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/$workspace/'
     | '/$workspace/project/$projectId'
+    | '/$workspace/settings/fields'
     | '/$workspace/settings/labels'
     | '/$workspace/settings/members'
     | '/$workspace/settings/preferences'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/$workspace'
     | '/$workspace/project/$projectId'
+    | '/$workspace/settings/fields'
     | '/$workspace/settings/labels'
     | '/$workspace/settings/members'
     | '/$workspace/settings/preferences'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/$workspace/'
     | '/$workspace/project/$projectId'
+    | '/$workspace/settings/fields'
     | '/$workspace/settings/labels'
     | '/$workspace/settings/members'
     | '/$workspace/settings/preferences'
@@ -410,6 +422,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceSettingsIndexRouteImport
       parentRoute: typeof WorkspaceSettingsRouteRoute
     }
+    '/$workspace/settings/fields': {
+      id: '/$workspace/settings/fields'
+      path: '/fields'
+      fullPath: '/$workspace/settings/fields'
+      preLoaderRoute: typeof WorkspaceSettingsFieldsRouteImport
+      parentRoute: typeof WorkspaceSettingsRouteRoute
+    }
     '/$workspace/settings/labels': {
       id: '/$workspace/settings/labels'
       path: '/labels'
@@ -484,6 +503,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface WorkspaceSettingsRouteRouteChildren {
+  WorkspaceSettingsFieldsRoute: typeof WorkspaceSettingsFieldsRoute
   WorkspaceSettingsLabelsRoute: typeof WorkspaceSettingsLabelsRoute
   WorkspaceSettingsMembersRoute: typeof WorkspaceSettingsMembersRoute
   WorkspaceSettingsPreferencesRoute: typeof WorkspaceSettingsPreferencesRoute
@@ -494,6 +514,7 @@ interface WorkspaceSettingsRouteRouteChildren {
 
 const WorkspaceSettingsRouteRouteChildren: WorkspaceSettingsRouteRouteChildren =
   {
+    WorkspaceSettingsFieldsRoute: WorkspaceSettingsFieldsRoute,
     WorkspaceSettingsLabelsRoute: WorkspaceSettingsLabelsRoute,
     WorkspaceSettingsMembersRoute: WorkspaceSettingsMembersRoute,
     WorkspaceSettingsPreferencesRoute: WorkspaceSettingsPreferencesRoute,

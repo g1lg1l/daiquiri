@@ -240,6 +240,48 @@ export type Database = {
           },
         ];
       };
+      custom_fields: {
+        Row: {
+          created_at: string;
+          id: string;
+          kind: string;
+          name: string;
+          options: NonNullable<Json>;
+          position: number;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          kind: string;
+          name: string;
+          options?: NonNullable<Json>;
+          position?: number;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          name?: string;
+          options?: NonNullable<Json>;
+          position?: number;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'custom_fields_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       cycles: {
         Row: {
           completed_at: string | null;
@@ -763,6 +805,46 @@ export type Database = {
           },
         ];
       };
+      task_field_values: {
+        Row: {
+          field_id: string;
+          task_id: string;
+          updated_at: string;
+          value: NonNullable<Json>;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          field_id: string;
+          task_id: string;
+          updated_at?: string;
+          value: NonNullable<Json>;
+          workspace_id: string;
+        };
+        Update: {
+          field_id?: string;
+          task_id?: string;
+          updated_at?: string;
+          value?: NonNullable<Json>;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'task_field_values_workspace_id_field_id_fkey';
+            columns: ['workspace_id', 'field_id'];
+            isOneToOne: false;
+            referencedRelation: 'custom_fields';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'task_field_values_workspace_id_task_id_fkey';
+            columns: ['workspace_id', 'task_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
       task_labels: {
         Row: {
           created_at: string;
@@ -1015,6 +1097,43 @@ export type Database = {
           },
           {
             foreignKeyName: 'tasks_workspace_id_team_id_fkey';
+            columns: ['workspace_id', 'team_id'];
+            isOneToOne: false;
+            referencedRelation: 'teams';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      team_custom_fields: {
+        Row: {
+          field_id: string;
+          position: number;
+          team_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          field_id: string;
+          position?: number;
+          team_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          field_id?: string;
+          position?: number;
+          team_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'team_custom_fields_workspace_id_field_id_fkey';
+            columns: ['workspace_id', 'field_id'];
+            isOneToOne: false;
+            referencedRelation: 'custom_fields';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'team_custom_fields_workspace_id_team_id_fkey';
             columns: ['workspace_id', 'team_id'];
             isOneToOne: false;
             referencedRelation: 'teams';

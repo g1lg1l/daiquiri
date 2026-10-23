@@ -13,7 +13,7 @@ export function useTeams(workspaceId: string) {
       unwrap(
         await client
           .from('teams')
-          .select('*, statuses(*), team_members(user_id)')
+          .select('*, statuses(*), team_members(user_id), team_custom_fields(field_id, position)')
           .eq('workspace_id', workspaceId)
           .order('name'),
       ).map(toTeam),

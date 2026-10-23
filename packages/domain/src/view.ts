@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { addDays, dueBucket, startOfWeek, type DueBucket } from './dates';
-import type { Label, Milestone, Project, Status, Task } from './model';
+import { fieldKeys, matchesFieldFilters, parseFieldFilter } from './fields';
+import type { CustomField, Label, Milestone, Project, Status, Task } from './model';
 import { prioritySortKey } from './priority';
 import { compareSortKeys } from './ordering';
 import { isClosedCategory, STATUS_CATEGORIES, type StatusCategory } from './status';
@@ -18,6 +19,7 @@ export const GROUP_BY = [
   'project',
   'milestone',
   'label',
+  'field',
   'due',
   'none',
 ] as const;
@@ -58,6 +60,10 @@ export const viewSearchSchema = z.object({
   project: idList.catch(undefined),
   due: z.enum(DUE_FILTERS).optional().catch(undefined),
   q: z.string().max(200).optional().catch(undefined),
+  /** Custom field filters, "fieldId:value" (see fields.ts). */
+  cf: idList.catch(undefined),
+  /** The custom field to group by when `group` is "field". */
+  groupField: z.uuid().optional().catch(undefined),
   peek: z.string().max(20).optional().catch(undefined),
   /** Saved view this URL started from; the rest of the params may have drifted from it. */
   view: z.uuid().optional().catch(undefined),
@@ -134,6 +140,7 @@ const FILTER_KEYS = [
   'project',
   'due',
   'q',
+  'cf',
 ] as const;
 
 export function hasActiveFilters(search: ViewSearch): boolean {
@@ -173,7 +180,9 @@ export function filterTasks(
   const weekAgo = addDays(context.today, -7);
   const completed = search.completed ?? DEFAULT_VIEW.completed;
 
+  const fieldFilters = search.cf?.length ? parseFieldFilter(search.cf) : null;
   return tasks.filter((task) => {
+    if (fieldFilters && !matchesFieldFilters(task, fieldFilters, context.userId)) return false;
     const category = context.statuses.get(task.statusId)?.category;
     if (category && isClosedCategory(category)) {
       if (completed === 'none') return false;
@@ -233,6 +242,8 @@ export interface GroupContext extends ViewContext {
   labels: ReadonlyMap<string, Label>;
   /** The project's milestones, for grouping by milestone on a project page. */
   milestones?: readonly Milestone[];
+  /** The custom field to group by when grouping by "field". */
+  field?: CustomField;
 }
 
 const PRIORITY_GROUPS: [number, string][] = [
@@ -336,6 +347,28 @@ export function groupTasks(
         [...milestones.map((m): [string, string] => [m.id, m.name]), [NONE, 'No milestone']],
         (task) => [task.milestoneId ?? NONE],
       ).filter((group) => group.key !== NONE || group.tasks.length > 0);
+    }
+    case 'field': {
+      const field = context.field;
+      if (!field) return [{ key: 'all', kind: 'none', label: 'All tasks', tasks: [...tasks] }];
+      const entries: [string, string][] =
+        field.kind === 'checkbox'
+          ? [
+              ['true', 'Yes'],
+              ['false', 'No'],
+            ]
+          : field.kind === 'person'
+            ? [...new Set(tasks.flatMap((task) => fieldKeys(task.fields[field.id])))].map(
+                (id): [string, string] => [
+                  id,
+                  context.members.get(id)?.displayName ?? 'Former member',
+                ],
+              )
+            : field.options.map((option): [string, string] => [option.id, option.name]);
+      return bucket([...entries, [NONE, `No ${field.name}`]], (task) => {
+        const keys = fieldKeys(task.fields[field.id]);
+        return keys.length ? keys : [NONE];
+      }).filter((group) => group.tasks.length > 0 || field.kind === 'select');
     }
     case 'label': {
       const ids = [...new Set(tasks.flatMap((task) => task.labelIds))].sort((a, b) =>

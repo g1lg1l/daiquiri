@@ -35,6 +35,7 @@ const task = (overrides: Partial<Task>): Task => ({
   cycleId: null,
   milestoneId: null,
   attachmentCount: 0,
+  fields: {},
   sortKey: `a${seq}`,
   completedAt: null,
   canceledAt: null,
@@ -211,5 +212,35 @@ describe('grouping by milestone', () => {
     expect(
       groupTasks([tasks[0]!], 'milestone', { ...context, milestones }).map((g) => g.label),
     ).toEqual(['Beta', 'GA']);
+  });
+});
+
+describe('grouping and filtering by custom field', () => {
+  const field = {
+    id: 'f1',
+    workspaceId: 'w',
+    name: 'Severity',
+    kind: 'select' as const,
+    options: [
+      { id: 's1', name: 'Minor' },
+      { id: 's2', name: 'Major' },
+    ],
+    position: 0,
+  };
+  const tasks = [task({ id: 'a', fields: { f1: 's2' } }), task({ id: 'b', fields: {} })];
+
+  it('groups by the field options, then tasks without a value', () => {
+    expect(
+      groupTasks(tasks, 'field', { ...context, field }).map((g) => [g.label, g.tasks.length]),
+    ).toEqual([
+      ['Minor', 0],
+      ['Major', 1],
+      ['No Severity', 1],
+    ]);
+  });
+
+  it('filters through the cf search param', () => {
+    const search = viewSearchSchema.parse({ cf: 'f1:s2' });
+    expect(filterTasks(tasks, search, context).map((t) => t.id)).toEqual(['a']);
   });
 });

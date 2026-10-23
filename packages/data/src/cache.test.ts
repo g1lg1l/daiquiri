@@ -20,6 +20,7 @@ const task = (overrides: Partial<Task> = {}): Task => ({
   cycleId: null,
   milestoneId: null,
   attachmentCount: 0,
+  fields: {},
   sortKey: 'a0',
   completedAt: null,
   canceledAt: null,

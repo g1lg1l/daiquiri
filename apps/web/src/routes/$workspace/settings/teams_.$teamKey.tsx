@@ -1,5 +1,5 @@
-import { useUpdateTeam } from '@daiq/data';
-import { can, type EstimateScale } from '@daiq/domain';
+import { useTeamFieldActions, useUpdateTeam } from '@daiq/data';
+import { can, FIELD_KIND_LABEL, type EstimateScale } from '@daiq/domain';
 import { Input, Label, Textarea } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ChevronLeftIcon } from 'lucide-react';
@@ -63,12 +63,13 @@ function Module({
   );
 }
 
-/** One team's name, description and modules (estimates, cycles). */
+/** One team's name, description, modules (estimates, cycles) and custom fields. */
 function TeamSettings() {
   const { teamKey } = Route.useParams();
   const { workspace, userId } = useWorkspace();
   const data = useWorkspaceData();
   const updateTeam = useUpdateTeam(workspace.id);
+  const toggleField = useTeamFieldActions(workspace.id);
   const team = data.teamsByKey.get(teamKey);
   if (!team) {
     return (
@@ -209,6 +210,47 @@ function TeamSettings() {
           </p>
         </Module>
       </div>
+
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-sm font-semibold">Custom fields</legend>
+        <p className="text-xs text-fg-muted">
+          Turn on the workspace fields this team uses, up to 12. Admins define them in{' '}
+          <Link
+            to="/$workspace/settings/fields"
+            params={{ workspace: workspace.slug }}
+            className="underline hover:text-fg"
+          >
+            Fields
+          </Link>
+          .
+        </p>
+        {data.fields.length === 0 ? (
+          <p className="text-[13px] text-fg-subtle">The workspace has no custom fields yet.</p>
+        ) : (
+          <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+            {data.fields.map((field) => {
+              const on = team.fieldIds.includes(field.id);
+              return (
+                <li key={field.id}>
+                  <label className="flex items-center gap-3 px-3 py-2 text-[13px]">
+                    <input
+                      type="checkbox"
+                      checked={on}
+                      disabled={!canEdit || (!on && team.fieldIds.length >= 12)}
+                      onChange={(event) =>
+                        toggleField.mutate({ team, fieldId: field.id, on: event.target.checked })
+                      }
+                      className="accent-(--accent)"
+                    />
+                    <span className="flex-1">{field.name}</span>
+                    <span className="text-xs text-fg-subtle">{FIELD_KIND_LABEL[field.kind]}</span>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </fieldset>
     </section>
   );
 }

@@ -108,8 +108,11 @@ export function TaskView({
       projects: data.projectsById,
       labels: data.labelsById,
       milestones,
+      ...(group === 'field' && search.groupField
+        ? { field: data.fieldsById.get(search.groupField) }
+        : {}),
     });
-  }, [tasks, visible, userId, data, teamIds, group, today, milestones]);
+  }, [tasks, visible, userId, data, teamIds, group, today, milestones, search.groupField]);
 
   const peekTask = useMemo(
     () => (search.peek ? tasks?.find((task) => identifier(task) === search.peek) : undefined),
@@ -153,6 +156,7 @@ export function TaskView({
           <LayoutToggle layout={layout} setSearch={setSearch} />
           <FilterMenu search={search} setSearch={setSearch} teamIds={teamIds} />
           <DisplayMenu
+            teamIds={teamIds}
             layout={layout}
             search={search}
             defaults={defaults}
@@ -193,6 +197,9 @@ export function TaskView({
           <Suspense fallback={null}>
             <TaskBoard
               groups={groups}
+              {...(group === 'field' && search.groupField
+                ? { groupField: data.fieldsById.get(search.groupField) }
+                : {})}
               groupBy={group}
               canReorder={order === 'manual'}
               peekId={peekTask?.id}

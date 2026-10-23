@@ -100,6 +100,37 @@ export interface ProjectUpdate {
   updatedAt: string;
 }
 
+export const CUSTOM_FIELD_KINDS = [
+  'text',
+  'number',
+  'date',
+  'select',
+  'multi_select',
+  'person',
+  'checkbox',
+  'url',
+] as const;
+export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
+export const isCustomFieldKind = (value: string): value is CustomFieldKind =>
+  (CUSTOM_FIELD_KINDS as readonly string[]).includes(value);
+
+export interface FieldOption {
+  id: string;
+  name: string;
+}
+
+export interface CustomField {
+  id: string;
+  workspaceId: string;
+  name: string;
+  kind: CustomFieldKind;
+  options: FieldOption[];
+  position: number;
+}
+
+/** text, date, url, select, person: string · number · checkbox: boolean · multi_select: ids. */
+export type FieldValue = string | number | boolean | string[];
+
 export interface Attachment {
   id: string;
   workspaceId: string;
@@ -125,6 +156,8 @@ export interface Team {
   cycleStartWeekday: number;
   estimatesEnabled: boolean;
   estimateScale: EstimateScale;
+  /** Custom fields this team uses, in order. */
+  fieldIds: string[];
   triageEnabled: boolean;
   memberIds: string[];
   statuses: Status[];
@@ -192,6 +225,8 @@ export interface Task {
   milestoneId: string | null;
   /** Files attached to the task (read-only; maintained by the database). */
   attachmentCount: number;
+  /** Custom field values by field id (only fields that have a value). */
+  fields: Readonly<Record<string, FieldValue>>;
   sortKey: string;
   completedAt: string | null;
   canceledAt: string | null;

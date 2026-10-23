@@ -1,3 +1,4 @@
+import { useSetFieldValue } from '@daiq/data';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import {
   draggable,
@@ -12,11 +13,14 @@ import {
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { announce } from '@atlaskit/pragmatic-drag-and-drop-live-region';
 import {
+  fieldKeys,
   formatDueDate,
   isClosedCategory,
   isPriority,
   NONE,
   sortKeyBetween,
+  type CustomField,
+  type FieldValue,
   type GroupBy,
   type Task,
   type TaskGroup,
@@ -64,7 +68,13 @@ function patchForMove(
   task: Task,
   from: string,
   to: string,
-): TaskPatch | { assigneeIds: string[] } | { labelIds: string[] } | null {
+  field: CustomField | undefined,
+):
+  | TaskPatch
+  | { assigneeIds: string[] }
+  | { labelIds: string[] }
+  | { fieldValue: FieldValue | null }
+  | null {
   if (from === to) return {};
   switch (groupBy) {
     case 'status':
@@ -88,6 +98,16 @@ function patchForMove(
       };
     case 'milestone':
       return { milestoneId: to === NONE ? null : to };
+    case 'field': {
+      if (!field) return null;
+      if (to === NONE) return { fieldValue: null };
+      if (field.kind === 'checkbox') return { fieldValue: to === 'true' };
+      if (field.kind === 'multi_select') {
+        const current = fieldKeys(task.fields[field.id]).filter((id) => id !== from);
+        return { fieldValue: [...current, to] };
+      }
+      return { fieldValue: to };
+    }
     case 'due':
     case 'none':
       return null; // due buckets and "none" have no single value to write
@@ -98,6 +118,8 @@ function patchForMove(
 
 export interface TaskBoardProps {
   groups: TaskGroup[];
+  /** The custom field columns stand for, when grouped by field. */
+  groupField?: CustomField;
   groupBy: GroupBy;
   canReorder: boolean;
   peekId: string | undefined;
@@ -108,6 +130,7 @@ export interface TaskBoardProps {
 
 export function TaskBoard({
   groups,
+  groupField,
   groupBy,
   canReorder,
   peekId,
@@ -116,6 +139,7 @@ export function TaskBoard({
   onCreate,
 }: TaskBoardProps) {
   const actions = useTaskActions();
+  const setField = useSetFieldValue();
   const identifier = useIdentifier();
   const data = useWorkspaceData();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -129,7 +153,7 @@ export function TaskBoard({
   const applyMove = (task: Task, fromKey: string, toKey: string, index: number) => {
     const target = groups.find((g) => g.key === toKey);
     if (!target) return;
-    const patch = patchForMove(groupBy, task, fromKey, toKey);
+    const patch = patchForMove(groupBy, task, fromKey, toKey, groupField);
     if (patch === null) {
       announce('Tasks cannot be moved between these columns.');
       return;
@@ -144,6 +168,11 @@ export function TaskBoard({
           ),
         }
       : {};
+    if ('fieldValue' in patch) {
+      if (groupField) setField.mutate({ task, fieldId: groupField.id, value: patch.fieldValue });
+      announce(`${identifier(task)} moved to ${target.label}`);
+      return;
+    }
     if ('assigneeIds' in patch) actions.setAssignees([task], patch.assigneeIds);
     else if ('labelIds' in patch) actions.setLabels([task], patch.labelIds);
     else if ('statusId' in patch && patch.statusId) {
