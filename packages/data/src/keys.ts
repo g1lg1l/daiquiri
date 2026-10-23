@@ -42,6 +42,8 @@ export const keys = {
     ['status-flow', workspaceId, fingerprint] as const,
   views: (workspaceId: string) => ['views', workspaceId] as const,
   templates: (workspaceId: string) => ['templates', workspaceId] as const,
+  automations: (teamId: string) => ['automations', teamId] as const,
+  automationRuns: (automationId: string) => ['automations', 'runs', automationId] as const,
   favorites: (workspaceId: string) => ['favorites', workspaceId] as const,
   search: (workspaceId: string, query: string) => ['search', workspaceId, query] as const,
   memberEmails: (workspaceId: string) => ['member-emails', workspaceId] as const,

@@ -162,3 +162,23 @@ export {
   WEEKDAY_SHORT,
 } from './recurrence';
 export type { Recurrence, RecurrenceRule, RecurrenceUnit } from './recurrence';
+export {
+  ACTION_LABEL,
+  automationActionSchema,
+  automationConditionsSchema,
+  automationInputSchema,
+  automationTriggerSchema,
+  emptyAction,
+  isAutomationTriggerKind,
+  TRIGGER_LABEL,
+} from './automation';
+export type {
+  Automation,
+  AutomationAction,
+  AutomationActionKind,
+  AutomationConditions,
+  AutomationInput,
+  AutomationRun,
+  AutomationTrigger,
+  AutomationTriggerKind,
+} from './automation';

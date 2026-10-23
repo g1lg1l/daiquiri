@@ -27,6 +27,7 @@ const VERB: Record<Notification['kind'], string> = {
   comment: 'commented',
   status: 'changed the status',
   unblocked: 'unblocked your task',
+  automation: 'asked you to look at this',
 };
 
 function Inbox() {
@@ -146,7 +147,13 @@ function Inbox() {
                     selectedId === notification.id && 'bg-surface-muted',
                   )}
                 >
-                  <Avatar name={actor?.displayName ?? 'Daiquiri'} size="lg" />
+                  <Avatar
+                    name={
+                      actor?.displayName ??
+                      (notification.kind === 'automation' ? 'Automation' : 'Daiquiri')
+                    }
+                    size="lg"
+                  />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-2 text-[13px]">
                       <span className={cn('truncate', !notification.readAt && 'font-semibold')}>
@@ -160,7 +167,9 @@ function Inbox() {
                       )}
                     </span>
                     <span className="truncate text-xs text-fg-muted">
-                      {actor?.displayName ?? 'Someone'} {VERB[notification.kind]}
+                      {actor?.displayName ??
+                        (notification.kind === 'automation' ? 'An automation' : 'Someone')}{' '}
+                      {VERB[notification.kind]}
                       {notification.eventCount > 1 && ` and ${notification.eventCount - 1} more`}
                     </span>
                   </span>

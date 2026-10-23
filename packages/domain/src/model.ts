@@ -297,6 +297,7 @@ export const NOTIFICATION_KINDS = [
   'comment',
   'status',
   'unblocked',
+  'automation',
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 

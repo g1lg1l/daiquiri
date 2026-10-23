@@ -153,6 +153,11 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
   const [showActivity, setShowActivity] = useState(true);
   const name = (id: string | null) =>
     id ? (data.membersById.get(id)?.displayName ?? 'Someone') : 'Daiquiri';
+  // Changes made by an automation name it instead of a person.
+  const actorName = (entry: ActivityEntry) =>
+    typeof entry.data.automation === 'string'
+      ? `Automation “${entry.data.automation}”`
+      : name(entry.actorId);
 
   const items: FeedItem[] = [
     ...(showActivity
@@ -195,9 +200,9 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
                 key={`a-${item.entry.id}`}
                 className="flex items-center gap-2 pl-1 text-xs text-fg-muted"
               >
-                <Avatar name={name(item.entry.actorId)} size="xs" />
+                <Avatar name={actorName(item.entry)} size="xs" />
                 <span>
-                  <span className="font-medium text-fg">{name(item.entry.actorId)}</span> {text}
+                  <span className="font-medium text-fg">{actorName(item.entry)}</span> {text}
                 </span>
                 <Tooltip label={formatDateTime(item.at)}>
                   <time dateTime={item.at} className="text-fg-subtle">

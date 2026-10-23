@@ -128,6 +128,153 @@ export type Database = {
           },
         ];
       };
+      automation_events: {
+        Row: {
+          chain: string[];
+          created_at: string;
+          data: NonNullable<Json>;
+          depth: number;
+          id: number;
+          kind: string;
+          task_id: string;
+          team_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          chain?: string[];
+          created_at?: string;
+          data?: NonNullable<Json>;
+          depth?: number;
+          id?: never;
+          kind: string;
+          task_id: string;
+          team_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          chain?: string[];
+          created_at?: string;
+          data?: NonNullable<Json>;
+          depth?: number;
+          id?: never;
+          kind?: string;
+          task_id?: string;
+          team_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [];
+      };
+      automation_runs: {
+        Row: {
+          automation_id: string;
+          created_at: string;
+          error: string | null;
+          event: string;
+          event_key: string | null;
+          id: number;
+          status: string;
+          task_id: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          automation_id: string;
+          created_at?: string;
+          error?: string | null;
+          event: string;
+          event_key?: string | null;
+          id?: never;
+          status: string;
+          task_id?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          automation_id?: string;
+          created_at?: string;
+          error?: string | null;
+          event?: string;
+          event_key?: string | null;
+          id?: never;
+          status?: string;
+          task_id?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'automation_runs_task_id_fkey';
+            columns: ['task_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'automation_runs_workspace_id_automation_id_fkey';
+            columns: ['workspace_id', 'automation_id'];
+            isOneToOne: false;
+            referencedRelation: 'automations';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      automations: {
+        Row: {
+          actions: NonNullable<Json>;
+          conditions: NonNullable<Json>;
+          created_at: string;
+          created_by: string | null;
+          enabled: boolean;
+          id: string;
+          name: string;
+          team_id: string;
+          trigger: NonNullable<Json>;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          actions: NonNullable<Json>;
+          conditions?: NonNullable<Json>;
+          created_at?: string;
+          created_by?: string | null;
+          enabled?: boolean;
+          id?: string;
+          name: string;
+          team_id: string;
+          trigger: NonNullable<Json>;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          actions?: NonNullable<Json>;
+          conditions?: NonNullable<Json>;
+          created_at?: string;
+          created_by?: string | null;
+          enabled?: boolean;
+          id?: string;
+          name?: string;
+          team_id?: string;
+          trigger?: NonNullable<Json>;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'automations_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'automations_workspace_id_team_id_fkey';
+            columns: ['workspace_id', 'team_id'];
+            isOneToOne: false;
+            referencedRelation: 'teams';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
       comment_reactions: {
         Row: {
           comment_id: string;

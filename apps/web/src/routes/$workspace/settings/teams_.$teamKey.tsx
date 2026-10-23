@@ -1,6 +1,6 @@
 import { useTeamFieldActions, useUpdateTeam } from '@daiq/data';
 import { can, FIELD_KIND_LABEL, type EstimateScale } from '@daiq/domain';
-import { Input, Label, Textarea } from '@daiq/ui';
+import { buttonVariants, Input, Label, Textarea } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ChevronLeftIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -209,6 +209,22 @@ function TeamSettings() {
             Changes apply to cycles scheduled from now on.
           </p>
         </Module>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-4">
+        <div>
+          <h3 className="text-[13px] font-medium">Automations</h3>
+          <p className="text-xs text-fg-muted">
+            Assign, label, reschedule or notify automatically when tasks change.
+          </p>
+        </div>
+        <Link
+          to="/$workspace/team/$teamKey/automations"
+          params={{ workspace: workspace.slug, teamKey: team.key }}
+          className={buttonVariants({ size: 'sm' })}
+        >
+          Manage automations
+        </Link>
       </div>
 
       <fieldset className="flex flex-col gap-3">
