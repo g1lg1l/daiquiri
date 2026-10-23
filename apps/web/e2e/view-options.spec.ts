@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { createTask, signUpWithWorkspace } from './helpers';
 
 async function setPriority(page: Page, title: string, priority: string) {

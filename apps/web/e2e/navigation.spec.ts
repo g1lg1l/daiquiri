@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createTask, mod, signUpWithWorkspace } from './helpers';
 
 test('command palette opens a task by identifier and searches', async ({ page }) => {

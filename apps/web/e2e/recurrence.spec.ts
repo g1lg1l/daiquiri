@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createTask, signUpWithWorkspace } from './helpers';
 
 test('make a task repeat, change the rule and stop it', async ({ page }) => {

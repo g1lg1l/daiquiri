@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { signUpWithWorkspace } from './helpers';
 
 test('a stranger sends a public form and the team finds it in Triage', async ({

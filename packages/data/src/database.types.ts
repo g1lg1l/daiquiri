@@ -816,6 +816,7 @@ export type Database = {
           event_count: number;
           id: string;
           kind: string;
+          project_id: string | null;
           read_at: string | null;
           snoozed_until: string | null;
           task_id: string | null;
@@ -831,6 +832,7 @@ export type Database = {
           event_count?: number;
           id?: string;
           kind: string;
+          project_id?: string | null;
           read_at?: string | null;
           snoozed_until?: string | null;
           task_id?: string | null;
@@ -845,6 +847,7 @@ export type Database = {
           event_count?: number;
           id?: string;
           kind?: string;
+          project_id?: string | null;
           read_at?: string | null;
           snoozed_until?: string | null;
           task_id?: string | null;
@@ -864,6 +867,13 @@ export type Database = {
             columns: ['comment_id'];
             isOneToOne: false;
             referencedRelation: 'comments';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_project_id_fkey';
+            columns: ['project_id'];
+            isOneToOne: false;
+            referencedRelation: 'projects';
             referencedColumns: ['id'];
           },
           {
@@ -973,6 +983,7 @@ export type Database = {
           status: Database['public']['Enums']['project_status'];
           target_date: string | null;
           team_id: string;
+          update_reminder_day: number | null;
           updated_at: string;
           workspace_id: string;
         };
@@ -990,6 +1001,7 @@ export type Database = {
           status?: Database['public']['Enums']['project_status'];
           target_date?: string | null;
           team_id: string;
+          update_reminder_day?: number | null;
           updated_at?: string;
           workspace_id: string;
         };
@@ -1006,6 +1018,7 @@ export type Database = {
           status?: Database['public']['Enums']['project_status'];
           target_date?: string | null;
           team_id?: string;
+          update_reminder_day?: number | null;
           updated_at?: string;
           workspace_id?: string;
         };
@@ -2032,6 +2045,7 @@ export type Database = {
           status: Database['public']['Enums']['project_status'];
           target_date: string | null;
           team_id: string;
+          update_reminder_day: number | null;
           updated_at: string;
           workspace_id: string;
         };

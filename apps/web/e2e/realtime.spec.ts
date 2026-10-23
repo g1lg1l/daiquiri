@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createTask, PASSWORD, signUpWithWorkspace } from './helpers';
 
 test('changes in one session reach another without reloading', async ({ browser, page }) => {

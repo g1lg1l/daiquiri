@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { mod, signUpWithWorkspace } from './helpers';
 
 test('save a view, favorite it, modify, reset, delete and undo', async ({ page }) => {

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { z } from 'zod';
 import { isoDay, mod, restAs, signUpWithWorkspace } from './helpers';
 

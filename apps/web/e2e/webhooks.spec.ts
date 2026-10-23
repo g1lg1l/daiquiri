@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { signUpWithWorkspace } from './helpers';
 
 test('add a webhook, keep its secret and send a test', async ({ page }) => {

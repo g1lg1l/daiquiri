@@ -204,6 +204,8 @@ export interface Project {
   sortKey: string;
   archivedAt: string | null;
   createdAt: string;
+  /** Day of the week (0 = Sunday) to remind the lead to post an update; null: off. */
+  updateReminderDay: number | null;
 }
 
 export interface Task {
@@ -299,6 +301,7 @@ export const NOTIFICATION_KINDS = [
   'status',
   'unblocked',
   'automation',
+  'update_reminder',
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -311,6 +314,8 @@ export interface Notification {
   workspaceId: string;
   taskId: string | null;
   task: { title: string; number: number; teamId: string } | null;
+  /** Set on notifications about a project (update reminders). */
+  project: { id: string; name: string } | null;
   commentId: string | null;
   actorId: string | null;
   kind: NotificationKind;

@@ -32,6 +32,12 @@ import { FavoriteButton } from '../../../features/views/favorite-button';
 import { useSetSearch } from '../../../features/views/use-set-search';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
 
+// Monday first; 2023-01-01 was a Sunday.
+const WEEKDAYS = [1, 2, 3, 4, 5, 6, 0].map((value) => ({
+  value,
+  label: new Date(2023, 0, 1 + value).toLocaleDateString('en', { weekday: 'long' }),
+}));
+
 export const Route = createFileRoute('/$workspace/project/$projectId')({
   validateSearch: viewSearchSchema.extend({
     tab: z.enum(['updates']).optional().catch(undefined),
@@ -189,6 +195,26 @@ function ProjectPage() {
           {counts.done}/{counts.total} done
         </span>
       </span>
+      <label className="flex items-center gap-1">
+        Update reminder
+        <select
+          aria-label="Remind the lead to post an update"
+          value={project.updateReminderDay ?? ''}
+          onChange={(event) =>
+            update({
+              updateReminderDay: event.target.value === '' ? null : Number(event.target.value),
+            })
+          }
+          className="h-6 rounded-md border border-transparent bg-transparent px-1 text-xs hover:border-border"
+        >
+          <option value="">Off</option>
+          {WEEKDAYS.map((day) => (
+            <option key={day.value} value={day.value}>
+              {day.label}s
+            </option>
+          ))}
+        </select>
+      </label>
       {workspace.role !== 'guest' && (
         <>
           <Button

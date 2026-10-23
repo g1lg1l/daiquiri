@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { mod, signUpWithWorkspace } from './helpers';
 
 const dayName = new Intl.DateTimeFormat('en-US', {

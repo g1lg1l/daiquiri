@@ -159,7 +159,7 @@ Start with [ARCHITECTURE.md](ARCHITECTURE.md), then [docs/plan.md](docs/plan.md)
 - [x] Notification levels per team, any-filter matching, list sub-groups
 - [x] Intake forms, for members or anyone with the link, that create tasks in Triage
 - [x] Trash with restore and delete forever
-- [ ] Weekly reminders to post a project update
+- [x] Weekly reminders to post a project update
 - [x] Outbound webhooks: signed, retried, with a delivery log, and callable from automations
 - [x] CSV import (Linear, Asana, ClickUp or spreadsheet exports) with column matching
 - [ ] Integrations: API tokens, Slack, direct importers from Linear, Asana and ClickUp

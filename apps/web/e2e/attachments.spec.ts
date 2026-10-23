@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createTask, signUpWithWorkspace } from './helpers';
 
 // A 1×1 transparent PNG.

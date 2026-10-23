@@ -1,6 +1,6 @@
 import { useNotifications, useUpdateNotifications } from '@daiq/data';
 import { addDays, type Notification } from '@daiq/domain';
-import { Avatar, Button, cn, Shortcut } from '@daiq/ui';
+import { Avatar, Button, buttonVariants, cn, Shortcut } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArchiveIcon, CheckCheckIcon, InboxIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -28,6 +28,7 @@ const VERB: Record<Notification['kind'], string> = {
   status: 'changed the status',
   unblocked: 'unblocked your task',
   automation: 'asked you to look at this',
+  update_reminder: 'reminds you to post a project update',
 };
 
 function Inbox() {
@@ -157,7 +158,7 @@ function Inbox() {
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="flex items-center gap-2 text-[13px]">
                       <span className={cn('truncate', !notification.readAt && 'font-semibold')}>
-                        {task?.title ?? 'A task'}
+                        {task?.title ?? notification.project?.name ?? 'A task'}
                       </span>
                       {!notification.readAt && (
                         <span
@@ -168,7 +169,11 @@ function Inbox() {
                     </span>
                     <span className="truncate text-xs text-fg-muted">
                       {actor?.displayName ??
-                        (notification.kind === 'automation' ? 'An automation' : 'Someone')}{' '}
+                        (notification.kind === 'automation'
+                          ? 'An automation'
+                          : notification.kind === 'update_reminder'
+                            ? 'Daiquiri'
+                            : 'Someone')}{' '}
                       {VERB[notification.kind]}
                       {notification.eventCount > 1 && ` and ${notification.eventCount - 1} more`}
                     </span>
@@ -211,6 +216,21 @@ function Inbox() {
       <section aria-label="Notification detail" className="hidden min-w-0 flex-1 flex-col md:flex">
         {selectedIdentifier ? (
           <TaskDetail key={selectedIdentifier} identifier={selectedIdentifier} mode="peek" />
+        ) : selected?.project ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+            <p className="text-[13px] text-fg-muted">
+              No update on <strong className="text-fg">{selected.project.name}</strong> this week. A
+              few lines on how it is going keep everyone in the loop.
+            </p>
+            <Link
+              to="/$workspace/project/$projectId"
+              params={{ workspace: workspace.slug, projectId: selected.project.id }}
+              search={{ tab: 'updates' }}
+              className={buttonVariants({ variant: 'primary', size: 'sm' })}
+            >
+              Post an update
+            </Link>
+          </div>
         ) : (
           <div className="flex flex-1 items-center justify-center text-[13px] text-fg-subtle">
             Select a notification to see the task.

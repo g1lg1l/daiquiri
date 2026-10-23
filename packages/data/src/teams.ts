@@ -177,7 +177,16 @@ export function useUpdateProject(workspaceId: string) {
     mutationFn: async (input: {
       id: string;
       patch: Partial<
-        Pick<Project, 'name' | 'status' | 'leadId' | 'startDate' | 'targetDate' | 'archivedAt'>
+        Pick<
+          Project,
+          | 'name'
+          | 'status'
+          | 'leadId'
+          | 'startDate'
+          | 'targetDate'
+          | 'archivedAt'
+          | 'updateReminderDay'
+        >
       >;
     }) => {
       const { patch } = input;
@@ -192,6 +201,9 @@ export function useUpdateProject(workspaceId: string) {
               ...(patch.startDate !== undefined && { start_date: patch.startDate }),
               ...(patch.targetDate !== undefined && { target_date: patch.targetDate }),
               ...(patch.archivedAt !== undefined && { archived_at: patch.archivedAt }),
+              ...(patch.updateReminderDay !== undefined && {
+                update_reminder_day: patch.updateReminderDay,
+              }),
             })
             .eq('id', input.id)
             .select()

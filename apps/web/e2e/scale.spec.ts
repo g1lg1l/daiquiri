@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { z } from 'zod';
 import { signUpWithWorkspace } from './helpers';
 
@@ -38,18 +38,18 @@ test(`a team list with ${COUNT} tasks stays virtualised and reaches the end`, as
   expect(team).toBeDefined();
   // With the app closed, so the list below is one fresh load rather than realtime catch-up.
   await page.goto('about:blank');
-  // In requests of 1,000 rows, as any importer must: the API stops statements after 8 s.
+  // In requests of 500 rows, like the importer: the API stops statements after 8 s.
   const rows = Array.from({ length: COUNT }, (_, i) => ({
     team_id: team?.id,
     workspace_id: team?.workspace_id,
     title: `Imported task ${String(i + 1).padStart(4, '0')}`,
   }));
-  for (let from = 0; from < COUNT; from += 1000) {
+  for (let from = 0; from < COUNT; from += 500) {
     // Sequential on purpose: one import, one batch at a time.
     // oxlint-disable-next-line no-await-in-loop
     const insert = await page.request.post(`${config.supabaseUrl}/rest/v1/tasks`, {
       headers: { ...headers, prefer: 'return=minimal' },
-      data: rows.slice(from, from + 1000),
+      data: rows.slice(from, from + 500),
     });
     expect(insert.status()).toBe(201);
   }

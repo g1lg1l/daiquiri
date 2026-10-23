@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createTask, signUpWithWorkspace } from './helpers';
 
 test('define a custom field, turn it on for a team, set, group and filter by it', async ({

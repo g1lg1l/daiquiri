@@ -13,7 +13,7 @@ export function useNotifications(workspaceId: string) {
       unwrap(
         await client
           .from('notifications')
-          .select('*, tasks(title, number, team_id)')
+          .select('*, tasks(title, number, team_id), projects(id, name)')
           .eq('workspace_id', workspaceId)
           .order('created_at', { ascending: false })
           .limit(300),

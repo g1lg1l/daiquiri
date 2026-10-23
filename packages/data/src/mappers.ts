@@ -179,6 +179,7 @@ export function toProject(row: Tables<'projects'>): Project {
     sortKey: row.sort_key,
     archivedAt: row.archived_at,
     createdAt: row.created_at,
+    updateReminderDay: row.update_reminder_day,
   };
 }
 
@@ -213,6 +214,7 @@ export function toActivity(row: Tables<'activity'>): ActivityEntry {
 export function toNotification(
   row: Tables<'notifications'> & {
     tasks: { title: string; number: number; team_id: string } | null;
+    projects?: { id: string; name: string } | null;
   },
 ): Notification | null {
   if (!isNotificationKind(row.kind)) return null;
@@ -223,6 +225,7 @@ export function toNotification(
     task: row.tasks
       ? { title: row.tasks.title, number: row.tasks.number, teamId: row.tasks.team_id }
       : null,
+    project: row.projects ? { id: row.projects.id, name: row.projects.name } : null,
     commentId: row.comment_id,
     actorId: row.actor_id,
     kind: row.kind,

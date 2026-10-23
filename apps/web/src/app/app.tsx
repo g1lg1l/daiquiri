@@ -1,7 +1,7 @@
 import { AuthProvider, DataProvider, useAuth, type DaiqClient } from '@daiq/data';
 import type { RuntimeConfig } from '@daiq/domain';
 import { ThemeProvider, Toaster, TooltipProvider } from '@daiq/ui';
-import { useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useIsMutating, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { RouterProvider } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
@@ -35,6 +35,22 @@ function AppRouter({ config }: { config: RuntimeConfig }) {
   return <RouterProvider router={router} context={{ auth }} />;
 }
 
+/**
+ * Writes still on their way to the server are lost if the page goes away:
+ * mark them on <html data-saving> and let the browser ask before leaving.
+ */
+function UnsavedChangesGuard() {
+  const saving = useIsMutating() > 0;
+  useEffect(() => {
+    document.documentElement.dataset.saving = String(saving);
+    if (!saving) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [saving]);
+  return null;
+}
+
 export function App({ client, config }: { client: DaiqClient; config: RuntimeConfig }) {
   const [queryClient] = useState<QueryClient>(createQueryClient);
   return (
@@ -44,6 +60,7 @@ export function App({ client, config }: { client: DaiqClient; config: RuntimeCon
           <AuthProvider>
             <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
               <AppRouter config={config} />
+              <UnsavedChangesGuard />
               <Toaster />
             </PersistQueryClientProvider>
           </AuthProvider>

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { createTask, mod, signUpWithWorkspace } from './helpers';
 
 test('restore a deleted task from the trash, or delete it for good', async ({ page }) => {
