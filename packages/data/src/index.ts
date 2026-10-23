@@ -61,6 +61,8 @@ export { useNotificationSettings, useSetNotificationLevel } from './notification
 export type { TeamNotificationLevel } from './notification-settings';
 export { useRecurrence, useRecurrenceActions } from './recurrences';
 export { useTemplateActions, useTemplates } from './templates';
+export { useTrash, useTrashActions } from './trash';
+export type { TrashedTask } from './trash';
 export { useAutomationActions, useAutomationRuns, useAutomations } from './automations';
 export type { StatusFlow } from './insights';
 export { useCycleProgress, useCycles, useRenameCycle, useUpdateTeam } from './planning';

@@ -1919,6 +1919,7 @@ export type Database = {
           workspace_name: string;
         }[];
       };
+      purge_tasks: { Args: { task_ids: string[] }; Returns: number };
       remove_member: { Args: { user_id: string; workspace_id: string }; Returns: undefined };
       restore_tasks: { Args: { task_ids: string[] }; Returns: number };
       revoke_invitation: { Args: { invitation_id: string }; Returns: undefined };
@@ -1983,6 +1984,17 @@ export type Database = {
       set_task_assignees: { Args: { task_id: string; user_ids: string[] }; Returns: undefined };
       set_task_labels: { Args: { label_ids: string[]; task_id: string }; Returns: undefined };
       status_flow: { Args: { task_ids: string[] }; Returns: Json };
+      trashed_tasks: {
+        Args: { workspace_id: string };
+        Returns: {
+          deleted_at: string;
+          id: string;
+          number: number;
+          subtasks: number;
+          team_id: string;
+          title: string;
+        }[];
+      };
       workspace_member_emails: {
         Args: { workspace_id: string };
         Returns: {

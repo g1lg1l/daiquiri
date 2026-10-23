@@ -43,6 +43,7 @@ export const keys = {
     ['status-flow', workspaceId, fingerprint] as const,
   views: (workspaceId: string) => ['views', workspaceId] as const,
   templates: (workspaceId: string) => ['templates', workspaceId] as const,
+  trash: (workspaceId: string) => ['trash', workspaceId] as const,
   automations: (teamId: string) => ['automations', teamId] as const,
   automationRuns: (automationId: string) => ['automations', 'runs', automationId] as const,
   favorites: (workspaceId: string) => ['favorites', workspaceId] as const,

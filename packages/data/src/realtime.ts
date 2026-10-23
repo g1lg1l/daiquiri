@@ -77,6 +77,7 @@ async function applyTaskEvents(
     queryClient.invalidateQueries({ predicate: keyFor('recurrence', ids) }),
     queryClient.invalidateQueries({ queryKey: ['relations'] }),
     queryClient.invalidateQueries({ queryKey: ['status-flow'] }),
+    queryClient.invalidateQueries({ queryKey: ['trash'] }),
   ]);
 }
 

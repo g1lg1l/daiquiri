@@ -36,9 +36,9 @@ select is(
   array[
     'accept_invitation', 'create_demo_workspace', 'create_invitation', 'create_project_from_template',
     'create_task', 'create_task_from_template', 'create_team', 'create_workspace', 'cycle_progress',
-    'delete_tasks', 'preview_invitation', 'remove_member', 'restore_tasks', 'revoke_invitation',
+    'delete_tasks', 'preview_invitation', 'purge_tasks', 'remove_member', 'restore_tasks', 'revoke_invitation',
     'save_project_template', 'save_task_template', 'search', 'set_member_role', 'set_task_assignees',
-    'set_task_labels', 'status_flow', 'workspace_member_emails'
+    'set_task_labels', 'status_flow', 'trashed_tasks', 'workspace_member_emails'
   ]::text[],
   'authenticated can execute exactly the public RPC allow-list'
 );

@@ -29,7 +29,7 @@ select matches(
 );
 select matches(
   pg_temp.plan_of($$ select id from public.tasks where team_id = '00000000-0000-4000-8000-000000000000' and deleted_at is null order by sort_key $$),
-  'Index (Only )?Scan using tasks_team_\w+_idx',
+  '(Index (Only )?Scan using|Bitmap Index Scan on) tasks_team_\w+_idx',
   'a team list is read through a team index (which one depends on table statistics)'
 );
 
