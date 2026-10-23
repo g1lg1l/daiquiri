@@ -64,6 +64,10 @@ export const viewSearchSchema = z.object({
   cf: idList.catch(undefined),
   /** The custom field to group by when `group` is "field". */
   groupField: z.uuid().optional().catch(undefined),
+  /** Second level of grouping in the list. */
+  subgroup: z.enum(GROUP_BY).optional().catch(undefined),
+  /** Whether a task must match every filter (default) or any of them. */
+  match: z.enum(['all', 'any']).optional().catch(undefined),
   peek: z.string().max(20).optional().catch(undefined),
   /** Saved view this URL started from; the rest of the params may have drifted from it. */
   view: z.uuid().optional().catch(undefined),
@@ -97,7 +101,7 @@ export const DEFAULT_VIEW: ViewDefaults = {
   completed: 'week',
 };
 
-const DEFAULTS = new Map<string, string>(Object.entries(DEFAULT_VIEW));
+const DEFAULTS = new Map<string, string>([...Object.entries(DEFAULT_VIEW), ['match', 'all']]);
 
 function isEmpty(key: string, value: unknown): boolean {
   if (value === undefined || value === '') return true;
@@ -171,6 +175,11 @@ function matchesDue(filter: DueFilter | undefined, due: string | null, today: st
   return due < addDays(startOfWeek(today), 7);
 }
 
+/**
+ * Tasks a view shows. Property filters must all match, or with `match: any`
+ * at least one of them; the text search and completed-task visibility always
+ * apply.
+ */
 export function filterTasks(
   tasks: readonly Task[],
   search: ViewSearch,
@@ -179,26 +188,37 @@ export function filterTasks(
   const text = search.q?.trim().toLowerCase();
   const weekAgo = addDays(context.today, -7);
   const completed = search.completed ?? DEFAULT_VIEW.completed;
+  const any = search.match === 'any';
 
-  const fieldFilters = search.cf?.length ? parseFieldFilter(search.cf) : null;
+  const fieldFilters = search.cf?.length ? [...parseFieldFilter(search.cf)] : [];
   return tasks.filter((task) => {
-    if (fieldFilters && !matchesFieldFilters(task, fieldFilters, context.userId)) return false;
     const category = context.statuses.get(task.statusId)?.category;
     if (category && isClosedCategory(category)) {
       if (completed === 'none') return false;
       const closedAt = task.completedAt ?? task.canceledAt;
       if (completed === 'week' && closedAt && closedAt.slice(0, 10) < weekAgo) return false;
     }
-    if (search.status?.length && !search.status.includes(task.statusId)) return false;
-    if (search.category?.length && (!category || !search.category.includes(category))) return false;
-    if (search.priority?.length && !search.priority.includes(task.priority)) return false;
-    if (!matchesIds(search.assignee, task.assigneeIds, context.userId)) return false;
-    if (!matchesIds(search.label, task.labelIds, context.userId)) return false;
-    if (!matchesIds(search.project, task.projectId ? [task.projectId] : [], context.userId))
-      return false;
-    if (!matchesDue(search.due, task.dueDate, context.today)) return false;
     if (text && !task.title.toLowerCase().includes(text)) return false;
-    return true;
+
+    // One result per active filter.
+    const checks: boolean[] = [];
+    if (search.status?.length) checks.push(search.status.includes(task.statusId));
+    if (search.category?.length)
+      checks.push(Boolean(category && search.category.includes(category)));
+    if (search.priority?.length) checks.push(search.priority.includes(task.priority));
+    if (search.assignee?.length)
+      checks.push(matchesIds(search.assignee, task.assigneeIds, context.userId));
+    if (search.label?.length) checks.push(matchesIds(search.label, task.labelIds, context.userId));
+    if (search.project?.length)
+      checks.push(
+        matchesIds(search.project, task.projectId ? [task.projectId] : [], context.userId),
+      );
+    if (search.due) checks.push(matchesDue(search.due, task.dueDate, context.today));
+    for (const entry of fieldFilters) {
+      checks.push(matchesFieldFilters(task, new Map([entry]), context.userId));
+    }
+    if (checks.length === 0) return true;
+    return any ? checks.some(Boolean) : checks.every(Boolean);
   });
 }
 
@@ -232,6 +252,10 @@ export interface TaskGroup {
   label: string;
   tasks: Task[];
   category?: StatusCategory;
+  /** Second-level groups (list sub-grouping), never empty. */
+  subgroups?: TaskGroup[];
+  /** Set on sub-groups: the key of the group they belong to. */
+  parentKey?: string;
 }
 
 export interface GroupContext extends ViewContext {
@@ -388,6 +412,20 @@ export function groupTasks(
 }
 
 /** Children listed right after their parent when both are in the same list (consistent at any depth). */
+/** Splits each group by a second property, keeping only sub-groups that have tasks. */
+export function subgroupTasks(
+  groups: readonly TaskGroup[],
+  by: GroupBy,
+  context: GroupContext,
+): TaskGroup[] {
+  return groups.map((group) => ({
+    ...group,
+    subgroups: groupTasks(group.tasks, by, context)
+      .filter((sub) => sub.tasks.length > 0)
+      .map((sub) => ({ ...sub, parentKey: group.key })),
+  }));
+}
+
 export function nestSubtasks(tasks: readonly Task[]): { task: Task; depth: number }[] {
   const ids = new Set(tasks.map((task) => task.id));
   const children = new Map<string, Task[]>();

@@ -352,3 +352,8 @@ export interface Template {
   /** What it creates besides the task or project itself. */
   counts: { subtasks: number; milestones: number; tasks: number };
 }
+
+export const NOTIFICATION_LEVELS = ['all', 'participating', 'mute'] as const;
+export type NotificationLevel = (typeof NOTIFICATION_LEVELS)[number];
+export const isNotificationLevel = (value: string): value is NotificationLevel =>
+  NOTIFICATION_LEVELS.some((level) => level === value);

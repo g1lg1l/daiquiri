@@ -243,6 +243,27 @@ export function DisplayMenu({
             <MenuSeparator />
           </>
         )}
+        {layout === 'list' && group !== 'none' && (
+          <>
+            <MenuRadioGroup
+              value={search.subgroup ?? 'none'}
+              onValueChange={(value: string) => {
+                const next = allowedGroups.find((g) => g === value);
+                setSearch({ subgroup: next && next !== 'none' ? next : undefined });
+              }}
+            >
+              <MenuLabel>Sub-group by</MenuLabel>
+              {allowedGroups
+                .filter((g) => g !== 'field' && g !== group)
+                .map((g) => (
+                  <MenuRadioItem key={g} value={g}>
+                    {GROUP_LABEL[g]}
+                  </MenuRadioItem>
+                ))}
+            </MenuRadioGroup>
+            <MenuSeparator />
+          </>
+        )}
         {layout !== 'insights' && (
           <>
             <MenuRadioGroup
@@ -472,8 +493,30 @@ export function FilterChips({ search, setSearch }: { search: ViewSearch; setSear
   const data = useWorkspaceData();
   const { userId } = useWorkspace();
   if (!hasActiveFilters(search)) return null;
+  const active =
+    [
+      search.category,
+      search.status,
+      search.priority,
+      search.assignee,
+      search.label,
+      search.project,
+    ].filter((value) => value?.length).length +
+    (search.due ? 1 : 0) +
+    parseFieldFilter(search.cf ?? []).size;
   return (
     <div className="flex flex-wrap items-center gap-1.5 border-b border-border px-4 py-2">
+      {active > 1 && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 px-1.5 text-xs text-fg-muted"
+          title="Switch between matching all filters and any filter"
+          onClick={() => setSearch({ match: search.match === 'any' ? undefined : 'any' })}
+        >
+          Match {search.match === 'any' ? 'any filter' : 'all filters'}
+        </Button>
+      )}
       {search.category?.length ? (
         <Chip
           label={`Status: ${search.category.map((c) => STATUS_CATEGORY_LABEL[c]).join(', ')}`}

@@ -5,6 +5,7 @@ import {
   slugify,
   sortStatuses,
   sortTasks,
+  subgroupTasks,
   toCsv,
   type GroupBy,
   type Milestone,
@@ -120,12 +121,23 @@ export function TaskView({
     else downloadText(name, JSON.stringify(rows, null, 2), 'application/json');
   };
 
+  // Sub-groups: list only, a second property other than the first.
+  const subgroup =
+    layout === 'list' &&
+    group !== 'none' &&
+    search.subgroup &&
+    search.subgroup !== group &&
+    search.subgroup !== 'field' &&
+    allowedGroups.includes(search.subgroup)
+      ? search.subgroup
+      : undefined;
+
   const groups = useMemo<TaskGroup[]>(() => {
     if (!tasks) return [];
     const orderedStatuses = sortStatuses(
       teamIds.flatMap((id) => data.teamsById.get(id)?.statuses ?? []),
     );
-    return groupTasks(visible, group, {
+    const context = {
       userId,
       today,
       statuses: data.statuses,
@@ -137,8 +149,21 @@ export function TaskView({
       ...(group === 'field' && search.groupField
         ? { field: data.fieldsById.get(search.groupField) }
         : {}),
-    });
-  }, [tasks, visible, userId, data, teamIds, group, today, milestones, search.groupField]);
+    };
+    const top = groupTasks(visible, group, context);
+    return subgroup ? subgroupTasks(top, subgroup, context) : top;
+  }, [
+    tasks,
+    visible,
+    userId,
+    data,
+    teamIds,
+    group,
+    subgroup,
+    today,
+    milestones,
+    search.groupField,
+  ]);
 
   const peekTask = useMemo(
     () => (search.peek ? tasks?.find((task) => identifier(task) === search.peek) : undefined),
@@ -163,15 +188,25 @@ export function TaskView({
 
   const groupDefaults = useCallback(
     (taskGroup: TaskGroup): ComposerDefaults => {
-      const extra: ComposerDefaults = {};
-      if (taskGroup.kind === 'status') extra.statusId = taskGroup.key;
-      if (taskGroup.kind === 'project' && taskGroup.key !== 'none') extra.projectId = taskGroup.key;
-      if (taskGroup.kind === 'assignee' && taskGroup.key !== 'none')
-        extra.assigneeIds = [taskGroup.key];
-      if (taskGroup.kind === 'label' && taskGroup.key !== 'none') extra.labelIds = [taskGroup.key];
-      return { ...composerDefaults, ...extra };
+      const valuesOf = (g: TaskGroup): ComposerDefaults => {
+        const extra: ComposerDefaults = {};
+        if (g.kind === 'status') extra.statusId = g.key;
+        if (g.kind === 'project' && g.key !== 'none') extra.projectId = g.key;
+        if (g.kind === 'assignee' && g.key !== 'none') extra.assigneeIds = [g.key];
+        if (g.kind === 'label' && g.key !== 'none') extra.labelIds = [g.key];
+        return extra;
+      };
+      // A sub-group's task also gets its parent group's value.
+      const parent = taskGroup.parentKey
+        ? groups.find((g) => g.key === taskGroup.parentKey)
+        : undefined;
+      return {
+        ...composerDefaults,
+        ...(parent && valuesOf(parent)),
+        ...valuesOf(taskGroup),
+      };
     },
-    [composerDefaults],
+    [composerDefaults, groups],
   );
 
   return (

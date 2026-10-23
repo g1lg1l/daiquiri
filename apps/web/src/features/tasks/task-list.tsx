@@ -40,8 +40,12 @@ import { useTaskActions } from './task-actions';
 import { useIdentifier } from './use-identifier';
 
 type Row =
-  | { kind: 'header'; group: TaskGroup; collapsed: boolean }
+  | { kind: 'header'; group: TaskGroup; collapsed: boolean; key: string; level: 1 | 2 }
   | { kind: 'task'; task: Task; depth: number; groupKey: string };
+
+/** Collapse state and keyboard reordering address a sub-group through its parent. */
+const rowKey = (group: TaskGroup) =>
+  group.parentKey ? `${group.parentKey}/${group.key}` : group.key;
 
 const ROW_HEIGHT = 36;
 
@@ -78,17 +82,33 @@ export function TaskList({
 
   const rows = useMemo<Row[]>(() => {
     const result: Row[] = [];
-    for (const group of groups) {
-      const isCollapsed = collapsed.has(group.key);
-      if (showGroupHeaders) result.push({ kind: 'header', group, collapsed: isCollapsed });
-      if (!isCollapsed) {
-        for (const { task, depth } of nestSubtasks(group.tasks)) {
-          result.push({ kind: 'task', task, depth, groupKey: group.key });
-        }
+    const add = (group: TaskGroup, level: 1 | 2) => {
+      const key = rowKey(group);
+      const isCollapsed = collapsed.has(key);
+      if (showGroupHeaders)
+        result.push({ kind: 'header', group, collapsed: isCollapsed, key, level });
+      if (isCollapsed) return;
+      if (group.subgroups) {
+        for (const sub of group.subgroups) add(sub, 2);
+        return;
       }
-    }
+      for (const { task, depth } of nestSubtasks(group.tasks)) {
+        result.push({ kind: 'task', task, depth, groupKey: key });
+      }
+    };
+    for (const group of groups) add(group, 1);
     return result;
   }, [groups, collapsed, showGroupHeaders]);
+  const groupsByKey = useMemo(
+    () =>
+      new Map(
+        groups.flatMap((group) => [
+          [rowKey(group), group] as const,
+          ...(group.subgroups ?? []).map((sub) => [rowKey(sub), sub] as const),
+        ]),
+      ),
+    [groups],
+  );
 
   const taskRows = useMemo(() => rows.flatMap((row) => (row.kind === 'task' ? [row] : [])), [rows]);
   const tasksById = useMemo(
@@ -153,7 +173,7 @@ export function TaskList({
   const reorder = (delta: 1 | -1) => {
     const row = taskRows.find((r) => r.task.id === focusedId);
     if (!canReorder || !row) return;
-    const group = groups.find((g) => g.key === row.groupKey);
+    const group = groupsByKey.get(row.groupKey);
     const siblings = group?.tasks.filter((t) => t.parentId === row.task.parentId) ?? [];
     const from = siblings.findIndex((t) => t.id === row.task.id);
     const to = from + delta;
@@ -298,7 +318,7 @@ export function TaskList({
             if (!row) return null;
             return (
               <div
-                key={row.kind === 'task' ? row.task.id : `h-${row.group.key}`}
+                key={row.kind === 'task' ? row.task.id : `h-${row.key}`}
                 data-index={item.index}
                 className="absolute inset-x-0"
                 style={{ transform: `translateY(${item.start}px)`, height: item.size }}
@@ -306,9 +326,10 @@ export function TaskList({
                 {row.kind === 'header' ? (
                   <GroupHeader
                     group={row.group}
+                    level={row.level}
                     collapsed={row.collapsed}
                     rowIndex={item.index + 1}
-                    onToggle={() => toggleGroup(row.group.key)}
+                    onToggle={() => toggleGroup(row.key)}
                     onCreate={() => onCreate(composerDefaults(row.group))}
                   />
                 ) : (
@@ -348,12 +369,14 @@ export function TaskList({
 
 function GroupHeader({
   group,
+  level,
   collapsed,
   rowIndex,
   onToggle,
   onCreate,
 }: {
   group: TaskGroup;
+  level: 1 | 2;
   collapsed: boolean;
   rowIndex: number;
   onToggle: () => void;
@@ -364,8 +387,12 @@ function GroupHeader({
     <div
       role="row"
       aria-rowindex={rowIndex}
+      aria-level={level}
       aria-expanded={!collapsed}
-      className="group/header flex h-9 items-center gap-2 border-b border-border bg-surface-subtle/70 px-3 md:px-4"
+      className={cn(
+        'group/header flex h-9 items-center gap-2 border-b border-border px-3 md:px-4',
+        level === 1 ? 'bg-surface-subtle/70' : 'pl-8 md:pl-9',
+      )}
     >
       <div role="gridcell" className="flex min-w-0 flex-1 items-center gap-2">
         <button

@@ -650,6 +650,43 @@ export type Database = {
           },
         ];
       };
+      notification_settings: {
+        Row: {
+          level: string;
+          team_id: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          level: string;
+          team_id: string;
+          user_id?: string;
+          workspace_id: string;
+        };
+        Update: {
+          level?: string;
+          team_id?: string;
+          user_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notification_settings_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notification_settings_workspace_id_team_id_fkey';
+            columns: ['workspace_id', 'team_id'];
+            isOneToOne: false;
+            referencedRelation: 'teams';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
       notifications: {
         Row: {
           actor_id: string | null;

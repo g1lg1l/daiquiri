@@ -41,7 +41,9 @@ export {
   isProjectHealth,
   isRichDocument,
   isSearchResultKind,
+  isNotificationLevel,
   isTemplateKind,
+  NOTIFICATION_LEVELS,
   TEMPLATE_KINDS,
 } from './model';
 export type {
@@ -61,6 +63,7 @@ export type {
   Milestone,
   Notification,
   NotificationKind,
+  NotificationLevel,
   Profile,
   Project,
   ProjectHealth,
@@ -108,6 +111,7 @@ export {
   ORDER_BY,
   sameViewConfig,
   sortTasks,
+  subgroupTasks,
   toViewConfig,
   viewConfigSchema,
   viewSearchSchema,

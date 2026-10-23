@@ -6,6 +6,7 @@ import {
   nestSubtasks,
   sameViewConfig,
   sortTasks,
+  subgroupTasks,
   toViewConfig,
   viewSearchSchema,
   type GroupContext,
@@ -74,6 +75,31 @@ describe('view engine', () => {
     task({ title: 'Plan launch', priority: 2, dueDate: '2026-10-24' }),
   ];
 
+  const titles = (search: Parameters<typeof filterTasks>[1]) =>
+    filterTasks(tasks, search, context).map((t) => t.title);
+
+  it('matches all filters, or any of them', () => {
+    const filters = { priority: [1], assignee: ['ana'] };
+    expect(titles(filters)).toEqual([]);
+    expect(titles({ ...filters, match: 'any' })).toEqual(['Fix login', 'Write docs']);
+    // The text search narrows either way.
+    expect(titles({ ...filters, match: 'any', q: 'docs' })).toEqual(['Write docs']);
+    expect(toViewConfig({ match: 'all', group: 'status' })).toEqual({});
+  });
+
+  it('sub-groups each group, without empty sub-groups', () => {
+    const groups = subgroupTasks(
+      groupTasks(filterTasks(tasks, {}, context), 'status', context),
+      'assignee',
+      context,
+    );
+    const todo = groups.find((g) => g.key === 'todo');
+    expect(todo?.subgroups?.map((sub) => [sub.label, sub.tasks.length, sub.parentKey])).toEqual([
+      ['Me', 1, 'todo'],
+      ['No assignee', 1, 'todo'],
+    ]);
+  });
+
   it('parses URL search params leniently', () => {
     expect(
       viewSearchSchema.parse({ group: 'nope', assignee: 'me,none', priority: [1, '2'] }),
@@ -85,9 +111,8 @@ describe('view engine', () => {
   });
 
   it('hides completed work older than a week by default', () => {
-    const titles = filterTasks(tasks, {}, context).map((t) => t.title);
-    expect(titles).not.toContain('Old done');
-    expect(titles).toContain('Recently done');
+    expect(titles({})).not.toContain('Old done');
+    expect(titles({})).toContain('Recently done');
     expect(filterTasks(tasks, { completed: 'none' }, context).map((t) => t.title)).not.toContain(
       'Recently done',
     );

@@ -125,7 +125,7 @@ Empty optional fields are hidden in the task view and reachable via the property
 - Never notified about your own actions. Bursts on the same task within 2 minutes collapse into one item.
 - Inbox tabs: _Inbox_, _Snoozed_, _Archived_. Actions: open, mark read/unread, snooze (later today, tomorrow, next week, custom), archive, unsubscribe.
 - Unread count in the sidebar and the document title.
-- Settings (P2): per team _All / Participating / Mute_; email digest (P3, requires SMTP).
+- Settings: per team _All activity / Only what involves me / Nothing_ in Preferences, enforced in the database for every way a notification is created; email digest (P3, requires SMTP).
 
 ## 6. Views — P1 (list, board), P2 (calendar, timeline)
 
@@ -141,7 +141,7 @@ Empty optional fields are hidden in the task view and reachable via the property
 
 - Filterable properties: status (and status category), priority, assignee (incl. _me_, _none_), creator, project, team, label, due date / start date (relative ranges: overdue, today, this week, next N days, none), created/updated date, parent/has sub-tasks, relations (blocked, blocking), text (title/description), custom fields (P2).
 - Operators: is / is not / is any of / is none of / before / after / is empty.
-- Filters combine with AND at top level; OR groups are P2.
+- Filters combine with AND, or with _Match any filter_ (the chip bar toggle, `match=any` in the URL) with OR; the text search and completed-task visibility always apply. Nested filter groups are not built.
 - The filter engine lives in `packages/domain` and compiles to both a client-side predicate (instant filtering of cached data) and a server query (PostgREST filters) from one definition.
 
 ## 8. Editor — P1

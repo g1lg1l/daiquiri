@@ -57,6 +57,8 @@ export {
   useWorkspaces,
 } from './workspaces';
 export { useStatusFlow } from './insights';
+export { useNotificationSettings, useSetNotificationLevel } from './notification-settings';
+export type { TeamNotificationLevel } from './notification-settings';
 export { useRecurrence, useRecurrenceActions } from './recurrences';
 export { useTemplateActions, useTemplates } from './templates';
 export { useAutomationActions, useAutomationRuns, useAutomations } from './automations';
