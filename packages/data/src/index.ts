@@ -7,6 +7,7 @@ export {
   useActivity,
   useCommentActions,
   useComments,
+  useDependencies,
   useRelationActions,
   useRelations,
   useTaskSubscription,

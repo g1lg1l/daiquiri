@@ -105,3 +105,5 @@ export type {
 } from './view';
 export { addMonths, isMonth, monthGrid, monthOf, reschedule, tasksByDueDate } from './calendar';
 export type { CalendarDay } from './calendar';
+export { moveTaskDates, taskSpan, timelineRange } from './timeline';
+export type { Span, SpanEdge } from './timeline';

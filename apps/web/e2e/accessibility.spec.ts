@@ -39,12 +39,13 @@ test('task list and task page have no serious accessibility violations', async (
   expect(serious(results.violations)).toEqual([]);
 });
 
-test('board and calendar have no serious accessibility violations', async ({ page }) => {
+test('board, calendar and timeline have no serious accessibility violations', async ({ page }) => {
   const { slug } = await signUpWithWorkspace(page);
   await createTask(page, 'Seen on every layout');
   const check = async (layout: string) => {
     await page.goto(`/${slug}/team/ENG/tasks?layout=${layout}`);
-    await expect(page.getByText('Seen on every layout').first()).toBeVisible();
+    await expect(page.getByRole('radio', { name: new RegExp(layout, 'i') })).toBeChecked();
+    await expect(page.getByText(/Seen on every layout|without dates/).first()).toBeVisible();
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag22aa'])
       .analyze();
@@ -52,4 +53,5 @@ test('board and calendar have no serious accessibility violations', async ({ pag
   };
   await check('board');
   await check('calendar');
+  await check('timeline');
 });

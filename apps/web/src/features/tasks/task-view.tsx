@@ -32,6 +32,9 @@ const TaskBoard = lazy(() => import('./task-board').then((m) => ({ default: m.Ta
 const TaskCalendar = lazy(() =>
   import('./task-calendar').then((m) => ({ default: m.TaskCalendar })),
 );
+const TaskTimeline = lazy(() =>
+  import('./task-timeline').then((m) => ({ default: m.TaskTimeline })),
+);
 
 export interface TaskViewProps {
   title: ReactNode;
@@ -157,6 +160,15 @@ export function TaskView({
               <Skeleton key={i} className="h-7" style={{ width: `${70 + ((i * 13) % 30)}%` }} />
             ))}
           </div>
+        ) : layout === 'timeline' ? (
+          <Suspense fallback={null}>
+            <TaskTimeline
+              groups={groups}
+              showGroupHeaders={group !== 'none'}
+              peekId={peekTask?.id}
+              onOpen={onOpen}
+            />
+          </Suspense>
         ) : layout === 'calendar' ? (
           <Suspense fallback={null}>
             <TaskCalendar

@@ -75,6 +75,16 @@ Daiq shortcuts follow four rules so users can predict them:
 | Drag onto a day    | Reschedule (a start date keeps its distance to the due) |
 | Drag onto the tray | Remove the due date                                     |
 
+### Timeline
+
+| Keys                   | Action                                    |
+| ---------------------- | ----------------------------------------- |
+| `↑` `↓` / `J` `K`      | Previous / next bar                       |
+| `Mod ←` / `Mod →`      | Move the focused bar one day (both dates) |
+| `Mod Shift ←` / `→`    | Move its due date one day                 |
+| `Enter` / `Space`      | Open / peek                               |
+| Drag a bar / its edges | Move it / change its start or due date    |
+
 ## Task properties (on target)
 
 | Keys            | Action                                                             |

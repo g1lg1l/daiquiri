@@ -8,6 +8,7 @@ import type {
 } from '@daiq/domain';
 import { useDaiqClient } from './context';
 import { ensureOk, unwrap } from './errors';
+import { fetchAll } from './fetch-all';
 import { keys } from './keys';
 import { documentToJson, toActivity, toComment } from './mappers';
 
@@ -165,6 +166,31 @@ export function useRelations(taskId: string | undefined) {
           .from('task_relations')
           .select('id, task_id, related_task_id, kind')
           .or(`task_id.eq.${taskId},related_task_id.eq.${taskId}`),
+      ).map((row) => ({
+        id: row.id,
+        taskId: row.task_id,
+        relatedTaskId: row.related_task_id,
+        kind: row.kind,
+      })),
+  });
+}
+
+/** Every "blocks" relation the user can see in the workspace (timeline dependency arrows). */
+export function useDependencies(workspaceId: string) {
+  const client = useDaiqClient();
+  return useQuery({
+    queryKey: keys.dependencies(workspaceId),
+    queryFn: async (): Promise<TaskRelation[]> =>
+      (
+        await fetchAll((from, to) =>
+          client
+            .from('task_relations')
+            .select('id, task_id, related_task_id, kind')
+            .eq('workspace_id', workspaceId)
+            .eq('kind', 'blocks')
+            .order('id')
+            .range(from, to),
+        )
       ).map((row) => ({
         id: row.id,
         taskId: row.task_id,

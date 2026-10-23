@@ -35,6 +35,7 @@ import {
 } from '@daiq/ui';
 import {
   CalendarDaysIcon,
+  GanttChartIcon,
   KanbanSquareIcon,
   ListFilterIcon,
   ListIcon,
@@ -85,11 +86,17 @@ function toggle<T>(list: readonly T[] | undefined, value: T): T[] | undefined {
   return next.length ? next : undefined;
 }
 
-const LAYOUT_LABEL: Record<Layout, string> = { list: 'List', board: 'Board', calendar: 'Calendar' };
+const LAYOUT_LABEL: Record<Layout, string> = {
+  list: 'List',
+  board: 'Board',
+  calendar: 'Calendar',
+  timeline: 'Timeline',
+};
 const LAYOUT_ICON: Record<Layout, ReactNode> = {
   list: <ListIcon aria-hidden />,
   board: <KanbanSquareIcon aria-hidden />,
   calendar: <CalendarDaysIcon aria-hidden />,
+  timeline: <GanttChartIcon aria-hidden />,
 };
 
 export function LayoutToggle({ layout, setSearch }: { layout: Layout; setSearch: SetSearch }) {
@@ -102,7 +109,7 @@ export function LayoutToggle({ layout, setSearch }: { layout: Layout; setSearch:
         <Tooltip
           key={value}
           label={LAYOUT_LABEL[value]}
-          shortcut={value === 'calendar' ? undefined : SHORTCUTS.toggleLayout.keys}
+          shortcut={value === 'list' || value === 'board' ? SHORTCUTS.toggleLayout.keys : undefined}
         >
           <label
             className={cn(

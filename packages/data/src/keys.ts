@@ -23,6 +23,8 @@ export const keys = {
   taskDetail: (teamId: string, number: number) => ['task', 'ref', teamId, number] as const,
   allTaskDetails: () => ['task'] as const,
   relations: (taskId: string) => ['relations', taskId] as const,
+  /** Under 'relations' so realtime relation events refresh it too. */
+  dependencies: (workspaceId: string) => ['relations', 'blocks', workspaceId] as const,
   comments: (taskId: string) => ['comments', taskId] as const,
   activity: (taskId: string) => ['activity', taskId] as const,
   notifications: (workspaceId: string) => ['notifications', workspaceId] as const,

@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { z } from 'zod';
 
 export const PASSWORD = 'e2e-password-123';
 
@@ -42,4 +43,38 @@ export async function createTask(page: Page, title: string) {
   // Wait for the server-assigned identifier (optimistic rows show "ENG-…").
   await expect(row.getByText(/^ENG-\d+$/)).toBeVisible();
   return row;
+}
+
+const restConfig = z.object({ supabaseUrl: z.string(), supabaseKey: z.string() });
+
+/** PostgREST as the signed-in user, for seeding data the way an import or script would. */
+export async function restAs(page: Page) {
+  const config = restConfig.parse(await (await page.request.get('/config.json')).json());
+  const token = await page.evaluate(() => {
+    const key = Object.keys(localStorage).find((name) => name.endsWith('-auth-token'));
+    const session: unknown = JSON.parse(localStorage.getItem(key ?? '') ?? 'null');
+    return typeof session === 'object' &&
+      session !== null &&
+      'access_token' in session &&
+      typeof session.access_token === 'string'
+      ? session.access_token
+      : '';
+  });
+  const headers = { apikey: config.supabaseKey, authorization: `Bearer ${token}` };
+  const url = (path: string) => `${config.supabaseUrl}/rest/v1/${path}`;
+  return {
+    get: async (path: string) => (await page.request.get(url(path), { headers })).json(),
+    post: (path: string, data: unknown) =>
+      page.request.post(url(path), {
+        headers: { ...headers, prefer: 'return=representation' },
+        data,
+      }),
+  };
+}
+
+/** Local ISO day `offset` days from today. */
+export function isoDay(offset = 0): string {
+  const date = new Date();
+  date.setDate(date.getDate() + offset);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
