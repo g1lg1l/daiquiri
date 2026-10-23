@@ -248,12 +248,13 @@ export function useRealtimeSync(options: {
     // Private channels authorize with the user's JWT: set it before joining, or
     // the first join is refused and only recovers through the retry backoff.
     let channels: ReturnType<typeof subscribe>[] = [];
-    client.realtime
+    void client.realtime
       .setAuth()
-      .then(() => {
+      .catch(reportError)
+      // Join even if refreshing the token failed: the channels retry on their own.
+      .finally(() => {
         if (!disposed) channels = topics.map(subscribe);
-      })
-      .catch(reportError);
+      });
 
     return () => {
       disposed = true;
