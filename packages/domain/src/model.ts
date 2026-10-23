@@ -159,6 +159,7 @@ export interface Team {
   /** Custom fields this team uses, in order. */
   fieldIds: string[];
   triageEnabled: boolean;
+  timeTrackingEnabled: boolean;
   memberIds: string[];
   statuses: Status[];
 }
@@ -357,3 +358,13 @@ export const NOTIFICATION_LEVELS = ['all', 'participating', 'mute'] as const;
 export type NotificationLevel = (typeof NOTIFICATION_LEVELS)[number];
 export const isNotificationLevel = (value: string): value is NotificationLevel =>
   NOTIFICATION_LEVELS.some((level) => level === value);
+
+export interface TimeEntry {
+  id: string;
+  taskId: string;
+  userId: string;
+  startedAt: string;
+  /** Null while the timer runs. */
+  endedAt: string | null;
+  note: string | null;
+}

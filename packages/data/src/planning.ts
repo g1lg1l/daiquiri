@@ -83,6 +83,7 @@ export type TeamSettings = Partial<
     | 'cyclesEnabled'
     | 'cycleWeeks'
     | 'cycleStartWeekday'
+    | 'timeTrackingEnabled'
   > & { estimateScale: EstimateScale }
 >;
 
@@ -102,6 +103,8 @@ export function useUpdateTeam(workspaceId: string) {
       if (patch.cycleWeeks !== undefined) columns.cycle_weeks = patch.cycleWeeks;
       if (patch.cycleStartWeekday !== undefined)
         columns.cycle_start_weekday = patch.cycleStartWeekday;
+      if (patch.timeTrackingEnabled !== undefined)
+        columns.time_tracking_enabled = patch.timeTrackingEnabled;
       return ensureOk(await client.from('teams').update(columns).eq('id', id));
     },
     onMutate: ({ id, patch }) => {

@@ -63,7 +63,7 @@ ClickUp, Asana and Linear each do a lot. Most teams use a small part of it, ever
 | Area          | Included today                                                                                                                                                                                                                                 |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Work          | Teams with their own workflows, projects, tasks with identifiers (`ENG-42`), sub-tasks, relations, labels, priorities, due and start dates, custom fields, file attachments with image previews                                                |
-| Planning      | Estimates in points or hours, cycles of one to four weeks that schedule themselves and roll unfinished work over, burn-up charts, project milestones and status updates with health, recurring tasks, task and project templates               |
+| Planning      | Estimates in points or hours, cycles of one to four weeks that schedule themselves and roll unfinished work over, burn-up charts, project milestones and status updates with health, recurring tasks, task and project templates, time tracking               |
 | Views         | List, board, calendar, timeline (with dependency arrows) and insights, CSV/JSON export, filters (all or any), grouping with sub-groups and ordering in the URL, saved views and favorites, My tasks grouped by due date, undo for every change |
 | Collaboration | Comments with @mentions and reactions, activity history, inbox notifications, subscriptions, realtime updates                                                                                                                                  |
 | Workspace     | Invitations with roles (owner, admin, member, guest), private teams, team templates, labels, a 30-day trash, automations with a run log, notification levels per team, theme preferences                                                       |
@@ -150,7 +150,7 @@ Start with [ARCHITECTURE.md](ARCHITECTURE.md), then [docs/plan.md](docs/plan.md)
 - [x] Estimates and cycles with burn-up
 - [x] Project milestones and status updates
 - [x] Custom fields per team (text, number, date, select, person, checkbox, link), with grouping and filters
-- [ ] Time tracking
+- [x] Time tracking per team: a timer per person and manual entries
 - [x] File attachments on private storage
 - [x] Recurring tasks, on a schedule or after completion
 - [x] Task templates (with sub-tasks) and project templates (with milestones and tasks)

@@ -72,6 +72,7 @@ import { useComposer } from './composer';
 import { PriorityIcon, StatusIcon } from './icons';
 import { LABEL_COLOR } from './label-colors';
 import { SaveTemplateDialog } from '../templates/save-template-dialog';
+import { TimeTracking } from '../time/time-tracking';
 import { RecurrenceEditor } from './recurrence-editor';
 import { DateField, useTaskActions } from './task-actions';
 import { useIdentifier } from './use-identifier';
@@ -683,6 +684,7 @@ function TaskDetailBody({
               />
             </Suspense>
             <Attachments task={task} />
+            {team?.timeTrackingEnabled && <TimeTracking task={task} />}
             <SubTasks task={task} />
             <Relations task={task} />
             <ActivityFeed task={task} />

@@ -62,6 +62,8 @@ export type { TeamNotificationLevel } from './notification-settings';
 export { useRecurrence, useRecurrenceActions } from './recurrences';
 export { useTemplateActions, useTemplates } from './templates';
 export { useTrash, useTrashActions } from './trash';
+export { useRunningTimer, useTimeEntries, useTimeEntryActions, useTimerActions } from './time';
+export type { RunningTimer } from './time';
 export type { TrashedTask } from './trash';
 export { useAutomationActions, useAutomationRuns, useAutomations } from './automations';
 export type { StatusFlow } from './insights';

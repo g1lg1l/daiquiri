@@ -151,6 +151,7 @@ export function toTeam(
       .toSorted((a, b) => a.position - b.position)
       .map((f) => f.field_id),
     triageEnabled: row.triage_enabled,
+    timeTrackingEnabled: row.time_tracking_enabled,
     memberIds: row.team_members.map((m) => m.user_id),
     statuses: row.statuses.map(toStatus),
   };

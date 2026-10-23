@@ -1431,6 +1431,7 @@ export type Database = {
           key: string;
           name: string;
           task_seq: number;
+          time_tracking_enabled: boolean;
           triage_enabled: boolean;
           updated_at: string;
           workspace_id: string;
@@ -1449,6 +1450,7 @@ export type Database = {
           key: string;
           name: string;
           task_seq?: number;
+          time_tracking_enabled?: boolean;
           triage_enabled?: boolean;
           updated_at?: string;
           workspace_id: string;
@@ -1466,6 +1468,7 @@ export type Database = {
           key?: string;
           name?: string;
           task_seq?: number;
+          time_tracking_enabled?: boolean;
           triage_enabled?: boolean;
           updated_at?: string;
           workspace_id?: string;
@@ -1535,6 +1538,55 @@ export type Database = {
             columns: ['workspace_id', 'team_id'];
             isOneToOne: false;
             referencedRelation: 'teams';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      time_entries: {
+        Row: {
+          created_at: string;
+          ended_at: string | null;
+          id: string;
+          note: string | null;
+          started_at: string;
+          task_id: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          ended_at?: string | null;
+          id?: string;
+          note?: string | null;
+          started_at?: string;
+          task_id: string;
+          user_id?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          ended_at?: string | null;
+          id?: string;
+          note?: string | null;
+          started_at?: string;
+          task_id?: string;
+          user_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'time_entries_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'time_entries_workspace_id_task_id_fkey';
+            columns: ['workspace_id', 'task_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
             referencedColumns: ['workspace_id', 'id'];
           },
         ];
@@ -1865,6 +1917,7 @@ export type Database = {
           key: string;
           name: string;
           task_seq: number;
+          time_tracking_enabled: boolean;
           triage_enabled: boolean;
           updated_at: string;
           workspace_id: string;
@@ -1983,7 +2036,45 @@ export type Database = {
       };
       set_task_assignees: { Args: { task_id: string; user_ids: string[] }; Returns: undefined };
       set_task_labels: { Args: { label_ids: string[]; task_id: string }; Returns: undefined };
+      start_timer: {
+        Args: { task_id: string };
+        Returns: {
+          created_at: string;
+          ended_at: string | null;
+          id: string;
+          note: string | null;
+          started_at: string;
+          task_id: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'time_entries';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       status_flow: { Args: { task_ids: string[] }; Returns: Json };
+      stop_timer: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          created_at: string;
+          ended_at: string | null;
+          id: string;
+          note: string | null;
+          started_at: string;
+          task_id: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'time_entries';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       trashed_tasks: {
         Args: { workspace_id: string };
         Returns: {

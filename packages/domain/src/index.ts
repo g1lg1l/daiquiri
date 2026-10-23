@@ -81,6 +81,7 @@ export type {
   Team,
   Template,
   TemplateKind,
+  TimeEntry,
   Workspace,
 } from './model';
 export {
@@ -186,3 +187,4 @@ export type {
   AutomationTrigger,
   AutomationTriggerKind,
 } from './automation';
+export { formatClock, formatDuration, parseDuration } from './time';

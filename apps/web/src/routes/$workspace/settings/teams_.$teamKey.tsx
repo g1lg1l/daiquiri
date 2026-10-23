@@ -63,7 +63,7 @@ function Module({
   );
 }
 
-/** One team's name, description, modules (estimates, cycles) and custom fields. */
+/** One team's name, description, modules (estimates, cycles, time tracking) and custom fields. */
 function TeamSettings() {
   const { teamKey } = Route.useParams();
   const { workspace, userId } = useWorkspace();
@@ -207,6 +207,17 @@ function TeamSettings() {
           </div>
           <p className="w-full text-xs text-fg-subtle">
             Changes apply to cycles scheduled from now on.
+          </p>
+        </Module>
+        <Module
+          title="Time tracking"
+          description="Log time on tasks with a timer or by hand. Everyone on the team sees the time logged."
+          enabled={team.timeTrackingEnabled}
+          disabled={!canEdit}
+          onToggle={(timeTrackingEnabled) => save({ timeTrackingEnabled })}
+        >
+          <p className="text-xs text-fg-subtle">
+            Each person runs one timer at a time; starting another stops it.
           </p>
         </Module>
       </div>

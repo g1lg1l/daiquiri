@@ -75,6 +75,8 @@ async function applyTaskEvents(
     queryClient.invalidateQueries({ predicate: keyFor('activity', ids) }),
     queryClient.invalidateQueries({ predicate: keyFor('attachments', ids) }),
     queryClient.invalidateQueries({ predicate: keyFor('recurrence', ids) }),
+    queryClient.invalidateQueries({ predicate: keyFor('time-entries', ids) }),
+    queryClient.invalidateQueries({ queryKey: ['running-timer'] }),
     queryClient.invalidateQueries({ queryKey: ['relations'] }),
     queryClient.invalidateQueries({ queryKey: ['status-flow'] }),
     queryClient.invalidateQueries({ queryKey: ['trash'] }),

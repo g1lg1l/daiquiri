@@ -51,6 +51,7 @@ import { nowIso } from '../../lib/use-today';
 import { usePalette } from '../command-palette/palette';
 import { SHORTCUTS } from '../shortcuts/registry';
 import { useComposer } from '../tasks/composer';
+import { RunningTimer } from '../time/running-timer';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { useShell } from './shell-context';
 
@@ -391,6 +392,8 @@ export function Sidebar() {
           </Button>
         </Tooltip>
       </div>
+
+      <RunningTimer />
 
       <ul className="flex flex-col gap-px">
         <li>
