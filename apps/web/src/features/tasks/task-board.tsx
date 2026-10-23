@@ -242,6 +242,8 @@ export function TaskBoard({
     assignee: () => actions.openPicker('assignee', target()),
     labels: () => actions.openPicker('labels', target()),
     dueDate: () => actions.openPicker('dueDate', target()),
+    estimate: () => actions.openPicker('estimate', target()),
+    cycle: () => actions.openPicker('cycle', target()),
     assignMe: () => actions.toggleAssignMe(target()),
     remove: () => actions.remove(target()),
     moveUp: () =>
@@ -463,6 +465,13 @@ const Card = memo(function Card({
             </span>
           ) : null;
         })}
+        {data.teamsById.get(task.teamId)?.estimatesEnabled && task.estimate !== null && (
+          <span className="rounded-sm border border-border px-1 text-[11px] text-fg-muted tabular">
+            {data.teamsById.get(task.teamId)?.estimateScale === 'hours'
+              ? `${task.estimate}h`
+              : task.estimate}
+          </span>
+        )}
         {task.dueDate && (
           <span
             className={cn(

@@ -53,6 +53,23 @@ export interface Status {
   position: number;
 }
 
+export const ESTIMATE_SCALES = ['points', 'hours'] as const;
+export type EstimateScale = (typeof ESTIMATE_SCALES)[number];
+export const isEstimateScale = (value: string): value is EstimateScale =>
+  (ESTIMATE_SCALES as readonly string[]).includes(value);
+
+export interface Cycle {
+  id: string;
+  workspaceId: string;
+  teamId: string;
+  number: number;
+  name: string | null;
+  /** First and last day, inclusive (ISO calendar dates). */
+  startsOn: string;
+  endsOn: string;
+  completedAt: string | null;
+}
+
 export interface Team {
   id: string;
   workspaceId: string;
@@ -61,7 +78,11 @@ export interface Team {
   description: string | null;
   isPrivate: boolean;
   cyclesEnabled: boolean;
+  /** Cycle length in weeks (1–4) and start weekday (0 = Sunday … 6 = Saturday). */
+  cycleWeeks: number;
+  cycleStartWeekday: number;
   estimatesEnabled: boolean;
+  estimateScale: EstimateScale;
   triageEnabled: boolean;
   memberIds: string[];
   statuses: Status[];
@@ -125,6 +146,7 @@ export interface Task {
   startDate: string | null;
   dueDate: string | null;
   estimate: number | null;
+  cycleId: string | null;
   sortKey: string;
   completedAt: string | null;
   canceledAt: string | null;
@@ -151,6 +173,7 @@ export type TaskPatch = Partial<
     | 'startDate'
     | 'dueDate'
     | 'estimate'
+    | 'cycleId'
     | 'sortKey'
   >
 >;

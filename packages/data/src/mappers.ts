@@ -1,4 +1,5 @@
 import {
+  isEstimateScale,
   isLabelColor,
   isNotificationKind,
   isPriority,
@@ -19,7 +20,7 @@ import {
 import type { Json, Tables, TablesUpdate } from './database.types';
 
 export const TASK_COLUMNS =
-  'id, workspace_id, team_id, number, title, status_id, priority, project_id, parent_id, creator_id, start_date, due_date, estimate, sort_key, completed_at, canceled_at, created_at, updated_at, task_assignees(user_id), task_labels(label_id)';
+  'id, workspace_id, team_id, number, title, status_id, priority, project_id, parent_id, creator_id, start_date, due_date, estimate, cycle_id, sort_key, completed_at, canceled_at, created_at, updated_at, task_assignees(user_id), task_labels(label_id)';
 
 export const TASK_DETAIL_COLUMNS = `${TASK_COLUMNS}, description`;
 
@@ -55,6 +56,7 @@ export function toTask(row: TaskRow): Task {
     startDate: row.start_date,
     dueDate: row.due_date,
     estimate: row.estimate,
+    cycleId: row.cycle_id,
     sortKey: row.sort_key,
     completedAt: row.completed_at,
     canceledAt: row.canceled_at,
@@ -83,6 +85,7 @@ export function toTaskUpdate(patch: TaskPatch) {
   if (patch.startDate !== undefined) columns.start_date = patch.startDate;
   if (patch.dueDate !== undefined) columns.due_date = patch.dueDate;
   if (patch.estimate !== undefined) columns.estimate = patch.estimate;
+  if (patch.cycleId !== undefined) columns.cycle_id = patch.cycleId;
   if (patch.sortKey !== undefined) columns.sort_key = patch.sortKey;
   return columns;
 }
@@ -108,7 +111,10 @@ export function toTeam(
     description: row.description,
     isPrivate: row.is_private,
     cyclesEnabled: row.cycles_enabled,
+    cycleWeeks: row.cycle_weeks,
+    cycleStartWeekday: row.cycle_start_weekday,
     estimatesEnabled: row.estimates_enabled,
+    estimateScale: isEstimateScale(row.estimate_scale) ? row.estimate_scale : 'points',
     triageEnabled: row.triage_enabled,
     memberIds: row.team_members.map((m) => m.user_id),
     statuses: row.statuses.map(toStatus),

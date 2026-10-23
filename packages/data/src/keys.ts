@@ -7,7 +7,8 @@ export type TaskScope =
   | { kind: 'project'; id: string }
   | { kind: 'assignee'; id: string; workspaceId: string }
   | { kind: 'creator'; id: string; workspaceId: string }
-  | { kind: 'parent'; id: string };
+  | { kind: 'parent'; id: string }
+  | { kind: 'cycle'; id: string };
 
 export const keys = {
   workspaces: () => ['workspaces'] as const,
@@ -28,6 +29,8 @@ export const keys = {
   comments: (taskId: string) => ['comments', taskId] as const,
   activity: (taskId: string) => ['activity', taskId] as const,
   notifications: (workspaceId: string) => ['notifications', workspaceId] as const,
+  cycles: (teamId: string) => ['cycles', teamId] as const,
+  cycleProgress: (cycleId: string) => ['cycles', 'progress', cycleId] as const,
   views: (workspaceId: string) => ['views', workspaceId] as const,
   favorites: (workspaceId: string) => ['favorites', workspaceId] as const,
   search: (workspaceId: string, query: string) => ['search', workspaceId, query] as const,

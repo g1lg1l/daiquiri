@@ -38,6 +38,7 @@ import {
   LogOutIcon,
   PanelLeftIcon,
   PlusIcon,
+  RefreshCcwIcon,
   SearchIcon,
   SettingsIcon,
   SparklesIcon,
@@ -182,6 +183,18 @@ function TeamSection({
               Projects
             </NavLink>
           </li>
+          {team.cyclesEnabled && (
+            <li>
+              <NavLink
+                to="/$workspace/team/$teamKey/cycles"
+                params={{ workspace: ws, teamKey: team.key }}
+                icon={<RefreshCcwIcon />}
+                depth={1}
+              >
+                Cycles
+              </NavLink>
+            </li>
+          )}
         </ul>
       )}
     </li>

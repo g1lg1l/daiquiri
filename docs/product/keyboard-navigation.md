@@ -97,6 +97,8 @@ Daiq shortcuts follow four rules so users can predict them:
 | `D`             | Due date                                                           |
 | `Shift D`       | Start date                                                         |
 | `Shift P`       | Move to project                                                    |
+| `Shift E`       | Set estimate (when the team uses estimates)                        |
+| `Shift C`       | Move to cycle (when the team uses cycles)                          |
 | `Shift E`       | Estimate (when enabled for the team)                               |
 | `E`             | Edit title (open task)                                             |
 | `Mod D`         | Duplicate                                                          |

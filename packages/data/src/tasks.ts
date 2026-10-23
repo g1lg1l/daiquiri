@@ -73,6 +73,14 @@ export function useTasks(scope: TaskScope | null) {
               .order('sort_key')
               .order('id')
               .range(from, to);
+          case 'cycle':
+            return client
+              .from('tasks')
+              .select(TASK_COLUMNS)
+              .eq('cycle_id', scope.id)
+              .order('sort_key')
+              .order('id')
+              .range(from, to);
           default:
             throw new Error(`Unknown task scope: ${String(scope satisfies never)}`);
         }
@@ -151,6 +159,8 @@ export interface NewTask {
   dueDate?: string | null;
   assigneeIds?: string[];
   labelIds?: string[];
+  cycleId?: string | null;
+  estimate?: number | null;
   creatorId: string;
 }
 
@@ -174,6 +184,8 @@ export function useCreateTask() {
           sort_key: input.sortKey,
           assignee_ids: input.assigneeIds ?? [],
           label_ids: input.labelIds ?? [],
+          ...(input.cycleId && { cycle_id: input.cycleId }),
+          ...(input.estimate != null && { estimate: input.estimate }),
         }),
       );
       return toTask({
@@ -198,7 +210,8 @@ export function useCreateTask() {
         creatorId: input.creatorId,
         startDate: input.startDate ?? null,
         dueDate: input.dueDate ?? null,
-        estimate: null,
+        estimate: input.estimate ?? null,
+        cycleId: input.cycleId ?? null,
         sortKey: input.sortKey,
         completedAt: null,
         canceledAt: null,

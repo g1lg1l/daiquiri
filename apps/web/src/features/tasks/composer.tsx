@@ -46,6 +46,8 @@ export interface ComposerDefaults {
   labelIds?: string[];
   priority?: Priority;
   dueDate?: string | null;
+  /** Only applies while the composer stays on the default team (cycles belong to a team). */
+  cycleId?: string | null;
 }
 
 const ComposerContext = createContext<((defaults?: ComposerDefaults) => void) | null>(null);
@@ -155,6 +157,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
           priority,
           projectId,
           parentId: defaults.parentId ?? null,
+          cycleId: team.id === defaults.teamId ? (defaults.cycleId ?? null) : null,
           dueDate,
           assigneeIds,
           labelIds,

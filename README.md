@@ -63,6 +63,7 @@ ClickUp, Asana and Linear each do a lot. Most teams use a small part of it, ever
 | Area          | Included today                                                                                                                                                                         |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Work          | Teams with their own workflows, projects, tasks with identifiers (`ENG-42`), sub-tasks, relations, labels, priorities, due and start dates                                             |
+| Planning      | Estimates in points or hours, cycles of one to four weeks that schedule themselves and roll unfinished work over, burn-up charts                                                       |
 | Views         | List, board, calendar and timeline (with dependency arrows), filters, grouping and ordering in the URL, saved views and favorites, My tasks grouped by due date, undo for every change |
 | Collaboration | Comments with @mentions and reactions, activity history, inbox notifications, subscriptions, realtime updates                                                                          |
 | Workspace     | Invitations with roles (owner, admin, member, guest), private teams, team templates, labels, theme preferences                                                                         |
@@ -146,8 +147,9 @@ Start with [ARCHITECTURE.md](ARCHITECTURE.md), then [docs/plan.md](docs/plan.md)
 - [x] Core: teams and workflows, projects, tasks, list, board, calendar and timeline, task page, comments, inbox, search, realtime
 - [x] Delivery: Docker self-hosting, CI, GitHub Pages demo build, end-to-end tests
 - [x] Saved views (personal or shared) and favorites in the sidebar
-- [ ] Cycles, milestones and project updates
-- [ ] Custom fields, estimates and time tracking
+- [x] Estimates and cycles with burn-up
+- [ ] Milestones and project updates
+- [ ] Custom fields and time tracking
 - [ ] Attachments, automations, recurring tasks and templates
 - [ ] Insights and CSV export
 - [ ] Integrations: webhooks, API tokens, Slack, importers from Linear, Asana and ClickUp

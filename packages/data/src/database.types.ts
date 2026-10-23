@@ -188,6 +188,51 @@ export type Database = {
           },
         ];
       };
+      cycles: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          ends_on: string;
+          id: string;
+          name: string | null;
+          number: number;
+          starts_on: string;
+          team_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          ends_on: string;
+          id?: string;
+          name?: string | null;
+          number: number;
+          starts_on: string;
+          team_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          ends_on?: string;
+          id?: string;
+          name?: string | null;
+          number?: number;
+          starts_on?: string;
+          team_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'cycles_workspace_id_team_id_fkey';
+            columns: ['workspace_id', 'team_id'];
+            isOneToOne: false;
+            referencedRelation: 'teams';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
       favorites: {
         Row: {
           created_at: string;
@@ -695,6 +740,7 @@ export type Database = {
           completed_at: string | null;
           created_at: string;
           creator_id: string | null;
+          cycle_id: string | null;
           deleted_at: string | null;
           description: Json | null;
           description_text: string;
@@ -720,6 +766,7 @@ export type Database = {
           completed_at?: string | null;
           created_at?: string;
           creator_id?: string | null;
+          cycle_id?: string | null;
           deleted_at?: string | null;
           description?: Json | null;
           description_text?: string;
@@ -744,6 +791,7 @@ export type Database = {
           completed_at?: string | null;
           created_at?: string;
           creator_id?: string | null;
+          cycle_id?: string | null;
           deleted_at?: string | null;
           description?: Json | null;
           description_text?: string;
@@ -770,6 +818,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_cycle_fk';
+            columns: ['team_id', 'cycle_id'];
+            isOneToOne: false;
+            referencedRelation: 'cycles';
+            referencedColumns: ['team_id', 'id'];
           },
           {
             foreignKeyName: 'tasks_team_id_parent_id_fkey';
@@ -841,8 +896,11 @@ export type Database = {
       teams: {
         Row: {
           created_at: string;
+          cycle_start_weekday: number;
+          cycle_weeks: number;
           cycles_enabled: boolean;
           description: string | null;
+          estimate_scale: string;
           estimates_enabled: boolean;
           id: string;
           is_private: boolean;
@@ -856,8 +914,11 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           created_at?: string;
+          cycle_start_weekday?: number;
+          cycle_weeks?: number;
           cycles_enabled?: boolean;
           description?: string | null;
+          estimate_scale?: string;
           estimates_enabled?: boolean;
           id?: string;
           is_private?: boolean;
@@ -870,8 +931,11 @@ export type Database = {
         };
         Update: {
           created_at?: string;
+          cycle_start_weekday?: number;
+          cycle_weeks?: number;
           cycles_enabled?: boolean;
           description?: string | null;
+          estimate_scale?: string;
           estimates_enabled?: boolean;
           id?: string;
           is_private?: boolean;
@@ -1079,8 +1143,10 @@ export type Database = {
       create_task: {
         Args: {
           assignee_ids?: string[];
+          cycle_id?: string;
           description?: Json;
           due_date?: string;
+          estimate?: number;
           id: string;
           label_ids?: string[];
           parent_id?: string;
@@ -1097,6 +1163,7 @@ export type Database = {
           completed_at: string | null;
           created_at: string;
           creator_id: string | null;
+          cycle_id: string | null;
           deleted_at: string | null;
           description: Json | null;
           description_text: string;
@@ -1133,8 +1200,11 @@ export type Database = {
         };
         Returns: {
           created_at: string;
+          cycle_start_weekday: number;
+          cycle_weeks: number;
           cycles_enabled: boolean;
           description: string | null;
+          estimate_scale: string;
           estimates_enabled: boolean;
           id: string;
           is_private: boolean;
@@ -1175,6 +1245,16 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      cycle_progress: {
+        Args: { cycle_id: string };
+        Returns: {
+          completed: number;
+          completed_points: number;
+          day: string;
+          scope: number;
+          scope_points: number;
+        }[];
       };
       delete_tasks: { Args: { task_ids: string[] }; Returns: string };
       preview_invitation: {

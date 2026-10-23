@@ -137,6 +137,9 @@ async function applyEvents(
       case 'status':
         work.push(invalidate(keys.teams(workspaceId)));
         break;
+      case 'cycle':
+        work.push(invalidate(['cycles']));
+        break;
       case 'workspace_member':
         work.push(
           invalidate(keys.members(workspaceId)),

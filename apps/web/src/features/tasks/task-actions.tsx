@@ -1,5 +1,6 @@
 import {
   useCreateLabel,
+  useCycles,
   useDeleteTasks,
   useRestoreTasks,
   useSetAssignees,
@@ -31,6 +32,8 @@ import {
 import { newId } from '../../lib/ids';
 import { useToday } from '../../lib/use-today';
 import {
+  cycleOptions,
+  estimatePickerOptions,
   labelOptions,
   memberOptions,
   NO_VALUE,
@@ -43,7 +46,8 @@ import { pushUndo } from '../undo/undo';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { useIdentifier } from './use-identifier';
 
-export type PickerKind = 'status' | 'priority' | 'assignee' | 'labels' | 'project' | 'dueDate';
+export type PickerKind =
+  'status' | 'priority' | 'assignee' | 'labels' | 'project' | 'dueDate' | 'estimate' | 'cycle';
 
 interface TaskActions {
   openPicker: (kind: PickerKind, tasks: Task[]) => void;
@@ -71,6 +75,8 @@ const PICKER_TITLE: Record<PickerKind, string> = {
   labels: 'Labels',
   project: 'Move to project',
   dueDate: 'Due date',
+  estimate: 'Set estimate',
+  cycle: 'Move to cycle',
 };
 
 /** Previous values of the patched fields, for undo. */
@@ -86,6 +92,7 @@ function inverse(task: Task | TaskDetail, patch: TaskPatch): TaskPatch {
   if (patch.startDate !== undefined) previous.startDate = task.startDate;
   if (patch.dueDate !== undefined) previous.dueDate = task.dueDate;
   if (patch.estimate !== undefined) previous.estimate = task.estimate;
+  if (patch.cycleId !== undefined) previous.cycleId = task.cycleId;
   if (patch.sortKey !== undefined) previous.sortKey = task.sortKey;
   return previous;
 }
@@ -207,9 +214,23 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
     [workspace.slug, identifier],
   );
 
-  const openPicker = useCallback((kind: PickerKind, tasks: Task[]) => {
-    if (tasks.length) setPicker({ kind, tasks });
-  }, []);
+  const openPicker = useCallback(
+    (kind: PickerKind, tasks: Task[]) => {
+      const team = tasks[0] && data.teamsById.get(tasks[0].teamId);
+      if (!team) return;
+      // Estimates and cycles are team modules: say how to turn them on instead of doing nothing.
+      if (kind === 'estimate' && !team.estimatesEnabled) {
+        toast(`Estimates are off for ${team.name}. Turn them on in the team's settings.`);
+        return;
+      }
+      if (kind === 'cycle' && !team.cyclesEnabled) {
+        toast(`Cycles are off for ${team.name}. Turn them on in the team's settings.`);
+        return;
+      }
+      setPicker({ kind, tasks });
+    },
+    [data.teamsById],
+  );
 
   const actionsValue = useMemo(
     () => ({
@@ -229,6 +250,9 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
   const tasks = picker?.tasks ?? [];
   const first = tasks[0];
   const team = first ? data.teamsById.get(first.teamId) : undefined;
+  const cycles = useCycles(picker?.kind === 'cycle' ? team?.id : undefined);
+  const today = useToday();
+  const sameTeam = tasks.filter((t) => t.teamId === first?.teamId);
   const shared = (field: 'assigneeIds' | 'labelIds') =>
     first ? first[field].filter((id) => tasks.every((task) => task[field].includes(id))) : [];
 
@@ -329,6 +353,32 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
                     { projectId: id === NO_VALUE || !id ? null : id },
                     'Project',
                   )
+                }
+                onDone={close}
+              />
+            )}
+            {picker.kind === 'estimate' && team && (
+              <PickerList
+                options={estimatePickerOptions(team.estimateScale)}
+                selected={tasks.length === 1 ? [String(first.estimate ?? NO_VALUE)] : []}
+                placeholder="Set estimate to…"
+                onSelect={([value]) =>
+                  update(
+                    sameTeam,
+                    { estimate: value && value !== NO_VALUE ? Number(value) : null },
+                    'Estimate',
+                  )
+                }
+                onDone={close}
+              />
+            )}
+            {picker.kind === 'cycle' && (
+              <PickerList
+                options={cycleOptions(cycles.data ?? [], today)}
+                selected={tasks.length === 1 ? [first.cycleId ?? NO_VALUE] : []}
+                placeholder="Move to cycle…"
+                onSelect={([id]) =>
+                  update(sameTeam, { cycleId: id && id !== NO_VALUE ? id : null }, 'Cycle')
                 }
                 onDone={close}
               />

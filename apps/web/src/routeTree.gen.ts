@@ -27,8 +27,11 @@ import { Route as WorkspaceSettingsMembersRouteImport } from './routes/$workspac
 import { Route as WorkspaceSettingsPreferencesRouteImport } from './routes/$workspace/settings/preferences'
 import { Route as WorkspaceSettingsTeamsRouteImport } from './routes/$workspace/settings/teams'
 import { Route as WorkspaceTaskIdentifierRouteImport } from './routes/$workspace/task/$identifier'
+import { Route as WorkspaceSettingsTeamsTeamKeyRouteImport } from './routes/$workspace/settings/teams_.$teamKey'
+import { Route as WorkspaceTeamTeamKeyCyclesRouteImport } from './routes/$workspace/team/$teamKey/cycles'
 import { Route as WorkspaceTeamTeamKeyProjectsRouteImport } from './routes/$workspace/team/$teamKey/projects'
 import { Route as WorkspaceTeamTeamKeyTasksRouteImport } from './routes/$workspace/team/$teamKey/tasks'
+import { Route as WorkspaceTeamTeamKeyCycleNumberRouteImport } from './routes/$workspace/team/$teamKey/cycle.$number'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -123,6 +126,18 @@ const WorkspaceTaskIdentifierRoute = WorkspaceTaskIdentifierRouteImport.update({
   path: '/task/$identifier',
   getParentRoute: () => WorkspaceRouteRoute,
 } as any)
+const WorkspaceSettingsTeamsTeamKeyRoute =
+  WorkspaceSettingsTeamsTeamKeyRouteImport.update({
+    id: '/teams_/$teamKey',
+    path: '/teams/$teamKey',
+    getParentRoute: () => WorkspaceSettingsRouteRoute,
+  } as any)
+const WorkspaceTeamTeamKeyCyclesRoute =
+  WorkspaceTeamTeamKeyCyclesRouteImport.update({
+    id: '/team/$teamKey/cycles',
+    path: '/team/$teamKey/cycles',
+    getParentRoute: () => WorkspaceRouteRoute,
+  } as any)
 const WorkspaceTeamTeamKeyProjectsRoute =
   WorkspaceTeamTeamKeyProjectsRouteImport.update({
     id: '/team/$teamKey/projects',
@@ -133,6 +148,12 @@ const WorkspaceTeamTeamKeyTasksRoute =
   WorkspaceTeamTeamKeyTasksRouteImport.update({
     id: '/team/$teamKey/tasks',
     path: '/team/$teamKey/tasks',
+    getParentRoute: () => WorkspaceRouteRoute,
+  } as any)
+const WorkspaceTeamTeamKeyCycleNumberRoute =
+  WorkspaceTeamTeamKeyCycleNumberRouteImport.update({
+    id: '/team/$teamKey/cycle/$number',
+    path: '/team/$teamKey/cycle/$number',
     getParentRoute: () => WorkspaceRouteRoute,
   } as any)
 
@@ -155,8 +176,11 @@ export interface FileRoutesByFullPath {
   '/$workspace/settings/teams': typeof WorkspaceSettingsTeamsRoute
   '/$workspace/task/$identifier': typeof WorkspaceTaskIdentifierRoute
   '/$workspace/settings/': typeof WorkspaceSettingsIndexRoute
+  '/$workspace/settings/teams/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
+  '/$workspace/team/$teamKey/cycles': typeof WorkspaceTeamTeamKeyCyclesRoute
   '/$workspace/team/$teamKey/projects': typeof WorkspaceTeamTeamKeyProjectsRoute
   '/$workspace/team/$teamKey/tasks': typeof WorkspaceTeamTeamKeyTasksRoute
+  '/$workspace/team/$teamKey/cycle/$number': typeof WorkspaceTeamTeamKeyCycleNumberRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -175,8 +199,11 @@ export interface FileRoutesByTo {
   '/$workspace/settings/teams': typeof WorkspaceSettingsTeamsRoute
   '/$workspace/task/$identifier': typeof WorkspaceTaskIdentifierRoute
   '/$workspace/settings': typeof WorkspaceSettingsIndexRoute
+  '/$workspace/settings/teams/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
+  '/$workspace/team/$teamKey/cycles': typeof WorkspaceTeamTeamKeyCyclesRoute
   '/$workspace/team/$teamKey/projects': typeof WorkspaceTeamTeamKeyProjectsRoute
   '/$workspace/team/$teamKey/tasks': typeof WorkspaceTeamTeamKeyTasksRoute
+  '/$workspace/team/$teamKey/cycle/$number': typeof WorkspaceTeamTeamKeyCycleNumberRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -198,8 +225,11 @@ export interface FileRoutesById {
   '/$workspace/settings/teams': typeof WorkspaceSettingsTeamsRoute
   '/$workspace/task/$identifier': typeof WorkspaceTaskIdentifierRoute
   '/$workspace/settings/': typeof WorkspaceSettingsIndexRoute
+  '/$workspace/settings/teams_/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
+  '/$workspace/team/$teamKey/cycles': typeof WorkspaceTeamTeamKeyCyclesRoute
   '/$workspace/team/$teamKey/projects': typeof WorkspaceTeamTeamKeyProjectsRoute
   '/$workspace/team/$teamKey/tasks': typeof WorkspaceTeamTeamKeyTasksRoute
+  '/$workspace/team/$teamKey/cycle/$number': typeof WorkspaceTeamTeamKeyCycleNumberRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -222,8 +252,11 @@ export interface FileRouteTypes {
     | '/$workspace/settings/teams'
     | '/$workspace/task/$identifier'
     | '/$workspace/settings/'
+    | '/$workspace/settings/teams/$teamKey'
+    | '/$workspace/team/$teamKey/cycles'
     | '/$workspace/team/$teamKey/projects'
     | '/$workspace/team/$teamKey/tasks'
+    | '/$workspace/team/$teamKey/cycle/$number'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -242,8 +275,11 @@ export interface FileRouteTypes {
     | '/$workspace/settings/teams'
     | '/$workspace/task/$identifier'
     | '/$workspace/settings'
+    | '/$workspace/settings/teams/$teamKey'
+    | '/$workspace/team/$teamKey/cycles'
     | '/$workspace/team/$teamKey/projects'
     | '/$workspace/team/$teamKey/tasks'
+    | '/$workspace/team/$teamKey/cycle/$number'
   id:
     | '__root__'
     | '/'
@@ -264,8 +300,11 @@ export interface FileRouteTypes {
     | '/$workspace/settings/teams'
     | '/$workspace/task/$identifier'
     | '/$workspace/settings/'
+    | '/$workspace/settings/teams_/$teamKey'
+    | '/$workspace/team/$teamKey/cycles'
     | '/$workspace/team/$teamKey/projects'
     | '/$workspace/team/$teamKey/tasks'
+    | '/$workspace/team/$teamKey/cycle/$number'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -406,6 +445,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceTaskIdentifierRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
+    '/$workspace/settings/teams_/$teamKey': {
+      id: '/$workspace/settings/teams_/$teamKey'
+      path: '/teams/$teamKey'
+      fullPath: '/$workspace/settings/teams/$teamKey'
+      preLoaderRoute: typeof WorkspaceSettingsTeamsTeamKeyRouteImport
+      parentRoute: typeof WorkspaceSettingsRouteRoute
+    }
+    '/$workspace/team/$teamKey/cycles': {
+      id: '/$workspace/team/$teamKey/cycles'
+      path: '/team/$teamKey/cycles'
+      fullPath: '/$workspace/team/$teamKey/cycles'
+      preLoaderRoute: typeof WorkspaceTeamTeamKeyCyclesRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
     '/$workspace/team/$teamKey/projects': {
       id: '/$workspace/team/$teamKey/projects'
       path: '/team/$teamKey/projects'
@@ -420,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceTeamTeamKeyTasksRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
+    '/$workspace/team/$teamKey/cycle/$number': {
+      id: '/$workspace/team/$teamKey/cycle/$number'
+      path: '/team/$teamKey/cycle/$number'
+      fullPath: '/$workspace/team/$teamKey/cycle/$number'
+      preLoaderRoute: typeof WorkspaceTeamTeamKeyCycleNumberRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
   }
 }
 
@@ -429,6 +489,7 @@ interface WorkspaceSettingsRouteRouteChildren {
   WorkspaceSettingsPreferencesRoute: typeof WorkspaceSettingsPreferencesRoute
   WorkspaceSettingsTeamsRoute: typeof WorkspaceSettingsTeamsRoute
   WorkspaceSettingsIndexRoute: typeof WorkspaceSettingsIndexRoute
+  WorkspaceSettingsTeamsTeamKeyRoute: typeof WorkspaceSettingsTeamsTeamKeyRoute
 }
 
 const WorkspaceSettingsRouteRouteChildren: WorkspaceSettingsRouteRouteChildren =
@@ -438,6 +499,7 @@ const WorkspaceSettingsRouteRouteChildren: WorkspaceSettingsRouteRouteChildren =
     WorkspaceSettingsPreferencesRoute: WorkspaceSettingsPreferencesRoute,
     WorkspaceSettingsTeamsRoute: WorkspaceSettingsTeamsRoute,
     WorkspaceSettingsIndexRoute: WorkspaceSettingsIndexRoute,
+    WorkspaceSettingsTeamsTeamKeyRoute: WorkspaceSettingsTeamsTeamKeyRoute,
   }
 
 const WorkspaceSettingsRouteRouteWithChildren =
@@ -452,8 +514,10 @@ interface WorkspaceRouteRouteChildren {
   WorkspaceIndexRoute: typeof WorkspaceIndexRoute
   WorkspaceProjectProjectIdRoute: typeof WorkspaceProjectProjectIdRoute
   WorkspaceTaskIdentifierRoute: typeof WorkspaceTaskIdentifierRoute
+  WorkspaceTeamTeamKeyCyclesRoute: typeof WorkspaceTeamTeamKeyCyclesRoute
   WorkspaceTeamTeamKeyProjectsRoute: typeof WorkspaceTeamTeamKeyProjectsRoute
   WorkspaceTeamTeamKeyTasksRoute: typeof WorkspaceTeamTeamKeyTasksRoute
+  WorkspaceTeamTeamKeyCycleNumberRoute: typeof WorkspaceTeamTeamKeyCycleNumberRoute
 }
 
 const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
@@ -463,8 +527,10 @@ const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
   WorkspaceIndexRoute: WorkspaceIndexRoute,
   WorkspaceProjectProjectIdRoute: WorkspaceProjectProjectIdRoute,
   WorkspaceTaskIdentifierRoute: WorkspaceTaskIdentifierRoute,
+  WorkspaceTeamTeamKeyCyclesRoute: WorkspaceTeamTeamKeyCyclesRoute,
   WorkspaceTeamTeamKeyProjectsRoute: WorkspaceTeamTeamKeyProjectsRoute,
   WorkspaceTeamTeamKeyTasksRoute: WorkspaceTeamTeamKeyTasksRoute,
+  WorkspaceTeamTeamKeyCycleNumberRoute: WorkspaceTeamTeamKeyCycleNumberRoute,
 }
 
 const WorkspaceRouteRouteWithChildren = WorkspaceRouteRoute._addFileChildren(

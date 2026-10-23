@@ -2,7 +2,7 @@ import { useCreateTeam, useTeamMembership } from '@daiq/data';
 import { can, suggestTeamKey, teamKeySchema } from '@daiq/domain';
 import { Button, FieldError, Input, Label } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { LockIcon } from 'lucide-react';
+import { LockIcon, SettingsIcon } from 'lucide-react';
 import { useState } from 'react';
 import { TeamBadge } from '../../../components/team-badge';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
@@ -92,6 +92,14 @@ function TeamsSettings() {
               {team.isPrivate && (
                 <LockIcon className="size-3.5 text-fg-subtle" aria-label="Private team" />
               )}
+              <Link
+                to="/$workspace/settings/teams/$teamKey"
+                params={{ workspace: workspace.slug, teamKey: team.key }}
+                className="flex size-7 items-center justify-center rounded-md text-fg-subtle hover:bg-surface-muted hover:text-fg"
+                aria-label={`${team.name} settings`}
+              >
+                <SettingsIcon className="size-4" />
+              </Link>
               <span className="text-xs text-fg-subtle tabular">
                 {team.memberIds.length} members
               </span>

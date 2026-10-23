@@ -103,6 +103,28 @@ function describe(entry: ActivityEntry, name: (id: string) => string): ReactNode
       return 'updated the description';
     case 'task.parent_changed':
       return data.to ? 'made this a sub-task' : 'removed the parent task';
+    case 'task.estimate_changed':
+      return typeof data.to === 'number' ? (
+        <>
+          set the estimate to <strong>{data.to}</strong>
+        </>
+      ) : (
+        'removed the estimate'
+      );
+    case 'task.cycle_changed':
+      // A system change (actor null) is the nightly rollover of an ended cycle.
+      return typeof data.to === 'number' ? (
+        <>
+          moved the task to <strong>Cycle {data.to}</strong>
+          {entry.actorId === null && typeof data.from === 'number' && (
+            <> because Cycle {data.from} ended</>
+          )}
+        </>
+      ) : (
+        <>
+          removed the task from <strong>Cycle {String(data.from)}</strong>
+        </>
+      );
     case 'task.deleted':
       return 'deleted the task';
     case 'task.restored':

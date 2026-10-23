@@ -1,6 +1,12 @@
 import {
+  cycleLabel,
+  estimateOptions,
+  formatEstimate,
+  plannableCycles,
   PRIORITY_LABEL,
   sortStatuses,
+  type Cycle,
+  type EstimateScale,
   type Label,
   type Member,
   type Priority,
@@ -8,7 +14,7 @@ import {
   type Status,
 } from '@daiq/domain';
 import { Avatar } from '@daiq/ui';
-import { CircleDashedIcon, FolderIcon } from 'lucide-react';
+import { CircleDashedIcon, FolderIcon, GaugeIcon, RefreshCcwIcon } from 'lucide-react';
 import { PriorityIcon, StatusIcon } from '../tasks/icons';
 import { LABEL_COLOR } from '../tasks/label-colors';
 import type { PickerOption } from './picker-list';
@@ -63,5 +69,33 @@ export function projectOptions(projects: readonly Project[]): PickerOption[] {
     ...projects
       .filter((project) => !project.archivedAt)
       .map((project) => ({ value: project.id, label: project.name, icon: <FolderIcon /> })),
+  ];
+}
+
+export function estimatePickerOptions(scale: EstimateScale): PickerOption[] {
+  return [
+    { value: NO_VALUE, label: 'No estimate', icon: <CircleDashedIcon /> },
+    ...estimateOptions(scale).map((value) => ({
+      value: String(value),
+      label: formatEstimate(value, scale),
+      icon: <GaugeIcon />,
+      hint: String(value),
+    })),
+  ];
+}
+
+const cycleDates = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
+
+/** The current and upcoming cycles, plus "No cycle". */
+export function cycleOptions(cycles: readonly Cycle[], today: string): PickerOption[] {
+  return [
+    { value: NO_VALUE, label: 'No cycle', icon: <CircleDashedIcon /> },
+    ...plannableCycles(cycles, today).map((cycle) => ({
+      value: cycle.id,
+      label: cycleLabel(cycle),
+      icon: <RefreshCcwIcon />,
+      hint: `${cycleDates.format(new Date(`${cycle.startsOn}T00:00`))} – ${cycleDates.format(new Date(`${cycle.endsOn}T00:00`))}`,
+      keywords: cycle.startsOn <= today ? ['current'] : ['upcoming', 'next'],
+    })),
   ];
 }

@@ -27,23 +27,27 @@ export {
 } from './status';
 export type { StatusCategory, StatusLike } from './status';
 export {
+  ESTIMATE_SCALES,
+  LABEL_COLORS,
+  NOTIFICATION_KINDS,
+  SEARCH_RESULT_KINDS,
+  isEstimateScale,
   isLabelColor,
   isNotificationKind,
   isRichDocument,
   isSearchResultKind,
-  LABEL_COLORS,
-  NOTIFICATION_KINDS,
-  SEARCH_RESULT_KINDS,
 } from './model';
 export type {
   ActivityEntry,
   Comment,
+  Cycle,
+  EstimateScale,
+  JsonValue,
   Label,
   LabelColor,
   Member,
   Notification,
   NotificationKind,
-  JsonValue,
   Profile,
   Project,
   ProjectStatus,
@@ -107,3 +111,11 @@ export { addMonths, isMonth, monthGrid, monthOf, reschedule, tasksByDueDate } fr
 export type { CalendarDay } from './calendar';
 export { moveTaskDates, taskSpan, timelineRange } from './timeline';
 export type { Span, SpanEdge } from './timeline';
+export {
+  cycleLabel,
+  cycleState,
+  estimateOptions,
+  formatEstimate,
+  plannableCycles,
+} from './planning';
+export type { CycleState } from './planning';

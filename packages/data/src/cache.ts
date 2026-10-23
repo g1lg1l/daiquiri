@@ -18,6 +18,8 @@ export function taskBelongsTo(key: QueryKey, task: Task): boolean {
       return task.projectId === id;
     case 'parent':
       return task.parentId === id;
+    case 'cycle':
+      return task.cycleId === id;
     case 'assignee':
       return task.workspaceId === workspaceId && task.assigneeIds.includes(id);
     case 'creator':

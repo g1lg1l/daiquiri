@@ -1,5 +1,6 @@
 import {
   formatDueDate,
+  formatEstimate,
   isClosedCategory,
   isPriority,
   nestSubtasks,
@@ -187,6 +188,8 @@ export function TaskList({
     labels: () => actions.openPicker('labels', targets()),
     dueDate: () => actions.openPicker('dueDate', targets()),
     project: () => actions.openPicker('project', targets()),
+    estimate: () => actions.openPicker('estimate', targets()),
+    cycle: () => actions.openPicker('cycle', targets()),
     assignMe: () => actions.toggleAssignMe(targets()),
     remove: () => actions.remove(targets()),
     copyLink: () => {
@@ -524,6 +527,15 @@ const TaskRow = memo(function TaskRow({
           className="hidden max-w-40 shrink-0 truncate text-xs text-fg-subtle @4xl/list:block"
         >
           {project.name}
+        </div>
+      )}
+      {team?.estimatesEnabled && task.estimate !== null && (
+        <div
+          role="gridcell"
+          className="hidden shrink-0 rounded-sm border border-border px-1 text-[11px] text-fg-muted tabular @2xl/list:block"
+          title={formatEstimate(task.estimate, team.estimateScale)}
+        >
+          {team.estimateScale === 'hours' ? `${task.estimate}h` : task.estimate}
         </div>
       )}
       {task.dueDate && (

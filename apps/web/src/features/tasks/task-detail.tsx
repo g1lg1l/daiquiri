@@ -1,4 +1,5 @@
 import {
+  useCycles,
   useTaskDetail,
   useTasks,
   useTaskSubscription,
@@ -7,7 +8,9 @@ import {
   useRelationActions,
 } from '@daiq/data';
 import {
+  cycleLabel,
   firstStatusOf,
+  formatEstimate,
   isPriority,
   parseIdentifier,
   PRIORITY_LABEL,
@@ -32,9 +35,11 @@ import {
   CircleDashedIcon,
   ExpandIcon,
   FolderIcon,
+  GaugeIcon,
   LinkIcon,
   MoreHorizontalIcon,
   PlusIcon,
+  RefreshCcwIcon,
   TagIcon,
   Trash2Icon,
   UserIcon,
@@ -44,6 +49,8 @@ import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 're
 import { rememberRecent } from '../command-palette/recent';
 import { usePaletteActions, type PaletteAction } from '../command-palette/palette';
 import {
+  cycleOptions,
+  estimatePickerOptions,
   labelOptions,
   memberOptions,
   NO_VALUE,
@@ -61,6 +68,7 @@ import { PriorityIcon, StatusIcon } from './icons';
 import { LABEL_COLOR } from './label-colors';
 import { DateField, useTaskActions } from './task-actions';
 import { useIdentifier } from './use-identifier';
+import { useToday } from '../../lib/use-today';
 
 const RichTextEditor = lazy(() =>
   import('@daiq/editor/editor').then((m) => ({ default: m.RichTextEditor })),
@@ -138,6 +146,9 @@ function TaskDetailBody({
   const team = data.teamsById.get(task.teamId);
   const status = data.statuses.get(task.statusId);
   const project = task.projectId ? data.projectsById.get(task.projectId) : undefined;
+  const cycles = useCycles(team?.cyclesEnabled ? team.id : undefined);
+  const cycle = task.cycleId ? cycles.data?.find((c) => c.id === task.cycleId) : undefined;
+  const today = useToday();
   const ident = identifier(task);
   const [title, setTitle] = useState(task.title);
   const [syncedTitle, setSyncedTitle] = useState(task.title);
@@ -172,6 +183,8 @@ function TaskDetailBody({
       labels: () => actions.openPicker('labels', [task]),
       dueDate: () => actions.openPicker('dueDate', [task]),
       project: () => actions.openPicker('project', [task]),
+      estimate: () => actions.openPicker('estimate', [task]),
+      cycle: () => actions.openPicker('cycle', [task]),
       copyLink: () => actions.copyLink(task),
       subscribe: () => subscription.toggle.mutate(!subscription.subscribed),
       subtask: () =>
@@ -382,6 +395,52 @@ function TaskDetailBody({
           }
         />
       </PropertyRow>
+      {team?.estimatesEnabled && (
+        <PropertyRow label="Estimate">
+          <PickerPopover
+            trigger={
+              <Button variant="ghost" size="sm" className={ghostTrigger}>
+                <GaugeIcon className={cn(task.estimate === null && 'text-fg-subtle')} />
+                <span className={cn(task.estimate === null && 'text-fg-subtle')}>
+                  {task.estimate === null
+                    ? 'No estimate'
+                    : formatEstimate(task.estimate, team.estimateScale)}
+                </span>
+              </Button>
+            }
+            options={estimatePickerOptions(team.estimateScale)}
+            selected={[String(task.estimate ?? NO_VALUE)]}
+            placeholder="Set estimate to…"
+            onSelect={([value]) =>
+              actions.update(
+                [task],
+                { estimate: value && value !== NO_VALUE ? Number(value) : null },
+                'Estimate',
+              )
+            }
+          />
+        </PropertyRow>
+      )}
+      {team?.cyclesEnabled && (
+        <PropertyRow label="Cycle">
+          <PickerPopover
+            trigger={
+              <Button variant="ghost" size="sm" className={ghostTrigger}>
+                <RefreshCcwIcon className={cn(!cycle && 'text-fg-subtle')} />
+                <span className={cn('truncate', !cycle && 'text-fg-subtle')}>
+                  {cycle ? cycleLabel(cycle) : 'No cycle'}
+                </span>
+              </Button>
+            }
+            options={cycleOptions(cycles.data ?? [], today)}
+            selected={[task.cycleId ?? NO_VALUE]}
+            placeholder="Move to cycle…"
+            onSelect={([id]) =>
+              actions.update([task], { cycleId: id && id !== NO_VALUE ? id : null }, 'Cycle')
+            }
+          />
+        </PropertyRow>
+      )}
       <PropertyRow label="Due date">
         <DateField
           label="Due date"

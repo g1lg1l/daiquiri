@@ -40,6 +40,8 @@ export const SHORTCUTS = {
   labels: { keys: 'L', label: 'Change labels', group: 'Task' },
   dueDate: { keys: 'D', label: 'Set due date', group: 'Task' },
   project: { keys: 'Shift+P', label: 'Move to project', group: 'Task' },
+  estimate: { keys: 'Shift+E', label: 'Set estimate', group: 'Task' },
+  cycle: { keys: 'Shift+C', label: 'Move to cycle', group: 'Task' },
   rename: { keys: 'E', label: 'Edit title', group: 'Task' },
   subtask: { keys: 'Mod+Shift+O', label: 'Add sub-task', group: 'Task' },
   copyLink: { keys: 'Mod+.', label: 'Copy link', group: 'Task' },
