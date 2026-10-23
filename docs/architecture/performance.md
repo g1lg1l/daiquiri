@@ -4,21 +4,22 @@ Performance is a product feature. Budgets are measured, enforced in CI where fea
 
 ## Budgets
 
-| Metric                                      | Budget                               | How it is measured                                                 |
-| ------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------ |
-| Initial JS (entry + static imports), gzip   | ≤ 250 kB                             | `pnpm --filter @daiq/web size` (reads the Vite manifest, fails CI) |
-| Any lazily loaded chunk, gzip               | ≤ 90 kB                              | same script                                                        |
-| Editor chunk, gzip                          | ≤ 180 kB                             | same script                                                        |
-| LCP, signed-in task list, desktop broadband | ≤ 1.5 s                              | Playwright trace on `vite preview`                                 |
-| INP p75                                     | ≤ 100 ms (hard limit 200 ms)         | Web-vitals in the logger; Playwright interaction timings           |
-| CLS                                         | ≤ 0.05                               | Web-vitals                                                         |
-| Optimistic mutation visible                 | next frame (≤ 16 ms after input)     | Component test with fake timers + Playwright                       |
-| Open task from list (cached)                | ≤ 100 ms                             | Playwright                                                         |
-| Team list with 5,000 tasks                  | first render ≤ 150 ms; 60 fps scroll | Playwright with seeded data; DevTools profile on regressions       |
-| Board with 2,000 cards                      | drag at 60 fps                       | Manual profile per release                                         |
-| PostgREST team task list (5k rows)          | p95 ≤ 150 ms server time             | `explain analyze` pgTAP plan checks; `pg_stat_statements`          |
-| RPC (create workspace, search)              | p95 ≤ 100 ms                         | pgTAP timing smoke + `pg_stat_statements`                          |
-| Realtime propagation                        | p95 ≤ 1 s                            | Two-browser E2E                                                    |
+| Metric                                      | Budget                               | How it is measured                                                                                |
+| ------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| Initial JS (entry + static imports), gzip   | ≤ 250 kB                             | `pnpm --filter @daiq/web size` (reads the Vite manifest, fails CI)                                |
+| Any lazily loaded chunk, gzip               | ≤ 90 kB                              | same script                                                                                       |
+| Editor chunk, gzip                          | ≤ 180 kB                             | same script                                                                                       |
+| LCP, signed-in task list, desktop broadband | ≤ 1.5 s                              | Playwright trace on `vite preview`                                                                |
+| INP p75                                     | ≤ 100 ms (hard limit 200 ms)         | Web-vitals in the logger; Playwright interaction timings                                          |
+| CLS                                         | ≤ 0.05                               | Web-vitals                                                                                        |
+| Optimistic mutation visible                 | next frame (≤ 16 ms after input)     | Component test with fake timers + Playwright                                                      |
+| Open task from list (cached)                | ≤ 100 ms                             | Playwright                                                                                        |
+| Team list with 5,000 tasks                  | first render ≤ 150 ms; 60 fps scroll | Playwright with seeded data; DevTools profile on regressions                                      |
+| Board with 2,000 cards                      | drag at 60 fps                       | Manual profile per release                                                                        |
+| PostgREST team task list (5k rows)          | p95 ≤ 150 ms server time             | `explain analyze` pgTAP plan checks; `pg_stat_statements`                                         |
+| RPC (create workspace, search)              | p95 ≤ 100 ms                         | pgTAP timing smoke + `pg_stat_statements`                                                         |
+| Realtime propagation                        | p95 ≤ 1 s                            | Two-browser E2E                                                                                   |
+| Bulk insert of 1,000 tasks (one request)    | ≤ 2 s server time                    | Scale E2E; imports send at most 1,000 rows per request because the API stops statements after 8 s |
 
 ### Measured baseline (2026-10-22)
 

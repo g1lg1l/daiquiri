@@ -36,15 +36,23 @@ test(`a team list with ${COUNT} tasks stays virtualised and reaches the end`, as
   );
   const team = teams[0];
   expect(team).toBeDefined();
-  const insert = await page.request.post(`${config.supabaseUrl}/rest/v1/tasks`, {
-    headers: { ...headers, prefer: 'return=minimal' },
-    data: Array.from({ length: COUNT }, (_, i) => ({
-      team_id: team?.id,
-      workspace_id: team?.workspace_id,
-      title: `Imported task ${String(i + 1).padStart(4, '0')}`,
-    })),
-  });
-  expect(insert.status()).toBe(201);
+  // With the app closed, so the list below is one fresh load rather than realtime catch-up.
+  await page.goto('about:blank');
+  // In requests of 1,000 rows, as any importer must: the API stops statements after 8 s.
+  const rows = Array.from({ length: COUNT }, (_, i) => ({
+    team_id: team?.id,
+    workspace_id: team?.workspace_id,
+    title: `Imported task ${String(i + 1).padStart(4, '0')}`,
+  }));
+  for (let from = 0; from < COUNT; from += 1000) {
+    // Sequential on purpose: one import, one batch at a time.
+    // oxlint-disable-next-line no-await-in-loop
+    const insert = await page.request.post(`${config.supabaseUrl}/rest/v1/tasks`, {
+      headers: { ...headers, prefer: 'return=minimal' },
+      data: rows.slice(from, from + 1000),
+    });
+    expect(insert.status()).toBe(201);
+  }
 
   const started = Date.now();
   await page.goto(`/${slug}/team/ENG/tasks?group=none&order=title`);
