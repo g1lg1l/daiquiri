@@ -155,6 +155,9 @@ async function applyEvents(
       case 'template':
         work.push(invalidate(keys.templates(workspaceId)));
         break;
+      case 'form':
+        work.push(invalidate(['forms']));
+        break;
       case 'automation':
       case 'automation_run':
         work.push(invalidate(['automations']));

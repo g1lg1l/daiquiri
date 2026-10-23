@@ -19,6 +19,7 @@ import { Route as WorkspaceIndexRouteImport } from './routes/$workspace/index'
 import { Route as WorkspaceInboxRouteImport } from './routes/$workspace/inbox'
 import { Route as WorkspaceMyTasksRouteImport } from './routes/$workspace/my-tasks'
 import { Route as WorkspaceSettingsRouteRouteImport } from './routes/$workspace/settings/route'
+import { Route as FSlugRouteImport } from './routes/f.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as WorkspaceProjectProjectIdRouteImport } from './routes/$workspace/project/$projectId'
 import { Route as WorkspaceSettingsIndexRouteImport } from './routes/$workspace/settings/index'
@@ -33,6 +34,7 @@ import { Route as WorkspaceTaskIdentifierRouteImport } from './routes/$workspace
 import { Route as WorkspaceSettingsTeamsTeamKeyRouteImport } from './routes/$workspace/settings/teams_.$teamKey'
 import { Route as WorkspaceTeamTeamKeyAutomationsRouteImport } from './routes/$workspace/team/$teamKey/automations'
 import { Route as WorkspaceTeamTeamKeyCyclesRouteImport } from './routes/$workspace/team/$teamKey/cycles'
+import { Route as WorkspaceTeamTeamKeyFormsRouteImport } from './routes/$workspace/team/$teamKey/forms'
 import { Route as WorkspaceTeamTeamKeyProjectsRouteImport } from './routes/$workspace/team/$teamKey/projects'
 import { Route as WorkspaceTeamTeamKeyTasksRouteImport } from './routes/$workspace/team/$teamKey/tasks'
 import { Route as WorkspaceTeamTeamKeyCycleNumberRouteImport } from './routes/$workspace/team/$teamKey/cycle.$number'
@@ -86,6 +88,11 @@ const WorkspaceSettingsRouteRoute = WorkspaceSettingsRouteRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => WorkspaceRouteRoute,
+} as any)
+const FSlugRoute = FSlugRouteImport.update({
+  id: '/f/$slug',
+  path: '/f/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: '/invite/$token',
@@ -164,6 +171,12 @@ const WorkspaceTeamTeamKeyCyclesRoute =
     path: '/team/$teamKey/cycles',
     getParentRoute: () => WorkspaceRouteRoute,
   } as any)
+const WorkspaceTeamTeamKeyFormsRoute =
+  WorkspaceTeamTeamKeyFormsRouteImport.update({
+    id: '/team/$teamKey/forms',
+    path: '/team/$teamKey/forms',
+    getParentRoute: () => WorkspaceRouteRoute,
+  } as any)
 const WorkspaceTeamTeamKeyProjectsRoute =
   WorkspaceTeamTeamKeyProjectsRouteImport.update({
     id: '/team/$teamKey/projects',
@@ -193,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/$workspace/settings': typeof WorkspaceSettingsRouteRouteWithChildren
   '/$workspace/inbox': typeof WorkspaceInboxRoute
   '/$workspace/my-tasks': typeof WorkspaceMyTasksRoute
+  '/f/$slug': typeof FSlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/$workspace/': typeof WorkspaceIndexRoute
   '/$workspace/project/$projectId': typeof WorkspaceProjectProjectIdRoute
@@ -208,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/$workspace/settings/teams/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
   '/$workspace/team/$teamKey/automations': typeof WorkspaceTeamTeamKeyAutomationsRoute
   '/$workspace/team/$teamKey/cycles': typeof WorkspaceTeamTeamKeyCyclesRoute
+  '/$workspace/team/$teamKey/forms': typeof WorkspaceTeamTeamKeyFormsRoute
   '/$workspace/team/$teamKey/projects': typeof WorkspaceTeamTeamKeyProjectsRoute
   '/$workspace/team/$teamKey/tasks': typeof WorkspaceTeamTeamKeyTasksRoute
   '/$workspace/team/$teamKey/cycle/$number': typeof WorkspaceTeamTeamKeyCycleNumberRoute
@@ -220,6 +235,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/$workspace/inbox': typeof WorkspaceInboxRoute
   '/$workspace/my-tasks': typeof WorkspaceMyTasksRoute
+  '/f/$slug': typeof FSlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/$workspace': typeof WorkspaceIndexRoute
   '/$workspace/project/$projectId': typeof WorkspaceProjectProjectIdRoute
@@ -235,6 +251,7 @@ export interface FileRoutesByTo {
   '/$workspace/settings/teams/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
   '/$workspace/team/$teamKey/automations': typeof WorkspaceTeamTeamKeyAutomationsRoute
   '/$workspace/team/$teamKey/cycles': typeof WorkspaceTeamTeamKeyCyclesRoute
+  '/$workspace/team/$teamKey/forms': typeof WorkspaceTeamTeamKeyFormsRoute
   '/$workspace/team/$teamKey/projects': typeof WorkspaceTeamTeamKeyProjectsRoute
   '/$workspace/team/$teamKey/tasks': typeof WorkspaceTeamTeamKeyTasksRoute
   '/$workspace/team/$teamKey/cycle/$number': typeof WorkspaceTeamTeamKeyCycleNumberRoute
@@ -250,6 +267,7 @@ export interface FileRoutesById {
   '/$workspace/settings': typeof WorkspaceSettingsRouteRouteWithChildren
   '/$workspace/inbox': typeof WorkspaceInboxRoute
   '/$workspace/my-tasks': typeof WorkspaceMyTasksRoute
+  '/f/$slug': typeof FSlugRoute
   '/invite/$token': typeof InviteTokenRoute
   '/$workspace/': typeof WorkspaceIndexRoute
   '/$workspace/project/$projectId': typeof WorkspaceProjectProjectIdRoute
@@ -265,6 +283,7 @@ export interface FileRoutesById {
   '/$workspace/settings/teams_/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
   '/$workspace/team/$teamKey/automations': typeof WorkspaceTeamTeamKeyAutomationsRoute
   '/$workspace/team/$teamKey/cycles': typeof WorkspaceTeamTeamKeyCyclesRoute
+  '/$workspace/team/$teamKey/forms': typeof WorkspaceTeamTeamKeyFormsRoute
   '/$workspace/team/$teamKey/projects': typeof WorkspaceTeamTeamKeyProjectsRoute
   '/$workspace/team/$teamKey/tasks': typeof WorkspaceTeamTeamKeyTasksRoute
   '/$workspace/team/$teamKey/cycle/$number': typeof WorkspaceTeamTeamKeyCycleNumberRoute
@@ -281,6 +300,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings'
     | '/$workspace/inbox'
     | '/$workspace/my-tasks'
+    | '/f/$slug'
     | '/invite/$token'
     | '/$workspace/'
     | '/$workspace/project/$projectId'
@@ -296,6 +316,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/teams/$teamKey'
     | '/$workspace/team/$teamKey/automations'
     | '/$workspace/team/$teamKey/cycles'
+    | '/$workspace/team/$teamKey/forms'
     | '/$workspace/team/$teamKey/projects'
     | '/$workspace/team/$teamKey/tasks'
     | '/$workspace/team/$teamKey/cycle/$number'
@@ -308,6 +329,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/$workspace/inbox'
     | '/$workspace/my-tasks'
+    | '/f/$slug'
     | '/invite/$token'
     | '/$workspace'
     | '/$workspace/project/$projectId'
@@ -323,6 +345,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/teams/$teamKey'
     | '/$workspace/team/$teamKey/automations'
     | '/$workspace/team/$teamKey/cycles'
+    | '/$workspace/team/$teamKey/forms'
     | '/$workspace/team/$teamKey/projects'
     | '/$workspace/team/$teamKey/tasks'
     | '/$workspace/team/$teamKey/cycle/$number'
@@ -337,6 +360,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings'
     | '/$workspace/inbox'
     | '/$workspace/my-tasks'
+    | '/f/$slug'
     | '/invite/$token'
     | '/$workspace/'
     | '/$workspace/project/$projectId'
@@ -352,6 +376,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/teams_/$teamKey'
     | '/$workspace/team/$teamKey/automations'
     | '/$workspace/team/$teamKey/cycles'
+    | '/$workspace/team/$teamKey/forms'
     | '/$workspace/team/$teamKey/projects'
     | '/$workspace/team/$teamKey/tasks'
     | '/$workspace/team/$teamKey/cycle/$number'
@@ -364,6 +389,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   SignupRoute: typeof SignupRoute
+  FSlugRoute: typeof FSlugRoute
   InviteTokenRoute: typeof InviteTokenRoute
 }
 
@@ -438,6 +464,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$workspace/settings'
       preLoaderRoute: typeof WorkspaceSettingsRouteRouteImport
       parentRoute: typeof WorkspaceRouteRoute
+    }
+    '/f/$slug': {
+      id: '/f/$slug'
+      path: '/f/$slug'
+      fullPath: '/f/$slug'
+      preLoaderRoute: typeof FSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/invite/$token': {
       id: '/invite/$token'
@@ -537,6 +570,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceTeamTeamKeyCyclesRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
+    '/$workspace/team/$teamKey/forms': {
+      id: '/$workspace/team/$teamKey/forms'
+      path: '/team/$teamKey/forms'
+      fullPath: '/$workspace/team/$teamKey/forms'
+      preLoaderRoute: typeof WorkspaceTeamTeamKeyFormsRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
     '/$workspace/team/$teamKey/projects': {
       id: '/$workspace/team/$teamKey/projects'
       path: '/team/$teamKey/projects'
@@ -600,6 +640,7 @@ interface WorkspaceRouteRouteChildren {
   WorkspaceTaskIdentifierRoute: typeof WorkspaceTaskIdentifierRoute
   WorkspaceTeamTeamKeyAutomationsRoute: typeof WorkspaceTeamTeamKeyAutomationsRoute
   WorkspaceTeamTeamKeyCyclesRoute: typeof WorkspaceTeamTeamKeyCyclesRoute
+  WorkspaceTeamTeamKeyFormsRoute: typeof WorkspaceTeamTeamKeyFormsRoute
   WorkspaceTeamTeamKeyProjectsRoute: typeof WorkspaceTeamTeamKeyProjectsRoute
   WorkspaceTeamTeamKeyTasksRoute: typeof WorkspaceTeamTeamKeyTasksRoute
   WorkspaceTeamTeamKeyCycleNumberRoute: typeof WorkspaceTeamTeamKeyCycleNumberRoute
@@ -614,6 +655,7 @@ const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
   WorkspaceTaskIdentifierRoute: WorkspaceTaskIdentifierRoute,
   WorkspaceTeamTeamKeyAutomationsRoute: WorkspaceTeamTeamKeyAutomationsRoute,
   WorkspaceTeamTeamKeyCyclesRoute: WorkspaceTeamTeamKeyCyclesRoute,
+  WorkspaceTeamTeamKeyFormsRoute: WorkspaceTeamTeamKeyFormsRoute,
   WorkspaceTeamTeamKeyProjectsRoute: WorkspaceTeamTeamKeyProjectsRoute,
   WorkspaceTeamTeamKeyTasksRoute: WorkspaceTeamTeamKeyTasksRoute,
   WorkspaceTeamTeamKeyCycleNumberRoute: WorkspaceTeamTeamKeyCycleNumberRoute,
@@ -630,6 +672,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   SignupRoute: SignupRoute,
+  FSlugRoute: FSlugRoute,
   InviteTokenRoute: InviteTokenRoute,
 }
 export const routeTree = rootRouteImport

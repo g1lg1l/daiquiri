@@ -135,6 +135,12 @@ function describe(entry: ActivityEntry, name: (id: string) => string): ReactNode
       return 'deleted the task';
     case 'task.restored':
       return 'restored the task';
+    case 'task.submitted':
+      return (
+        <>
+          sent it through the form <strong>{str(data.form)}</strong>
+        </>
+      );
     default:
       return null;
   }
@@ -154,10 +160,12 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
   const name = (id: string | null) =>
     id ? (data.membersById.get(id)?.displayName ?? 'Someone') : 'Daiquiri';
   // Changes made by an automation name it instead of a person.
-  const actorName = (entry: ActivityEntry) =>
-    typeof entry.data.automation === 'string'
-      ? `Automation “${entry.data.automation}”`
-      : name(entry.actorId);
+  const actorName = (entry: ActivityEntry) => {
+    if (typeof entry.data.automation === 'string') return `Automation “${entry.data.automation}”`;
+    // Someone outside the workspace, through a public form.
+    if (entry.actorId === null && typeof entry.data.email === 'string') return entry.data.email;
+    return name(entry.actorId);
+  };
 
   const items: FeedItem[] = [
     ...(showActivity

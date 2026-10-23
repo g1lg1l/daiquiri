@@ -54,6 +54,8 @@ Everything left of the gateway is attacker-controlled. The only credentials ship
 | T19 | **Template payloads** replayed with stale or foreign references | Templates are saved and applied by `security invoker` functions, so RLS decides what can be read and created; people who left, deleted labels and fields the team no longer uses are dropped, and values that no longer fit their field are skipped | `140_templates.test.sql` |
 | T20 | **Notification preferences** read or written for someone else | Rows are keyed by `auth.uid()` and policies only match the caller's own rows; the level is enforced by a trigger on `notifications`, so every path that creates one respects it | `160_notification_settings.test.sql` |
 
+| T21 | **Form spam and abuse** of public intake forms | One `security definer` entry point (`submit_form`) with size limits, an email check, a honeypot field and rate limits per client (5 per 10 min, keyed by a SHA-256 of the client address and form, never the raw address) and per form (200 per hour); answers HTTP 429 when exceeded; only fields the team uses can be asked, never people; the public demo cannot publish forms; the submitter's email is visible to the team only (activity RLS). CAPTCHA is not built | `190_forms.test.sql` (honeypot, rate limit, invalid email, workspace-only forms closed to strangers, outsiders see no submissions) |
+
 ## Security checklist for every new table
 
 1. `workspace_id` column + composite FK to its parent.

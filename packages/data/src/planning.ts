@@ -84,6 +84,7 @@ export type TeamSettings = Partial<
     | 'cycleWeeks'
     | 'cycleStartWeekday'
     | 'timeTrackingEnabled'
+    | 'triageEnabled'
   > & { estimateScale: EstimateScale }
 >;
 
@@ -105,6 +106,7 @@ export function useUpdateTeam(workspaceId: string) {
         columns.cycle_start_weekday = patch.cycleStartWeekday;
       if (patch.timeTrackingEnabled !== undefined)
         columns.time_tracking_enabled = patch.timeTrackingEnabled;
+      if (patch.triageEnabled !== undefined) columns.triage_enabled = patch.triageEnabled;
       return ensureOk(await client.from('teams').update(columns).eq('id', id));
     },
     onMutate: ({ id, patch }) => {

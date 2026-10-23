@@ -16,6 +16,7 @@ const sqlStateToCode: Record<string, DaiqErrorCode> = {
   '22023': 'validation',
   '22P02': 'validation',
   '53400': 'rate_limited',
+  PT429: 'rate_limited',
   PGRST301: 'unauthenticated',
   PGRST116: 'not_found',
 };
@@ -45,7 +46,11 @@ export function toDaiqError(error: unknown): DaiqError {
     (pg.code && sqlStateToCode[pg.code]) ||
     (pg.status === 401 ? 'unauthenticated' : pg.status === 429 ? 'rate_limited' : 'unknown');
   const raisedByUs =
-    pg.code === 'P0002' || pg.code === '53400' || pg.code === '42501' || pg.code === '23514';
+    pg.code === 'P0002' ||
+    pg.code === '53400' ||
+    pg.code === 'PT429' ||
+    pg.code === '42501' ||
+    pg.code === '23514';
   const message = raisedByUs && pg.message ? pg.message : fallbackMessage[code];
   return new DaiqError(code, message, { cause: error });
 }

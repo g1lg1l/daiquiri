@@ -510,6 +510,126 @@ export type Database = {
           },
         ];
       };
+      form_submissions: {
+        Row: {
+          client_hash: string;
+          created_at: string;
+          email: string | null;
+          form_id: string;
+          id: number;
+          task_id: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_hash: string;
+          created_at?: string;
+          email?: string | null;
+          form_id: string;
+          id?: never;
+          task_id?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          client_hash?: string;
+          created_at?: string;
+          email?: string | null;
+          form_id?: string;
+          id?: never;
+          task_id?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'form_submissions_form_id_fkey';
+            columns: ['form_id'];
+            isOneToOne: false;
+            referencedRelation: 'forms';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'form_submissions_task_id_fkey';
+            columns: ['task_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      forms: {
+        Row: {
+          ask_priority: boolean;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          enabled: boolean;
+          field_ids: string[];
+          id: string;
+          is_public: boolean;
+          name: string;
+          slug: string;
+          status_id: string | null;
+          team_id: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          ask_priority?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          enabled?: boolean;
+          field_ids?: string[];
+          id?: string;
+          is_public?: boolean;
+          name: string;
+          slug?: string;
+          status_id?: string | null;
+          team_id: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          ask_priority?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          enabled?: boolean;
+          field_ids?: string[];
+          id?: string;
+          is_public?: boolean;
+          name?: string;
+          slug?: string;
+          status_id?: string | null;
+          team_id?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'forms_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'forms_team_id_status_id_fkey';
+            columns: ['team_id', 'status_id'];
+            isOneToOne: false;
+            referencedRelation: 'statuses';
+            referencedColumns: ['team_id', 'id'];
+          },
+          {
+            foreignKeyName: 'forms_workspace_id_team_id_fkey';
+            columns: ['workspace_id', 'team_id'];
+            isOneToOne: false;
+            referencedRelation: 'teams';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
       invitations: {
         Row: {
           accepted_at: string | null;
@@ -1964,6 +2084,7 @@ export type Database = {
         }[];
       };
       delete_tasks: { Args: { task_ids: string[] }; Returns: string };
+      form_by_slug: { Args: { slug: string }; Returns: Json };
       preview_invitation: {
         Args: { token: string };
         Returns: {
@@ -2074,6 +2195,18 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      submit_form: {
+        Args: {
+          details?: string;
+          email?: string;
+          fields?: Json;
+          priority?: number;
+          slug: string;
+          title: string;
+          website?: string;
+        };
+        Returns: string;
       };
       trashed_tasks: {
         Args: { workspace_id: string };

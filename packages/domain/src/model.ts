@@ -368,3 +368,30 @@ export interface TimeEntry {
   endedAt: string | null;
   note: string | null;
 }
+
+/** An intake form: submissions become tasks in the team's Triage (feature spec §13). */
+export interface IntakeForm {
+  id: string;
+  workspaceId: string;
+  teamId: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  isPublic: boolean;
+  askPriority: boolean;
+  fieldIds: string[];
+  statusId: string | null;
+  enabled: boolean;
+}
+
+/** What a form shows to the person filling it in. */
+export interface PublicForm {
+  name: string;
+  description: string | null;
+  team: string;
+  workspace: string;
+  isPublic: boolean;
+  askPriority: boolean;
+  signedIn: boolean;
+  fields: CustomField[];
+}

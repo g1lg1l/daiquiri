@@ -5,9 +5,11 @@ on:
     branches: [main]
   pull_request:
 
+# Every commit on main gets a full result (a cancelled run reads like a failure
+# in the history); other branches only need their latest push checked.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.ref }}-${{ github.ref == 'refs/heads/main' && github.sha || 'latest' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read

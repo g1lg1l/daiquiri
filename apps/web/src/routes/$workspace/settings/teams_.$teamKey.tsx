@@ -210,6 +210,17 @@ function TeamSettings() {
           </p>
         </Module>
         <Module
+          title="Triage"
+          description="New requests, from people outside the team or from forms, land in a Triage status first, so someone decides where they go."
+          enabled={team.triageEnabled}
+          disabled={!canEdit}
+          onToggle={(triageEnabled) => save({ triageEnabled })}
+        >
+          <p className="text-xs text-fg-subtle">
+            Triage shows first in the team’s list. Turning it off keeps the status and its tasks.
+          </p>
+        </Module>
+        <Module
           title="Time tracking"
           description="Log time on tasks with a timer or by hand. Everyone on the team sees the time logged."
           enabled={team.timeTrackingEnabled}
@@ -235,6 +246,22 @@ function TeamSettings() {
           className={buttonVariants({ size: 'sm' })}
         >
           Manage automations
+        </Link>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-4">
+        <div>
+          <h3 className="text-[13px] font-medium">Forms</h3>
+          <p className="text-xs text-fg-muted">
+            Collect requests through a link, from members or from anyone, straight into Triage.
+          </p>
+        </div>
+        <Link
+          to="/$workspace/team/$teamKey/forms"
+          params={{ workspace: workspace.slug, teamKey: team.key }}
+          className={buttonVariants({ size: 'sm' })}
+        >
+          Manage forms
         </Link>
       </div>
 

@@ -60,14 +60,14 @@ ClickUp, Asana and Linear each do a lot. Most teams use a small part of it, ever
 
 ## What you get
 
-| Area          | Included today                                                                                                                                                                                                                                 |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Work          | Teams with their own workflows, projects, tasks with identifiers (`ENG-42`), sub-tasks, relations, labels, priorities, due and start dates, custom fields, file attachments with image previews                                                |
-| Planning      | Estimates in points or hours, cycles of one to four weeks that schedule themselves and roll unfinished work over, burn-up charts, project milestones and status updates with health, recurring tasks, task and project templates, time tracking               |
-| Views         | List, board, calendar, timeline (with dependency arrows) and insights, CSV/JSON export, filters (all or any), grouping with sub-groups and ordering in the URL, saved views and favorites, My tasks grouped by due date, undo for every change |
-| Collaboration | Comments with @mentions and reactions, activity history, inbox notifications, subscriptions, realtime updates                                                                                                                                  |
-| Workspace     | Invitations with roles (owner, admin, member, guest), private teams, team templates, labels, a 30-day trash, automations with a run log, notification levels per team, theme preferences                                                       |
-| Quality       | Light, dark and system themes, reduced motion, WCAG 2.2 AA contrast, screen-reader labels, full keyboard support                                                                                                                               |
+| Area          | Included today                                                                                                                                                                                                                                  |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Work          | Teams with their own workflows, projects, tasks with identifiers (`ENG-42`), sub-tasks, relations, labels, priorities, due and start dates, custom fields, file attachments with image previews                                                 |
+| Planning      | Estimates in points or hours, cycles of one to four weeks that schedule themselves and roll unfinished work over, burn-up charts, project milestones and status updates with health, recurring tasks, task and project templates, time tracking |
+| Views         | List, board, calendar, timeline (with dependency arrows) and insights, CSV/JSON export, filters (all or any), grouping with sub-groups and ordering in the URL, saved views and favorites, My tasks grouped by due date, undo for every change  |
+| Collaboration | Comments with @mentions and reactions, activity history, inbox notifications, subscriptions, realtime updates                                                                                                                                   |
+| Workspace     | Invitations with roles (owner, admin, member, guest), private teams, team templates, labels, a 30-day trash, intake forms into Triage, automations with a run log, notification levels per team, theme preferences                              |
+| Quality       | Light, dark and system themes, reduced motion, WCAG 2.2 AA contrast, screen-reader labels, full keyboard support                                                                                                                                |
 
 ## Tech stack
 
@@ -157,7 +157,8 @@ Start with [ARCHITECTURE.md](ARCHITECTURE.md), then [docs/plan.md](docs/plan.md)
 - [x] Automations: when a task changes, if it matches, then up to three actions, with a run log
 - [x] Insights on every view (throughput, burn-up, cycle and lead time, time in status) and CSV/JSON export
 - [x] Notification levels per team, any-filter matching, list sub-groups
-- [ ] Intake forms that create tasks in triage
+- [x] Intake forms, for members or anyone with the link, that create tasks in Triage
+- [x] Trash with restore and delete forever
 - [ ] Weekly reminders to post a project update
 - [ ] Integrations: webhooks, API tokens, Slack, importers from Linear, Asana and ClickUp
 
