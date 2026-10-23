@@ -28,11 +28,11 @@
 
 ## Running the suites
 
-| Suite            | Command                                 | Current size                                           |
-| ---------------- | --------------------------------------- | ------------------------------------------------------ |
-| Unit + component | `pnpm test`                             | 122 tests (domain 54, ui 32, editor 26, data 4, web 6) |
-| Database         | `pnpm db:test`                          | 100 pgTAP assertions in 6 files                        |
-| E2E              | `pnpm test:e2e` (needs `pnpm db:start`) | 12 Playwright flows incl. axe checks                   |
+| Suite            | Command                                 | Current size                                                                       |
+| ---------------- | --------------------------------------- | ---------------------------------------------------------------------------------- |
+| Unit + component | `pnpm test`                             | 126 tests (domain 54, ui 35, editor 26, data 5, web 6)                             |
+| Database         | `pnpm db:test`                          | 109 pgTAP assertions in 8 files                                                    |
+| E2E              | `pnpm test:e2e` (needs `pnpm db:start`) | 14 Playwright flows incl. axe, realtime between two sessions and a 5,000-task list |
 
 ## Rules
 

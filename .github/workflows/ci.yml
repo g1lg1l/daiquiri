@@ -116,3 +116,25 @@ jobs:
         run: |
           cp docker/.env.example docker/.env
           docker compose -f docker/docker-compose.yml --env-file docker/.env config --quiet
+
+  self-host:
+    name: Self-host smoke test (docker compose)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - name: Generate secrets
+        working-directory: docker
+        run: |
+          cp .env.example .env
+          sh supabase/utils/generate-keys.sh --update-env > /dev/null
+          sed -i 's/^ENABLE_EMAIL_AUTOCONFIRM=.*/ENABLE_EMAIL_AUTOCONFIRM=true/' .env
+      - name: Start the stack
+        run: docker compose -f docker/docker-compose.yml --env-file docker/.env up -d --build --wait --wait-timeout 420
+      - run: sh docker/smoke-test.sh
+      - name: Logs
+        if: failure()
+        run: docker compose -f docker/docker-compose.yml --env-file docker/.env logs --tail 80
+      - name: Stop
+        if: always()
+        run: docker compose -f docker/docker-compose.yml --env-file docker/.env down -v

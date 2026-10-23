@@ -270,6 +270,17 @@ export function TaskList({
             event.preventDefault();
             move(-1, event.shiftKey);
           }
+          // Treegrid pattern: Home/End jump to the first/last row (not while typing).
+          const typing =
+            event.target instanceof HTMLElement &&
+            event.target.closest('input, textarea, [contenteditable="true"]');
+          if ((event.key === 'Home' || event.key === 'End') && !typing) {
+            const target = event.key === 'Home' ? taskRows[0] : taskRows.at(-1);
+            if (target) {
+              event.preventDefault();
+              focusTask(target.task.id);
+            }
+          }
         }}
       >
         <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
