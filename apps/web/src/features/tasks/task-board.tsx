@@ -54,13 +54,27 @@ interface CardData {
   type: 'card';
   taskId: string;
   groupKey: string;
+  /** The swimlane the card is in ('' without swimlanes). */
+  laneKey: string;
 }
 
 function isCardData(data: Record<string | symbol, unknown>): data is CardData {
   return (
-    data.type === 'card' && typeof data.taskId === 'string' && typeof data.groupKey === 'string'
+    data.type === 'card' &&
+    typeof data.taskId === 'string' &&
+    typeof data.groupKey === 'string' &&
+    typeof data.laneKey === 'string'
   );
 }
+
+/** A swimlane: the board's columns again, for the tasks with one value of a second property. */
+export interface BoardLane {
+  key: string;
+  label: string;
+  taskIds: ReadonlySet<string>;
+}
+
+type Patch = NonNullable<ReturnType<typeof patchForMove>>;
 
 /** Moves between columns write the column's property (ADR-0011). */
 function patchForMove(
@@ -124,8 +138,12 @@ export interface TaskBoardProps {
   canReorder: boolean;
   peekId: string | undefined;
   onOpen: (task: Task, mode: 'peek' | 'page') => void;
-  composerDefaults: (group: TaskGroup) => ComposerDefaults;
+  composerDefaults: (group: TaskGroup, lane?: BoardLane) => ComposerDefaults;
   onCreate: (defaults: ComposerDefaults) => void;
+  /** Swimlanes, and the property (and custom field) they stand for. */
+  lanes?: BoardLane[];
+  laneBy?: GroupBy;
+  laneField?: CustomField;
 }
 
 export function TaskBoard({
@@ -137,30 +155,66 @@ export function TaskBoard({
   onOpen,
   composerDefaults,
   onCreate,
+  lanes,
+  laneBy,
+  laneField,
 }: TaskBoardProps) {
   const actions = useTaskActions();
   const setField = useSetFieldValue();
   const identifier = useIdentifier();
   const data = useWorkspaceData();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [focused, setFocused] = useState<{ column: number; row: number } | null>(null);
+  const [focused, setFocused] = useState<{ lane: number; column: number; row: number } | null>(
+    null,
+  );
   const tasksById = useMemo(
     () => new Map(groups.flatMap((g) => g.tasks.map((t) => [t.id, t]))),
     [groups],
   );
   const today = useToday();
+  const rows: (BoardLane | undefined)[] = lanes ?? [undefined];
+  /** The cards of one column in one lane. */
+  const cell = (lane: BoardLane | undefined, group: TaskGroup | undefined) =>
+    (group?.tasks ?? []).filter((t) => !lane || lane.taskIds.has(t.id));
 
-  const applyMove = (task: Task, fromKey: string, toKey: string, index: number) => {
+  /** Applies one property change; plain fields are collected into `plain`. */
+  const applyPatch = (
+    task: Task,
+    patch: Patch,
+    field: CustomField | undefined,
+    plain: TaskPatch,
+  ) => {
+    if ('fieldValue' in patch) {
+      if (field) setField.mutate({ task, fieldId: field.id, value: patch.fieldValue });
+    } else if ('assigneeIds' in patch) actions.setAssignees([task], patch.assigneeIds);
+    else if ('labelIds' in patch) actions.setLabels([task], patch.labelIds);
+    else if ('statusId' in patch && patch.statusId) actions.setStatus([task], patch.statusId);
+    else Object.assign(plain, patch);
+  };
+
+  const applyMove = (
+    task: Task,
+    fromKey: string,
+    toKey: string,
+    index: number,
+    fromLane = '',
+    toLane = '',
+  ) => {
     const target = groups.find((g) => g.key === toKey);
+    const lane = lanes?.find((l) => l.key === toLane);
     if (!target) return;
     const patch = patchForMove(groupBy, task, fromKey, toKey, groupField);
-    if (patch === null) {
-      announce('Tasks cannot be moved between these columns.');
+    const lanePatch =
+      lanes && laneBy && fromLane !== toLane
+        ? patchForMove(laneBy, task, fromLane, toLane, laneField)
+        : {};
+    if (patch === null || lanePatch === null) {
+      announce('Tasks cannot be moved there.');
       return;
     }
-    const others = target.tasks.filter((t) => t.id !== task.id);
+    const others = cell(lane, target).filter((t) => t.id !== task.id);
     const clamped = Math.max(0, Math.min(index, others.length));
-    const sortPatch: TaskPatch = canReorder
+    const plain: TaskPatch = canReorder
       ? {
           sortKey: sortKeyBetween(
             others[clamped - 1]?.sortKey ?? null,
@@ -168,29 +222,15 @@ export function TaskBoard({
           ),
         }
       : {};
-    if ('fieldValue' in patch) {
-      if (groupField) setField.mutate({ task, fieldId: groupField.id, value: patch.fieldValue });
-      announce(`${identifier(task)} moved to ${target.label}`);
-      return;
-    }
-    if ('assigneeIds' in patch) actions.setAssignees([task], patch.assigneeIds);
-    else if ('labelIds' in patch) actions.setLabels([task], patch.labelIds);
-    else if ('statusId' in patch && patch.statusId) {
-      actions.setStatus([task], patch.statusId);
-      if (sortPatch.sortKey) actions.update([task], sortPatch, 'Reorder');
-      announce(`${identifier(task)} moved to ${target.label}`);
-      return;
-    }
-    const combined = {
-      ...('assigneeIds' in patch || 'labelIds' in patch ? {} : patch),
-      ...sortPatch,
-    };
-    if (Object.keys(combined).length > 0)
-      actions.update([task], combined, fromKey === toKey ? 'Reorder' : `Move to ${target.label}`);
+    applyPatch(task, patch, groupField, plain);
+    applyPatch(task, lanePatch, laneField, plain);
+    const moved = fromKey !== toKey || fromLane !== toLane;
+    if (Object.keys(plain).length > 0)
+      actions.update([task], plain, moved ? `Move to ${target.label}` : 'Reorder');
     announce(
-      fromKey === toKey
-        ? `${identifier(task)} moved to position ${clamped + 1}`
-        : `${identifier(task)} moved to ${target.label}`,
+      moved
+        ? `${identifier(task)} moved to ${target.label}${lane ? ` in ${lane.label}` : ''}`
+        : `${identifier(task)} moved to position ${clamped + 1}`,
     );
   };
 
@@ -203,8 +243,11 @@ export function TaskBoard({
       const task = tasksById.get(source.taskId);
       if (!task) return;
       if (isCardData(targetData)) {
-        const column = groups.find((g) => g.key === targetData.groupKey);
-        const others = column?.tasks.filter((t) => t.id !== task.id) ?? [];
+        const lane = lanes?.find((l) => l.key === targetData.laneKey);
+        const others = cell(
+          lane,
+          groups.find((g) => g.key === targetData.groupKey),
+        ).filter((t) => t.id !== task.id);
         const overIndex = others.findIndex((t) => t.id === targetData.taskId);
         const edge = extractClosestEdge(targetData);
         applyMove(
@@ -212,10 +255,21 @@ export function TaskBoard({
           source.groupKey,
           targetData.groupKey,
           overIndex + (edge === 'bottom' ? 1 : 0),
+          source.laneKey,
+          targetData.laneKey,
         );
       } else if (typeof targetData.columnKey === 'string') {
+        const laneKey = typeof targetData.laneKey === 'string' ? targetData.laneKey : '';
+        const lane = lanes?.find((l) => l.key === laneKey);
         const column = groups.find((g) => g.key === targetData.columnKey);
-        applyMove(task, source.groupKey, targetData.columnKey, column?.tasks.length ?? 0);
+        applyMove(
+          task,
+          source.groupKey,
+          targetData.columnKey,
+          cell(lane, column).length,
+          source.laneKey,
+          laneKey,
+        );
       }
     },
   );
@@ -233,39 +287,65 @@ export function TaskBoard({
     );
   }, []);
 
-  const focusCard = (column: number, row: number) => {
-    const group = groups[column];
-    const task = group?.tasks[Math.max(0, Math.min(row, group.tasks.length - 1))];
+  const cardsAt = (lane: number, column: number) => cell(rows[lane], groups[column]);
+  const focusCard = (lane: number, column: number, row: number) => {
+    const cards = cardsAt(lane, column);
+    const task = cards[Math.max(0, Math.min(row, cards.length - 1))];
     if (!task) return;
-    setFocused({ column, row: group.tasks.indexOf(task) });
-    scrollRef.current?.querySelector<HTMLElement>(`[data-card-id="${task.id}"]`)?.focus();
+    setFocused({ lane, column, row: cards.indexOf(task) });
+    scrollRef.current
+      ?.querySelector<HTMLElement>(
+        `[data-card-id="${task.id}"][data-lane="${rows[lane]?.key ?? ''}"]`,
+      )
+      ?.focus();
   };
-  const focusedTask = focused ? groups[focused.column]?.tasks[focused.row] : undefined;
+  const focusedTask = focused ? cardsAt(focused.lane, focused.column)[focused.row] : undefined;
   const target = () =>
     focusedTask ? [focusedTask] : peekId && tasksById.get(peekId) ? [tasksById.get(peekId)!] : [];
-  const nonEmpty = (from: number, step: 1 | -1) => {
+  const nonEmpty = (lane: number, from: number, step: 1 | -1) => {
     for (let i = from + step; i >= 0 && i < groups.length; i += step)
-      if (groups[i]?.tasks.length) return i;
+      if (cardsAt(lane, i).length) return i;
     return null;
+  };
+  /** Down from the last card of a cell goes on to the next lane with cards in that column. */
+  const vertical = (step: 1 | -1) => {
+    if (!focused) return;
+    const row = focused.row + step;
+    if (row >= 0 && row < cardsAt(focused.lane, focused.column).length) {
+      focusCard(focused.lane, focused.column, row);
+      return;
+    }
+    for (let lane = focused.lane + step; lane >= 0 && lane < rows.length; lane += step) {
+      const count = cardsAt(lane, focused.column).length;
+      if (count) {
+        focusCard(lane, focused.column, step === 1 ? 0 : count - 1);
+        return;
+      }
+    }
   };
   const onArrow = (key: string) => {
     if (!focused) return;
     if (key === 'ArrowRight') {
-      const next = nonEmpty(focused.column, 1);
-      if (next !== null) focusCard(next, focused.row);
+      const next = nonEmpty(focused.lane, focused.column, 1);
+      if (next !== null) focusCard(focused.lane, next, focused.row);
     }
     if (key === 'ArrowLeft') {
-      const previous = nonEmpty(focused.column, -1);
-      if (previous !== null) focusCard(previous, focused.row);
+      const previous = nonEmpty(focused.lane, focused.column, -1);
+      if (previous !== null) focusCard(focused.lane, previous, focused.row);
     }
-    if (key === 'ArrowDown') focusCard(focused.column, focused.row + 1);
-    if (key === 'ArrowUp') focusCard(focused.column, focused.row - 1);
+    if (key === 'ArrowDown') vertical(1);
+    if (key === 'ArrowUp') vertical(-1);
+  };
+  const reorder = (step: 1 | -1) => {
+    if (!focusedTask || !focused || !canReorder) return;
+    const key = groups[focused.column]?.key ?? '';
+    const laneKey = rows[focused.lane]?.key ?? '';
+    applyMove(focusedTask, key, key, focused.row + step, laneKey, laneKey);
   };
 
   useShortcuts({
-    next: () =>
-      focused ? focusCard(focused.column, focused.row + 1) : focusCard(nonEmpty(-1, 1) ?? 0, 0),
-    previous: () => focused && focusCard(focused.column, focused.row - 1),
+    next: () => (focused ? vertical(1) : focusCard(0, nonEmpty(0, -1, 1) ?? 0, 0)),
+    previous: () => vertical(-1),
     open: () => focusedTask && onOpen(focusedTask, 'page'),
     peek: () => focusedTask && onOpen(focusedTask, 'peek'),
     status: () => actions.openPicker('status', target()),
@@ -277,27 +357,65 @@ export function TaskBoard({
     cycle: () => actions.openPicker('cycle', target()),
     assignMe: () => actions.toggleAssignMe(target()),
     remove: () => actions.remove(target()),
-    moveUp: () =>
-      focusedTask &&
-      focused &&
-      canReorder &&
-      applyMove(
-        focusedTask,
-        groups[focused.column]!.key,
-        groups[focused.column]!.key,
-        focused.row - 1,
-      ),
-    moveDown: () =>
-      focusedTask &&
-      focused &&
-      canReorder &&
-      applyMove(
-        focusedTask,
-        groups[focused.column]!.key,
-        groups[focused.column]!.key,
-        focused.row + 1,
-      ),
+    moveUp: () => reorder(-1),
+    moveDown: () => reorder(1),
   });
+
+  const columns = (lane: BoardLane | undefined, laneIndex: number) =>
+    groups.map((group, columnIndex) => {
+      const cards = cell(lane, group);
+      return (
+        <Column
+          key={group.key}
+          group={group}
+          lane={lane}
+          count={cards.length}
+          onCreate={() => onCreate(composerDefaults(group, lane))}
+        >
+          {cards.map((task, rowIndex) => (
+            <Card
+              key={task.id}
+              task={task}
+              groupKey={group.key}
+              laneKey={lane?.key ?? ''}
+              identifier={identifier(task)}
+              peeked={peekId === task.id}
+              onOpen={onOpen}
+              onFocus={() => setFocused({ lane: laneIndex, column: columnIndex, row: rowIndex })}
+              onArrow={onArrow}
+              today={today}
+              data={data}
+            />
+          ))}
+        </Column>
+      );
+    });
+
+  if (lanes) {
+    return (
+      <section
+        ref={scrollRef}
+        className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto p-3 scrollbar-thin md:p-4"
+        aria-label="Board"
+      >
+        {lanes.map((lane, laneIndex) => (
+          <section
+            key={lane.key}
+            aria-label={`${lane.label}, ${lane.taskIds.size} tasks`}
+            className="flex w-max flex-col gap-2"
+          >
+            <h2 className="sticky left-0 flex w-fit items-center gap-2 px-1 text-[13px] font-semibold">
+              {lane.label}
+              <span className="text-xs font-normal text-fg-subtle tabular">
+                {lane.taskIds.size}
+              </span>
+            </h2>
+            <div className="flex gap-3">{columns(lane, laneIndex)}</div>
+          </section>
+        ))}
+      </section>
+    );
+  }
 
   return (
     <section
@@ -305,63 +423,54 @@ export function TaskBoard({
       className="flex min-h-0 flex-1 gap-3 overflow-x-auto overflow-y-hidden p-3 scrollbar-thin md:p-4"
       aria-label="Board"
     >
-      {groups.map((group, columnIndex) => (
-        <Column key={group.key} group={group} onCreate={() => onCreate(composerDefaults(group))}>
-          {group.tasks.map((task, rowIndex) => (
-            <Card
-              key={task.id}
-              task={task}
-              groupKey={group.key}
-              identifier={identifier(task)}
-              peeked={peekId === task.id}
-              onOpen={onOpen}
-              onFocus={() => setFocused({ column: columnIndex, row: rowIndex })}
-              onArrow={onArrow}
-              today={today}
-              data={data}
-            />
-          ))}
-        </Column>
-      ))}
+      {columns(undefined, 0)}
     </section>
   );
 }
 
 function Column({
   group,
+  lane,
+  count,
   onCreate,
   children,
 }: {
   group: TaskGroup;
+  lane: BoardLane | undefined;
+  count: number;
   onCreate: () => void;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [over, setOver] = useState(false);
   const groupPriority = group.kind === 'priority' ? Number(group.key) : Number.NaN;
+  const laneKey = lane?.key ?? '';
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
     return dropTargetForElements({
       element,
-      getData: () => ({ columnKey: group.key }),
+      getData: () => ({ columnKey: group.key, laneKey }),
       canDrop: ({ source }) => isCardData(source.data),
       onDragEnter: () => setOver(true),
       onDragLeave: () => setOver(false),
       onDrop: () => setOver(false),
     });
-  }, [group.key]);
+  }, [group.key, laneKey]);
 
   return (
     <section
-      aria-label={`${group.label}, ${group.tasks.length} tasks`}
-      className="flex w-72 shrink-0 flex-col rounded-xl bg-surface-subtle"
+      aria-label={`${group.label}${lane ? ` in ${lane.label}` : ''}, ${count} tasks`}
+      className={cn(
+        'flex w-72 shrink-0 flex-col rounded-xl bg-surface-subtle',
+        lane && 'max-h-[70vh]',
+      )}
     >
       <header className="group/col flex h-10 items-center gap-2 px-3">
         {group.category && <StatusIcon category={group.category} />}
         {isPriority(groupPriority) && <PriorityIcon priority={groupPriority} />}
         <h2 className="truncate text-[13px] font-medium">{group.label}</h2>
-        <span className="text-xs text-fg-subtle tabular">{group.tasks.length}</span>
+        <span className="text-xs text-fg-subtle tabular">{count}</span>
         <Tooltip label={`Create in ${group.label}`}>
           <Button
             variant="ghost"
@@ -390,6 +499,7 @@ function Column({
 const Card = memo(function Card({
   task,
   groupKey,
+  laneKey,
   identifier,
   peeked,
   onOpen,
@@ -400,6 +510,7 @@ const Card = memo(function Card({
 }: {
   task: Task;
   groupKey: string;
+  laneKey: string;
   identifier: string;
   peeked: boolean;
   onOpen: (task: Task, mode: 'peek' | 'page') => void;
@@ -426,7 +537,7 @@ const Card = memo(function Card({
   useEffect(() => {
     const element = ref.current;
     if (!element || task.number === null) return;
-    const cardData: CardData = { type: 'card', taskId: task.id, groupKey };
+    const cardData: CardData = { type: 'card', taskId: task.id, groupKey, laneKey };
     return combine(
       draggable({
         element,
@@ -444,7 +555,7 @@ const Card = memo(function Card({
         onDrop: () => setEdge(null),
       }),
     );
-  }, [task.id, task.number, groupKey]);
+  }, [task.id, task.number, groupKey, laneKey]);
 
   return (
     // A div, not a <button>: Firefox cannot start native drags from buttons.
@@ -454,6 +565,7 @@ const Card = memo(function Card({
       tabIndex={0}
       onKeyDown={onKeyDown}
       data-card-id={task.id}
+      data-lane={laneKey}
       aria-label={`${identifier} ${task.title}`}
       onClick={() => onOpen(task, 'peek')}
       onFocus={onFocus}

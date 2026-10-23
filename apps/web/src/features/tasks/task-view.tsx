@@ -31,6 +31,7 @@ import {
 } from '../views/view-controls';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { useComposer, type ComposerDefaults } from './composer';
+import type { BoardLane } from './task-board';
 import { TaskList } from './task-list';
 import { TaskPeek } from './task-peek';
 import { useIdentifier } from './use-identifier';
@@ -121,9 +122,9 @@ export function TaskView({
     else downloadText(name, JSON.stringify(rows, null, 2), 'application/json');
   };
 
-  // Sub-groups: list only, a second property other than the first.
+  // Sub-groups (list) and swimlanes (board): a second property other than the first.
   const subgroup =
-    layout === 'list' &&
+    (layout === 'list' || layout === 'board') &&
     group !== 'none' &&
     search.subgroup &&
     search.subgroup !== group &&
@@ -132,8 +133,8 @@ export function TaskView({
       ? search.subgroup
       : undefined;
 
-  const groups = useMemo<TaskGroup[]>(() => {
-    if (!tasks) return [];
+  const { groups, lanes } = useMemo((): { groups: TaskGroup[]; lanes?: BoardLane[] } => {
+    if (!tasks) return { groups: [] };
     const orderedStatuses = sortStatuses(
       teamIds.flatMap((id) => data.teamsById.get(id)?.statuses ?? []),
     );
@@ -151,7 +152,18 @@ export function TaskView({
         : {}),
     };
     const top = groupTasks(visible, group, context);
-    return subgroup ? subgroupTasks(top, subgroup, context) : top;
+    if (!subgroup) return { groups: top };
+    if (layout !== 'board') return { groups: subgroupTasks(top, subgroup, context) };
+    return {
+      groups: top,
+      lanes: groupTasks(visible, subgroup, context)
+        .filter((lane) => lane.tasks.length > 0)
+        .map((lane) => ({
+          key: lane.key,
+          label: lane.label,
+          taskIds: new Set(lane.tasks.map((t) => t.id)),
+        })),
+    };
   }, [
     tasks,
     visible,
@@ -160,6 +172,7 @@ export function TaskView({
     teamIds,
     group,
     subgroup,
+    layout,
     today,
     milestones,
     search.groupField,
@@ -187,8 +200,8 @@ export function TaskView({
   );
 
   const groupDefaults = useCallback(
-    (taskGroup: TaskGroup): ComposerDefaults => {
-      const valuesOf = (g: TaskGroup): ComposerDefaults => {
+    (taskGroup: TaskGroup, lane?: BoardLane): ComposerDefaults => {
+      const valuesOf = (g: Pick<TaskGroup, 'key' | 'kind'>): ComposerDefaults => {
         const extra: ComposerDefaults = {};
         if (g.kind === 'status') extra.statusId = g.key;
         if (g.kind === 'project' && g.key !== 'none') extra.projectId = g.key;
@@ -204,9 +217,11 @@ export function TaskView({
         ...composerDefaults,
         ...(parent && valuesOf(parent)),
         ...valuesOf(taskGroup),
+        // A board cell is in a swimlane too.
+        ...(lane && subgroup && valuesOf({ key: lane.key, kind: subgroup })),
       };
     },
-    [composerDefaults, groups],
+    [composerDefaults, groups, subgroup],
   );
 
   return (
@@ -272,6 +287,7 @@ export function TaskView({
               onOpen={onOpen}
               composerDefaults={groupDefaults}
               onCreate={composer}
+              {...(lanes && subgroup && { lanes, laneBy: subgroup })}
             />
           </Suspense>
         ) : (

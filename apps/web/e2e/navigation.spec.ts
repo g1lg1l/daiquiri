@@ -51,3 +51,31 @@ test('the demo creates a private sandbox with sample data', async ({ page }) => 
   await expect(page.getByText('You’re in a demo')).toBeVisible();
   expect(page.url()).toBe(sandbox);
 });
+
+test('board swimlanes: a drop writes the column and the lane', async ({ page }) => {
+  const { slug } = await signUpWithWorkspace(page, 'Swim Lane');
+  const mine = await createTask(page, 'Already mine');
+  await mine.focus();
+  await page.keyboard.press('i');
+  await createTask(page, 'Nobody has this');
+
+  await page.goto(`/${slug}/team/ENG/tasks?layout=board&subgroup=assignee`);
+  const myLane = page.getByRole('region', { name: /^Swim Lane, \d+ tasks/ });
+  const noOne = page.getByRole('region', { name: /^No assignee, 1 tasks/ });
+  await expect(myLane).toBeVisible();
+  const card = noOne.getByRole('button', { name: /Nobody has this/ });
+  await card.dragTo(myLane.getByRole('region', { name: /^In Progress in Swim Lane/ }));
+
+  // Now in my lane, in progress: assigned and moved in one drop.
+  const moved = myLane
+    .getByRole('region', { name: /^In Progress in Swim Lane/ })
+    .getByRole('button', { name: /Nobody has this/ });
+  await expect(moved).toBeVisible();
+  await page.reload();
+  await expect(
+    page
+      .getByRole('region', { name: /^Swim Lane, 2 tasks/ })
+      .getByRole('region', { name: /^In Progress in Swim Lane/ })
+      .getByRole('button', { name: /Nobody has this/ }),
+  ).toBeVisible();
+});

@@ -243,7 +243,7 @@ export function DisplayMenu({
             <MenuSeparator />
           </>
         )}
-        {layout === 'list' && group !== 'none' && (
+        {(layout === 'list' || layout === 'board') && group !== 'none' && (
           <>
             <MenuRadioGroup
               value={search.subgroup ?? 'none'}
@@ -252,7 +252,7 @@ export function DisplayMenu({
                 setSearch({ subgroup: next && next !== 'none' ? next : undefined });
               }}
             >
-              <MenuLabel>Sub-group by</MenuLabel>
+              <MenuLabel>{layout === 'board' ? 'Swimlanes' : 'Sub-group by'}</MenuLabel>
               {allowedGroups
                 .filter((g) => g !== 'field' && g !== group)
                 .map((g) => (
