@@ -70,7 +70,7 @@ select throws_ok(
      select workspace_id, task_id, workspace_id || '/' || task_id || '/elsewhere/x.txt', 'x.txt', 1 from paths $$,
   '23514', null, 'a row must point at its own folder of its task');
 select is(
-  (select kind from public.activity where task_id = (select task_id from paths) order by created_at desc limit 1),
+  (select kind from public.activity where task_id = (select task_id from paths) order by id desc limit 1),
   'task.attachment_added', 'adding a file shows in the task activity');
 
 select tests.authenticate_as('eve');
