@@ -5,8 +5,8 @@ import {
   isPriority,
   PRIORITY_LABEL,
   sortKeyBetween,
+  textToDocument,
   type Priority,
-  type RichDocument,
   type Task,
 } from '@daiq/domain';
 import { Avatar, Button, Dialog, DialogContent, DialogTitle, Shortcut, toast } from '@daiq/ui';
@@ -57,18 +57,6 @@ export function useComposer(): (defaults?: ComposerDefaults) => void {
   const open = useContext(ComposerContext);
   if (!open) throw new Error('useComposer must be used inside <ComposerProvider>');
   return open;
-}
-
-/** Plain text → editor document; one paragraph per line. */
-function textToDocument(text: string): RichDocument | null {
-  const lines = text.split('\n');
-  if (!text.trim()) return null;
-  return {
-    type: 'doc',
-    content: lines.map((line) =>
-      line ? { type: 'paragraph', content: [{ type: 'text', text: line }] } : { type: 'paragraph' },
-    ),
-  };
 }
 
 export function ComposerProvider({ children }: { children: ReactNode }) {

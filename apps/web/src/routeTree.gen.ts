@@ -36,6 +36,7 @@ import { Route as WorkspaceSettingsTeamsTeamKeyRouteImport } from './routes/$wor
 import { Route as WorkspaceTeamTeamKeyAutomationsRouteImport } from './routes/$workspace/team/$teamKey/automations'
 import { Route as WorkspaceTeamTeamKeyCyclesRouteImport } from './routes/$workspace/team/$teamKey/cycles'
 import { Route as WorkspaceTeamTeamKeyFormsRouteImport } from './routes/$workspace/team/$teamKey/forms'
+import { Route as WorkspaceTeamTeamKeyImportRouteImport } from './routes/$workspace/team/$teamKey/import'
 import { Route as WorkspaceTeamTeamKeyProjectsRouteImport } from './routes/$workspace/team/$teamKey/projects'
 import { Route as WorkspaceTeamTeamKeyTasksRouteImport } from './routes/$workspace/team/$teamKey/tasks'
 import { Route as WorkspaceTeamTeamKeyCycleNumberRouteImport } from './routes/$workspace/team/$teamKey/cycle.$number'
@@ -184,6 +185,12 @@ const WorkspaceTeamTeamKeyFormsRoute =
     path: '/team/$teamKey/forms',
     getParentRoute: () => WorkspaceRouteRoute,
   } as any)
+const WorkspaceTeamTeamKeyImportRoute =
+  WorkspaceTeamTeamKeyImportRouteImport.update({
+    id: '/team/$teamKey/import',
+    path: '/team/$teamKey/import',
+    getParentRoute: () => WorkspaceRouteRoute,
+  } as any)
 const WorkspaceTeamTeamKeyProjectsRoute =
   WorkspaceTeamTeamKeyProjectsRouteImport.update({
     id: '/team/$teamKey/projects',
@@ -231,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/$workspace/team/$teamKey/automations': typeof WorkspaceTeamTeamKeyAutomationsRoute
   '/$workspace/team/$teamKey/cycles': typeof WorkspaceTeamTeamKeyCyclesRoute
   '/$workspace/team/$teamKey/forms': typeof WorkspaceTeamTeamKeyFormsRoute
+  '/$workspace/team/$teamKey/import': typeof WorkspaceTeamTeamKeyImportRoute
   '/$workspace/team/$teamKey/projects': typeof WorkspaceTeamTeamKeyProjectsRoute
   '/$workspace/team/$teamKey/tasks': typeof WorkspaceTeamTeamKeyTasksRoute
   '/$workspace/team/$teamKey/cycle/$number': typeof WorkspaceTeamTeamKeyCycleNumberRoute
@@ -261,6 +269,7 @@ export interface FileRoutesByTo {
   '/$workspace/team/$teamKey/automations': typeof WorkspaceTeamTeamKeyAutomationsRoute
   '/$workspace/team/$teamKey/cycles': typeof WorkspaceTeamTeamKeyCyclesRoute
   '/$workspace/team/$teamKey/forms': typeof WorkspaceTeamTeamKeyFormsRoute
+  '/$workspace/team/$teamKey/import': typeof WorkspaceTeamTeamKeyImportRoute
   '/$workspace/team/$teamKey/projects': typeof WorkspaceTeamTeamKeyProjectsRoute
   '/$workspace/team/$teamKey/tasks': typeof WorkspaceTeamTeamKeyTasksRoute
   '/$workspace/team/$teamKey/cycle/$number': typeof WorkspaceTeamTeamKeyCycleNumberRoute
@@ -294,6 +303,7 @@ export interface FileRoutesById {
   '/$workspace/team/$teamKey/automations': typeof WorkspaceTeamTeamKeyAutomationsRoute
   '/$workspace/team/$teamKey/cycles': typeof WorkspaceTeamTeamKeyCyclesRoute
   '/$workspace/team/$teamKey/forms': typeof WorkspaceTeamTeamKeyFormsRoute
+  '/$workspace/team/$teamKey/import': typeof WorkspaceTeamTeamKeyImportRoute
   '/$workspace/team/$teamKey/projects': typeof WorkspaceTeamTeamKeyProjectsRoute
   '/$workspace/team/$teamKey/tasks': typeof WorkspaceTeamTeamKeyTasksRoute
   '/$workspace/team/$teamKey/cycle/$number': typeof WorkspaceTeamTeamKeyCycleNumberRoute
@@ -328,6 +338,7 @@ export interface FileRouteTypes {
     | '/$workspace/team/$teamKey/automations'
     | '/$workspace/team/$teamKey/cycles'
     | '/$workspace/team/$teamKey/forms'
+    | '/$workspace/team/$teamKey/import'
     | '/$workspace/team/$teamKey/projects'
     | '/$workspace/team/$teamKey/tasks'
     | '/$workspace/team/$teamKey/cycle/$number'
@@ -358,6 +369,7 @@ export interface FileRouteTypes {
     | '/$workspace/team/$teamKey/automations'
     | '/$workspace/team/$teamKey/cycles'
     | '/$workspace/team/$teamKey/forms'
+    | '/$workspace/team/$teamKey/import'
     | '/$workspace/team/$teamKey/projects'
     | '/$workspace/team/$teamKey/tasks'
     | '/$workspace/team/$teamKey/cycle/$number'
@@ -390,6 +402,7 @@ export interface FileRouteTypes {
     | '/$workspace/team/$teamKey/automations'
     | '/$workspace/team/$teamKey/cycles'
     | '/$workspace/team/$teamKey/forms'
+    | '/$workspace/team/$teamKey/import'
     | '/$workspace/team/$teamKey/projects'
     | '/$workspace/team/$teamKey/tasks'
     | '/$workspace/team/$teamKey/cycle/$number'
@@ -597,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceTeamTeamKeyFormsRouteImport
       parentRoute: typeof WorkspaceRouteRoute
     }
+    '/$workspace/team/$teamKey/import': {
+      id: '/$workspace/team/$teamKey/import'
+      path: '/team/$teamKey/import'
+      fullPath: '/$workspace/team/$teamKey/import'
+      preLoaderRoute: typeof WorkspaceTeamTeamKeyImportRouteImport
+      parentRoute: typeof WorkspaceRouteRoute
+    }
     '/$workspace/team/$teamKey/projects': {
       id: '/$workspace/team/$teamKey/projects'
       path: '/team/$teamKey/projects'
@@ -663,6 +683,7 @@ interface WorkspaceRouteRouteChildren {
   WorkspaceTeamTeamKeyAutomationsRoute: typeof WorkspaceTeamTeamKeyAutomationsRoute
   WorkspaceTeamTeamKeyCyclesRoute: typeof WorkspaceTeamTeamKeyCyclesRoute
   WorkspaceTeamTeamKeyFormsRoute: typeof WorkspaceTeamTeamKeyFormsRoute
+  WorkspaceTeamTeamKeyImportRoute: typeof WorkspaceTeamTeamKeyImportRoute
   WorkspaceTeamTeamKeyProjectsRoute: typeof WorkspaceTeamTeamKeyProjectsRoute
   WorkspaceTeamTeamKeyTasksRoute: typeof WorkspaceTeamTeamKeyTasksRoute
   WorkspaceTeamTeamKeyCycleNumberRoute: typeof WorkspaceTeamTeamKeyCycleNumberRoute
@@ -678,6 +699,7 @@ const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
   WorkspaceTeamTeamKeyAutomationsRoute: WorkspaceTeamTeamKeyAutomationsRoute,
   WorkspaceTeamTeamKeyCyclesRoute: WorkspaceTeamTeamKeyCyclesRoute,
   WorkspaceTeamTeamKeyFormsRoute: WorkspaceTeamTeamKeyFormsRoute,
+  WorkspaceTeamTeamKeyImportRoute: WorkspaceTeamTeamKeyImportRoute,
   WorkspaceTeamTeamKeyProjectsRoute: WorkspaceTeamTeamKeyProjectsRoute,
   WorkspaceTeamTeamKeyTasksRoute: WorkspaceTeamTeamKeyTasksRoute,
   WorkspaceTeamTeamKeyCycleNumberRoute: WorkspaceTeamTeamKeyCycleNumberRoute,

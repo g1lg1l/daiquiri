@@ -2201,6 +2201,7 @@ export type Database = {
       };
       delete_tasks: { Args: { task_ids: string[] }; Returns: string };
       form_by_slug: { Args: { slug: string }; Returns: Json };
+      import_tasks: { Args: { rows: Json; team_id: string }; Returns: number };
       ping_webhook: { Args: { webhook_id: string }; Returns: undefined };
       preview_invitation: {
         Args: { token: string };

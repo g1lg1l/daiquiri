@@ -265,6 +265,22 @@ function TeamSettings() {
         </Link>
       </div>
 
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-4">
+        <div>
+          <h3 className="text-[13px] font-medium">Import tasks</h3>
+          <p className="text-xs text-fg-muted">
+            From a CSV file: an export from Linear, Asana, ClickUp or a spreadsheet.
+          </p>
+        </div>
+        <Link
+          to="/$workspace/team/$teamKey/import"
+          params={{ workspace: workspace.slug, teamKey: team.key }}
+          className={buttonVariants({ size: 'sm' })}
+        >
+          Import CSV
+        </Link>
+      </div>
+
       <fieldset className="flex flex-col gap-3">
         <legend className="text-sm font-semibold">Custom fields</legend>
         <p className="text-xs text-fg-muted">

@@ -192,3 +192,14 @@ export type {
 export { formatClock, formatDuration, parseDuration } from './time';
 export { isSafeWebhookUrl, WEBHOOK_EVENT_LABEL, WEBHOOK_EVENTS } from './webhooks';
 export type { Webhook, WebhookDelivery, WebhookEvent } from './webhooks';
+export {
+  guessMapping,
+  IMPORT_TARGET_LABEL,
+  IMPORT_TARGETS,
+  parseCsv,
+  parseDateCell,
+  parsePriority,
+  splitList,
+  textToDocument,
+} from './import';
+export type { ImportTarget } from './import';
