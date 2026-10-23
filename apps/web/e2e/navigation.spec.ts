@@ -60,8 +60,8 @@ test('board swimlanes: a drop writes the column and the lane', async ({ page }) 
   await createTask(page, 'Nobody has this');
 
   await page.goto(`/${slug}/team/ENG/tasks?layout=board&subgroup=assignee`);
-  const myLane = page.getByRole('region', { name: /^Swim Lane, \d+ tasks/ });
-  const noOne = page.getByRole('region', { name: /^No assignee, 1 tasks/ });
+  const myLane = page.getByRole('region', { name: /^Swim Lane, \d+ tasks?\b/ });
+  const noOne = page.getByRole('region', { name: /^No assignee, 1 task\b/ });
   await expect(myLane).toBeVisible();
   const card = noOne.getByRole('button', { name: /Nobody has this/ });
   await card.dragTo(myLane.getByRole('region', { name: /^In Progress in Swim Lane/ }));

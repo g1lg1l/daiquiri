@@ -228,7 +228,9 @@ export const shell = {
     completed: 'Completed',
     scope: 'Scope',
     summary: (done: number, total: number, points: boolean) =>
-      `${done} of ${total} ${points ? 'points' : 'tasks'} completed`,
+      points
+        ? count(total, `${done} of # point completed`, `${done} of # points completed`)
+        : count(total, `${done} of # task completed`, `${done} of # tasks completed`),
     empty: 'No work in this cycle yet',
   },
   inbox: {

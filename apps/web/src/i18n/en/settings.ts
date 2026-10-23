@@ -52,7 +52,7 @@ export const settings = {
     keyTaken: (key: string) => `The key ${key} is already used. Try a different name.`,
     privateTeam: 'Private team',
     teamSettings: (name: string) => `${name} settings`,
-    members: (n: number) => `${n} members`,
+    members: (n: number) => count(n, '# member', '# members'),
     leave: 'Leave',
     join: 'Join',
   },
@@ -175,7 +175,7 @@ export const settings = {
       `Deleted tasks stay here for ${days} days, then they are deleted for good. Restoring a task brings back the sub-tasks deleted with it.`,
     empty: 'The trash is empty.',
     deleted: (ago: string, subtasks: number, daysLeft: number) =>
-      `Deleted ${ago}${subtasks > 0 ? `, with ${count(subtasks, '# sub-task', '# sub-tasks')}` : ''}. ${daysLeft} days left.`,
+      `Deleted ${ago}${subtasks > 0 ? `, with ${count(subtasks, '# sub-task', '# sub-tasks')}` : ''}. ${count(daysLeft, '# day left', '# days left')}.`,
     restored: (identifier: string) => `Restored ${identifier}`,
     deleteForever: 'Delete forever',
     purgeTitle: (title: string) => `Delete ${title} forever?`,
@@ -220,7 +220,8 @@ export const settings = {
     waiting: 'Waiting',
     status: {
       delivered: (code: number) => `delivered (HTTP ${code})`,
-      gaveUp: (attempts: number) => `gave up after ${attempts} attempts`,
+      gaveUp: (attempts: number) =>
+        count(attempts, 'gave up after # attempt', 'gave up after # attempts'),
       retrying: (attempt: number) => `retrying (attempt ${attempt} of 6)`,
       queued: 'queued',
     },

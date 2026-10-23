@@ -64,9 +64,9 @@ export const tasks = {
   undo: {
     status: (name: string) => `Status → ${name}`,
     clearedDueDate: 'Cleared due date',
-    onTasks: (label: string, n: number) => `${label} on ${n} tasks`,
+    onTasks: (label: string, n: number) => count(n, `${label} on # task`, `${label} on # tasks`),
     deleted: (id: string) => `Deleted ${id}`,
-    deletedMany: (n: number) => `Deleted ${n} tasks`,
+    deletedMany: (n: number) => count(n, 'Deleted # task', 'Deleted # tasks'),
     reorder: 'Reorder',
     moveTo: (group: string) => `Move to ${group}`,
     reschedule: 'Reschedule',
@@ -86,7 +86,7 @@ export const tasks = {
     project: 'Project…',
     assignToMe: 'Assign to me',
     copyLink: 'Copy link',
-    deleteMany: (n: number) => `Delete ${n} tasks`,
+    deleteMany: (n: number) => count(n, 'Delete # task', 'Delete # tasks'),
   },
   list: {
     movedToPosition: (title: string, position: number, total: number) =>
@@ -109,9 +109,10 @@ export const tasks = {
     movedInLane: (id: string, column: string, lane: string) =>
       `${id} moved to ${column} in ${lane}`,
     movedToPosition: (id: string, position: number) => `${id} moved to position ${position}`,
-    lane: (lane: string, n: number) => `${lane}, ${n} tasks`,
-    column: (column: string, n: number) => `${column}, ${n} tasks`,
-    columnInLane: (column: string, lane: string, n: number) => `${column} in ${lane}, ${n} tasks`,
+    lane: (lane: string, n: number) => `${lane}, ${count(n, '# task', '# tasks')}`,
+    column: (column: string, n: number) => `${column}, ${count(n, '# task', '# tasks')}`,
+    columnInLane: (column: string, lane: string, n: number) =>
+      `${column} in ${lane}, ${count(n, '# task', '# tasks')}`,
   },
   calendar: {
     movedTo: (id: string, day: string) => `${id} moved to ${day}`,

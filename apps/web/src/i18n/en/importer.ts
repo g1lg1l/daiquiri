@@ -4,8 +4,8 @@ const num = (n: number) => n.toLocaleString('en');
 
 /** Importing tasks from CSV files, Linear, Asana and ClickUp. */
 export const importer = {
-  imported: (n: number) => `Imported ${num(n)} tasks`,
-  importTasks: (n: number) => `Import ${num(n)} tasks`,
+  imported: (n: number) => count(n, 'Imported # task', 'Imported # tasks'),
+  importTasks: (n: number) => count(n, 'Import # task', 'Import # tasks'),
   openTasks: (team: string) => `Open ${team}’s tasks`,
   importing: 'Importing',
   sources: {
@@ -42,7 +42,7 @@ export const importer = {
     importingBusy: 'Importing…',
     addingComments: 'Adding comments…',
     untitled: 'Untitled',
-    andComments: (n: number) => ` and ${num(n)} comments`,
+    andComments: (n: number) => count(n, ' and # comment', ' and # comments'),
     connecting: 'Connecting…',
     nothingToImport: (source: string) => `This ${source} account has nothing to import.`,
     tokenLabel: (source: string, token: string) => `${source} ${token.toLowerCase()}`,
@@ -57,9 +57,10 @@ export const importer = {
     includeComments: 'Include comments (slower: one request per task for Asana and ClickUp)',
     readTasks: 'Read tasks',
     review: 'Review',
-    summary: (n: number, scope: string) => `${num(n)} tasks from ${scope}`,
-    subtasks: (n: number) => `, ${n} of them sub-tasks`,
-    withComments: (n: number) => `, with ${num(n)} comments`,
+    summary: (n: number, scope: string) =>
+      count(n, `# task from ${scope}`, `# tasks from ${scope}`),
+    subtasks: (n: number) => count(n, ', # of them a sub-task', ', # of them sub-tasks'),
+    withComments: (n: number) => count(n, ', with # comment', ', with # comments'),
     statuses: 'Statuses',
     completed: 'Completed',
     noStatus: 'No status',
@@ -69,8 +70,9 @@ export const importer = {
     unassigned: (names: string, more: number) =>
       `Not members here, left unassigned: ${names}${more > 0 ? ` and ${more} more` : ''}.`,
     adminsMatch: ' (Admins also match people by email.)',
-    createLabels: (n: number) => `Create ${n} missing labels`,
-    createProjects: (n: number, names: string) => `Create ${n} projects (${names})`,
+    createLabels: (n: number) => count(n, 'Create # missing label', 'Create # missing labels'),
+    createProjects: (n: number, names: string) =>
+      count(n, `Create # project (${names})`, `Create # projects (${names})`),
     errorKept: ' Tasks imported before the error stay.',
   },
   csv: {
@@ -91,7 +93,8 @@ export const importer = {
     skip: 'Don’t import',
     column: (n: number) => `Column ${n}`,
     preview: 'Preview',
-    previewTitle: (n: number, file: string) => `Preview: ${num(n)} tasks from ${file}`,
+    previewTitle: (n: number, file: string) =>
+      count(n, `Preview: # task from ${file}`, `Preview: # tasks from ${file}`),
     defaultStatus: 'Default status',
     unmatchedStatus: (n: number, team: string) =>
       count(
@@ -111,7 +114,8 @@ export const importer = {
         `# row names a project ${team} doesn’t have: no project is set.`,
         `# rows name a project ${team} doesn’t have: no project is set.`,
       ),
-    createLabels: (n: number, names: string) => `Create ${n} missing labels (${names})`,
+    createLabels: (n: number, names: string) =>
+      count(n, `Create # missing label (${names})`, `Create # missing labels (${names})`),
     chooseTitle: 'Choose the column with the task titles.',
   },
   settings: {

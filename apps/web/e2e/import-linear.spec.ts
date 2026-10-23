@@ -93,18 +93,16 @@ test('import a Linear team, with sub-issues and comments', async ({ page }) => {
 
   const review = page.getByRole('region', { name: 'Review' });
   await expect(review).toContainText(
-    '3 tasks from App (APP), 1 of them sub-tasks, with 1 comments',
+    '3 tasks from App (APP), 1 of them a sub-task, with 1 comment',
   );
   // "QA" has no namesake here: it maps to the first in-progress status.
   await expect(review.getByLabel('Status for QA')).toHaveText(
     (await review.getByLabel('Status for In Progress').textContent()) ?? '',
   );
   await expect(review).toContainText('Not members here, left unassigned: Ghost');
-  await expect(review.getByLabel(/Create 1 projects \(Payments\)/)).toBeChecked();
+  await expect(review.getByLabel(/Create 1 project \(Payments\)/)).toBeChecked();
   await review.getByRole('button', { name: 'Import 3 tasks' }).click();
-  await expect(
-    page.getByRole('heading', { name: 'Imported 3 tasks and 1 comments' }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Imported 3 tasks and 1 comment' })).toBeVisible();
   // The key went to Linear as typed, and nowhere else.
   expect(new Set(seen)).toEqual(new Set(['lin_api_e2e']));
 
