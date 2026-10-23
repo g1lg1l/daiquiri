@@ -86,6 +86,8 @@ function patchForMove(
       return {
         labelIds: [...task.labelIds.filter((id) => id !== from), ...(to === NONE ? [] : [to])],
       };
+    case 'milestone':
+      return { milestoneId: to === NONE ? null : to };
     case 'due':
     case 'none':
       return null; // due buckets and "none" have no single value to write

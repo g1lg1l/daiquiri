@@ -4,6 +4,7 @@ import {
   sortStatuses,
   sortTasks,
   type GroupBy,
+  type Milestone,
   type Task,
   type TaskGroup,
   type ViewDefaults,
@@ -15,6 +16,7 @@ import { lazy, Suspense, useCallback, useMemo, type ReactNode } from 'react';
 import { useToday } from '../../lib/use-today';
 import { ViewHeader } from '../shell/view-header';
 import { useShell } from '../shell/shell-context';
+import { useShortcuts } from '../shortcuts/use-shortcuts';
 import {
   DisplayMenu,
   FilterChips,
@@ -48,6 +50,8 @@ export interface TaskViewProps {
   composerDefaults: ComposerDefaults;
   allowedGroups: readonly GroupBy[];
   headerExtra?: ReactNode;
+  /** A project's milestones, for grouping by milestone. */
+  milestones?: readonly Milestone[];
   /** Context shown under the header (e.g. project properties). */
   subheader?: ReactNode;
 }
@@ -63,12 +67,15 @@ export function TaskView({
   composerDefaults,
   allowedGroups,
   headerExtra,
+  milestones,
   subheader,
 }: TaskViewProps) {
   const { workspace, userId } = useWorkspace();
   const data = useWorkspaceData();
   const navigate = useNavigate();
   const composer = useComposer();
+  // C creates in this view's context (team, project, cycle), not just the current team.
+  useShortcuts({ create: () => composer(composerDefaults) });
   const identifier = useIdentifier();
   const { canPeek } = useShell();
   const today = useToday();
@@ -100,8 +107,9 @@ export function TaskView({
       members: data.membersById,
       projects: data.projectsById,
       labels: data.labelsById,
+      milestones,
     });
-  }, [tasks, visible, userId, data, teamIds, group, today]);
+  }, [tasks, visible, userId, data, teamIds, group, today, milestones]);
 
   const peekTask = useMemo(
     () => (search.peek ? tasks?.find((task) => identifier(task) === search.peek) : undefined),

@@ -1,5 +1,6 @@
 import {
   useCycles,
+  useMilestones,
   useTaskDetail,
   useTasks,
   useTaskSubscription,
@@ -33,6 +34,7 @@ import {
   BellIcon,
   BellOffIcon,
   CircleDashedIcon,
+  DiamondIcon,
   ExpandIcon,
   FolderIcon,
   GaugeIcon,
@@ -147,6 +149,10 @@ function TaskDetailBody({
   const status = data.statuses.get(task.statusId);
   const project = task.projectId ? data.projectsById.get(task.projectId) : undefined;
   const cycles = useCycles(team?.cyclesEnabled ? team.id : undefined);
+  const milestones = useMilestones(task.projectId);
+  const milestone = task.milestoneId
+    ? milestones.data?.find((m) => m.id === task.milestoneId)
+    : undefined;
   const cycle = task.cycleId ? cycles.data?.find((c) => c.id === task.cycleId) : undefined;
   const today = useToday();
   const ident = identifier(task);
@@ -395,6 +401,37 @@ function TaskDetailBody({
           }
         />
       </PropertyRow>
+      {project && (milestones.data?.length ?? 0) > 0 && (
+        <PropertyRow label="Milestone">
+          <PickerPopover
+            trigger={
+              <Button variant="ghost" size="sm" className={ghostTrigger}>
+                <DiamondIcon className={cn(!milestone && 'text-fg-subtle')} />
+                <span className={cn('truncate', !milestone && 'text-fg-subtle')}>
+                  {milestone?.name ?? 'No milestone'}
+                </span>
+              </Button>
+            }
+            options={[
+              { value: NO_VALUE, label: 'No milestone', icon: <CircleDashedIcon /> },
+              ...(milestones.data ?? []).map((m) => ({
+                value: m.id,
+                label: m.name,
+                icon: <DiamondIcon />,
+              })),
+            ]}
+            selected={[task.milestoneId ?? NO_VALUE]}
+            placeholder="Move to milestone…"
+            onSelect={([id]) =>
+              actions.update(
+                [task],
+                { milestoneId: id && id !== NO_VALUE ? id : null },
+                'Milestone',
+              )
+            }
+          />
+        </PropertyRow>
+      )}
       {team?.estimatesEnabled && (
         <PropertyRow label="Estimate">
           <PickerPopover

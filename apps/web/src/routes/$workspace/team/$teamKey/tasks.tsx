@@ -1,5 +1,5 @@
 import { useTasks } from '@daiq/data';
-import { DEFAULT_VIEW, GROUP_BY, viewSearchSchema } from '@daiq/domain';
+import { DEFAULT_VIEW, TEAM_GROUP_BY, viewSearchSchema } from '@daiq/domain';
 import { createFileRoute } from '@tanstack/react-router';
 import { ChevronRightIcon } from 'lucide-react';
 import { useMemo } from 'react';
@@ -56,7 +56,7 @@ function TeamTasks() {
       defaults={DEFAULT_VIEW}
       teamIds={teamIds}
       composerDefaults={composerDefaults}
-      allowedGroups={GROUP_BY}
+      allowedGroups={TEAM_GROUP_BY}
     />
   );
 }

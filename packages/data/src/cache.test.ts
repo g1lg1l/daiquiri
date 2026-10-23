@@ -18,6 +18,7 @@ const task = (overrides: Partial<Task> = {}): Task => ({
   dueDate: null,
   estimate: null,
   cycleId: null,
+  milestoneId: null,
   sortKey: 'a0',
   completedAt: null,
   canceledAt: null,

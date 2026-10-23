@@ -4,7 +4,7 @@ import {
   cycleState,
   daysBetween,
   DEFAULT_VIEW,
-  GROUP_BY,
+  TEAM_GROUP_BY,
   isClosedCategory,
   viewSearchSchema,
 } from '@daiq/domain';
@@ -125,7 +125,7 @@ function CyclePage() {
         defaults={DEFAULT_VIEW}
         teamIds={teamIds}
         composerDefaults={composerDefaults}
-        allowedGroups={GROUP_BY}
+        allowedGroups={TEAM_GROUP_BY}
         subheader={summary}
         headerExtra={
           <Button variant="ghost" size="sm" onClick={() => setRenaming(true)}>

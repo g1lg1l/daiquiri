@@ -1,4 +1,4 @@
-import { useTasks, useUpdateProject } from '@daiq/data';
+import { useLatestProjectUpdates, useMilestones, useTasks, useUpdateProject } from '@daiq/data';
 import {
   DEFAULT_VIEW,
   GROUP_BY,
@@ -10,16 +10,21 @@ import { Avatar, Button, cn } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArchiveIcon, ArchiveRestoreIcon, UserIcon } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
+import { z } from 'zod';
 import { NotFoundPanel } from '../../../components/not-found-panel';
 import { rememberRecent } from '../../../features/command-palette/recent';
 import { memberOptions } from '../../../features/pickers/options';
 import { PickerPopover } from '../../../features/pickers/picker-popover';
+import { Milestones } from '../../../features/projects/milestones';
 import {
+  HealthBadge,
   PROJECT_STATUS_LABEL,
   PROJECT_STATUSES,
   ProjectStatusIcon,
   progressOf,
 } from '../../../features/projects/project-status';
+import { ProjectUpdates } from '../../../features/projects/project-updates';
+import { ViewHeader } from '../../../features/shell/view-header';
 import { DateField } from '../../../features/tasks/task-actions';
 import { TaskView } from '../../../features/tasks/task-view';
 import { FavoriteButton } from '../../../features/views/favorite-button';
@@ -27,7 +32,9 @@ import { useSetSearch } from '../../../features/views/use-set-search';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
 
 export const Route = createFileRoute('/$workspace/project/$projectId')({
-  validateSearch: viewSearchSchema,
+  validateSearch: viewSearchSchema.extend({
+    tab: z.enum(['updates']).optional().catch(undefined),
+  }),
   component: ProjectPage,
 });
 
@@ -39,6 +46,8 @@ function ProjectPage() {
   const setSearch = useSetSearch();
   const project = data.projectsById.get(projectId);
   const tasks = useTasks(project ? { kind: 'project', id: project.id } : null);
+  const milestones = useMilestones(project?.id);
+  const latest = useLatestProjectUpdates(workspace.id).data?.get(projectId);
   const updateProject = useUpdateProject(workspace.id);
   const teamIds = useMemo(() => (project ? [project.teamId] : []), [project]);
   const composerDefaults = useMemo(
@@ -81,8 +90,33 @@ function ProjectPage() {
   const update = (patch: Parameters<typeof updateProject.mutate>[0]['patch']) =>
     updateProject.mutate({ id: project.id, patch });
 
+  const tabs = (
+    <nav aria-label="Project" className="flex rounded-md border border-border p-0.5">
+      {(
+        [
+          [undefined, 'Tasks'],
+          ['updates', 'Updates'],
+        ] as const
+      ).map(([tab, label]) => (
+        <Link
+          key={label}
+          to="/$workspace/project/$projectId"
+          params={{ workspace: workspace.slug, projectId: project.id }}
+          search={{ tab }}
+          activeOptions={{ includeSearch: true, explicitUndefined: true }}
+          className="rounded-[5px] px-2 py-0.5 text-xs text-fg-muted hover:text-fg"
+          activeProps={{ className: 'bg-surface-emphasis text-fg' }}
+        >
+          {label}
+        </Link>
+      ))}
+    </nav>
+  );
+
   const summary = (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border px-4 py-2 text-xs text-fg-muted">
+      {tabs}
+      {latest && <HealthBadge health={latest.health} />}
       {team && (
         <Link
           to="/$workspace/team/$teamKey/projects"
@@ -165,6 +199,23 @@ function ProjectPage() {
     </div>
   );
 
+  if (search.tab === 'updates') {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <ViewHeader
+          title={project.name}
+          icon={
+            <ProjectStatusIcon status={project.status} progress={progress} className="size-4" />
+          }
+        >
+          <FavoriteButton kind="project" id={project.id} />
+        </ViewHeader>
+        {summary}
+        <ProjectUpdates project={project} />
+      </div>
+    );
+  }
+
   return (
     <TaskView
       title={project.name}
@@ -176,7 +227,13 @@ function ProjectPage() {
       teamIds={teamIds}
       composerDefaults={composerDefaults}
       allowedGroups={GROUP_BY.filter((g) => g !== 'project')}
-      subheader={summary}
+      milestones={milestones.data}
+      subheader={
+        <>
+          {summary}
+          <Milestones project={project} tasks={tasks.data ?? []} />
+        </>
+      }
       headerExtra={<FavoriteButton kind="project" id={project.id} />}
     />
   );

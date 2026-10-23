@@ -70,6 +70,36 @@ export interface Cycle {
   completedAt: string | null;
 }
 
+export interface Milestone {
+  id: string;
+  workspaceId: string;
+  teamId: string;
+  projectId: string;
+  name: string;
+  targetDate: string | null;
+  sortKey: string;
+}
+
+export const PROJECT_HEALTH = ['on_track', 'at_risk', 'off_track'] as const;
+export type ProjectHealth = (typeof PROJECT_HEALTH)[number];
+export const isProjectHealth = (value: string): value is ProjectHealth =>
+  (PROJECT_HEALTH as readonly string[]).includes(value);
+export const PROJECT_HEALTH_LABEL: Record<ProjectHealth, string> = {
+  on_track: 'On track',
+  at_risk: 'At risk',
+  off_track: 'Off track',
+};
+
+export interface ProjectUpdate {
+  id: string;
+  projectId: string;
+  authorId: string | null;
+  health: ProjectHealth;
+  body: RichDocument | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Team {
   id: string;
   workspaceId: string;
@@ -147,6 +177,7 @@ export interface Task {
   dueDate: string | null;
   estimate: number | null;
   cycleId: string | null;
+  milestoneId: string | null;
   sortKey: string;
   completedAt: string | null;
   canceledAt: string | null;
@@ -174,6 +205,7 @@ export type TaskPatch = Partial<
     | 'dueDate'
     | 'estimate'
     | 'cycleId'
+    | 'milestoneId'
     | 'sortKey'
   >
 >;

@@ -58,3 +58,11 @@ export {
 } from './workspaces';
 export { useCycleProgress, useCycles, useRenameCycle, useUpdateTeam } from './planning';
 export type { CycleDay, TeamSettings } from './planning';
+export {
+  useLatestProjectUpdates,
+  useMilestoneActions,
+  useMilestones,
+  useProjectUpdateActions,
+  useProjectUpdates,
+} from './projects';
+export type { LatestUpdate, MilestonePatch } from './projects';

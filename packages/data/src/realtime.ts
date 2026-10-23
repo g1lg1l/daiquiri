@@ -140,6 +140,12 @@ async function applyEvents(
       case 'cycle':
         work.push(invalidate(['cycles']));
         break;
+      case 'milestone':
+        work.push(invalidate(['milestones']));
+        break;
+      case 'project_update':
+        work.push(invalidate(['project-updates']));
+        break;
       case 'workspace_member':
         work.push(
           invalidate(keys.members(workspaceId)),

@@ -93,6 +93,7 @@ function inverse(task: Task | TaskDetail, patch: TaskPatch): TaskPatch {
   if (patch.dueDate !== undefined) previous.dueDate = task.dueDate;
   if (patch.estimate !== undefined) previous.estimate = task.estimate;
   if (patch.cycleId !== undefined) previous.cycleId = task.cycleId;
+  if (patch.milestoneId !== undefined) previous.milestoneId = task.milestoneId;
   if (patch.sortKey !== undefined) previous.sortKey = task.sortKey;
   return previous;
 }

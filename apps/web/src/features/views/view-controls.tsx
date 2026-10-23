@@ -56,6 +56,7 @@ const GROUP_LABEL: Record<GroupBy, string> = {
   priority: 'Priority',
   assignee: 'Assignee',
   project: 'Project',
+  milestone: 'Milestone',
   label: 'Label',
   due: 'Due date',
   none: 'No grouping',

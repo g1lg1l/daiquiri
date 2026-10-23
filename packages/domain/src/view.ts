@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { addDays, dueBucket, startOfWeek, type DueBucket } from './dates';
-import type { Label, Project, Status, Task } from './model';
+import type { Label, Milestone, Project, Status, Task } from './model';
 import { prioritySortKey } from './priority';
 import { compareSortKeys } from './ordering';
 import { isClosedCategory, STATUS_CATEGORIES, type StatusCategory } from './status';
@@ -16,10 +16,14 @@ export const GROUP_BY = [
   'priority',
   'assignee',
   'project',
+  'milestone',
   'label',
   'due',
   'none',
 ] as const;
+
+/** Groupings that make sense for every list; 'milestone' only applies inside one project. */
+export const TEAM_GROUP_BY = GROUP_BY.filter((group) => group !== 'milestone');
 export const ORDER_BY = ['manual', 'priority', 'due', 'created', 'updated', 'title'] as const;
 export const COMPLETED_VISIBILITY = ['all', 'week', 'none'] as const;
 export const LAYOUTS = ['list', 'board', 'calendar', 'timeline'] as const;
@@ -227,6 +231,8 @@ export interface GroupContext extends ViewContext {
   members: ReadonlyMap<string, { displayName: string }>;
   projects: ReadonlyMap<string, Project>;
   labels: ReadonlyMap<string, Label>;
+  /** The project's milestones, for grouping by milestone on a project page. */
+  milestones?: readonly Milestone[];
 }
 
 const PRIORITY_GROUPS: [number, string][] = [
@@ -320,6 +326,16 @@ export function groupTasks(
         ],
         (task) => [task.projectId ?? NONE],
       ).filter((group) => group.tasks.length > 0);
+    }
+    case 'milestone': {
+      // Every milestone shows, even empty, in its order; "No milestone" only when used.
+      const milestones = (context.milestones ?? []).toSorted((a, b) =>
+        compareSortKeys(a.sortKey, b.sortKey),
+      );
+      return bucket(
+        [...milestones.map((m): [string, string] => [m.id, m.name]), [NONE, 'No milestone']],
+        (task) => [task.milestoneId ?? NONE],
+      ).filter((group) => group.key !== NONE || group.tasks.length > 0);
     }
     case 'label': {
       const ids = [...new Set(tasks.flatMap((task) => task.labelIds))].sort((a, b) =>

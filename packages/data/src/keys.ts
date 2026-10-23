@@ -30,6 +30,10 @@ export const keys = {
   activity: (taskId: string) => ['activity', taskId] as const,
   notifications: (workspaceId: string) => ['notifications', workspaceId] as const,
   cycles: (teamId: string) => ['cycles', teamId] as const,
+  milestones: (projectId: string) => ['milestones', projectId] as const,
+  projectUpdates: (projectId: string) => ['project-updates', projectId] as const,
+  latestProjectUpdates: (workspaceId: string) =>
+    ['project-updates', 'latest', workspaceId] as const,
   cycleProgress: (cycleId: string) => ['cycles', 'progress', cycleId] as const,
   views: (workspaceId: string) => ['views', workspaceId] as const,
   favorites: (workspaceId: string) => ['favorites', workspaceId] as const,

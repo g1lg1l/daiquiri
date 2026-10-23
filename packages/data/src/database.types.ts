@@ -357,6 +357,58 @@ export type Database = {
           },
         ];
       };
+      milestones: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          project_id: string;
+          sort_key: string;
+          target_date: string | null;
+          team_id: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          project_id: string;
+          sort_key?: string;
+          target_date?: string | null;
+          team_id: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          project_id?: string;
+          sort_key?: string;
+          target_date?: string | null;
+          team_id?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'milestones_team_id_project_id_fkey';
+            columns: ['team_id', 'project_id'];
+            isOneToOne: false;
+            referencedRelation: 'projects';
+            referencedColumns: ['team_id', 'id'];
+          },
+          {
+            foreignKeyName: 'milestones_workspace_id_team_id_fkey';
+            columns: ['workspace_id', 'team_id'];
+            isOneToOne: false;
+            referencedRelation: 'teams';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
       notifications: {
         Row: {
           actor_id: string | null;
@@ -456,6 +508,58 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      project_updates: {
+        Row: {
+          author_id: string | null;
+          body: Json | null;
+          created_at: string;
+          health: string;
+          id: string;
+          project_id: string;
+          team_id: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          author_id?: string | null;
+          body?: Json | null;
+          created_at?: string;
+          health: string;
+          id?: string;
+          project_id: string;
+          team_id: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          author_id?: string | null;
+          body?: Json | null;
+          created_at?: string;
+          health?: string;
+          id?: string;
+          project_id?: string;
+          team_id?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'project_updates_team_id_project_id_fkey';
+            columns: ['team_id', 'project_id'];
+            isOneToOne: false;
+            referencedRelation: 'projects';
+            referencedColumns: ['team_id', 'id'];
+          },
+          {
+            foreignKeyName: 'project_updates_workspace_id_author_id_fkey';
+            columns: ['workspace_id', 'author_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspace_members';
+            referencedColumns: ['workspace_id', 'user_id'];
+          },
+        ];
       };
       projects: {
         Row: {
@@ -747,6 +851,7 @@ export type Database = {
           due_date: string | null;
           estimate: number | null;
           id: string;
+          milestone_id: string | null;
           number: number;
           parent_id: string | null;
           priority: number;
@@ -773,6 +878,7 @@ export type Database = {
           due_date?: string | null;
           estimate?: number | null;
           id?: string;
+          milestone_id?: string | null;
           number: number;
           parent_id?: string | null;
           priority?: number;
@@ -798,6 +904,7 @@ export type Database = {
           due_date?: string | null;
           estimate?: number | null;
           id?: string;
+          milestone_id?: string | null;
           number?: number;
           parent_id?: string | null;
           priority?: number;
@@ -825,6 +932,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'cycles';
             referencedColumns: ['team_id', 'id'];
+          },
+          {
+            foreignKeyName: 'tasks_milestone_fk';
+            columns: ['project_id', 'milestone_id'];
+            isOneToOne: false;
+            referencedRelation: 'milestones';
+            referencedColumns: ['project_id', 'id'];
           },
           {
             foreignKeyName: 'tasks_team_id_parent_id_fkey';
@@ -1093,7 +1207,17 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      project_latest_updates: {
+        Row: {
+          author_id: string | null;
+          created_at: string | null;
+          health: string | null;
+          id: string | null;
+          project_id: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
     };
     Functions: {
       accept_invitation: {
@@ -1170,6 +1294,7 @@ export type Database = {
           due_date: string | null;
           estimate: number | null;
           id: string;
+          milestone_id: string | null;
           number: number;
           parent_id: string | null;
           priority: number;

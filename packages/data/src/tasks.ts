@@ -212,6 +212,7 @@ export function useCreateTask() {
         dueDate: input.dueDate ?? null,
         estimate: input.estimate ?? null,
         cycleId: input.cycleId ?? null,
+        milestoneId: null,
         sortKey: input.sortKey,
         completedAt: null,
         canceledAt: null,

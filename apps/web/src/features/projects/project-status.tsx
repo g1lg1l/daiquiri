@@ -1,4 +1,4 @@
-import type { ProjectStatus } from '@daiq/domain';
+import { PROJECT_HEALTH_LABEL, type ProjectHealth, type ProjectStatus } from '@daiq/domain';
 import { cn } from '@daiq/ui';
 
 export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
@@ -68,4 +68,25 @@ export function ProjectStatusIcon({
 
 export function progressOf(counts: { done: number; total: number }): number {
   return counts.total === 0 ? 0 : counts.done / counts.total;
+}
+
+const HEALTH_DOT: Record<ProjectHealth, string> = {
+  on_track: 'bg-status-completed',
+  at_risk: 'bg-warning',
+  off_track: 'bg-danger',
+};
+
+/** A project's latest health, as posted in its updates. */
+export function HealthBadge({ health, className }: { health: ProjectHealth; className?: string }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex h-5 items-center gap-1.5 rounded-full border border-border px-2 text-[11px] text-fg-muted',
+        className,
+      )}
+    >
+      <span aria-hidden className={cn('size-1.5 rounded-full', HEALTH_DOT[health])} />
+      {PROJECT_HEALTH_LABEL[health]}
+    </span>
+  );
 }

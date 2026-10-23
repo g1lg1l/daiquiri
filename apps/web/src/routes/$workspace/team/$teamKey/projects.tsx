@@ -1,4 +1,4 @@
-import { useCreateProject, useTasks } from '@daiq/data';
+import { useCreateProject, useLatestProjectUpdates, useTasks } from '@daiq/data';
 import { formatDueDate, isClosedCategory, type ProjectStatus } from '@daiq/domain';
 import { useToday } from '../../../../lib/use-today';
 import {
@@ -18,6 +18,7 @@ import { useMemo, useState } from 'react';
 import { NotFoundPanel } from '../../../../components/not-found-panel';
 import { TeamBadge } from '../../../../components/team-badge';
 import {
+  HealthBadge,
   PROJECT_STATUS_LABEL,
   PROJECT_STATUSES,
   ProjectStatusIcon,
@@ -38,6 +39,7 @@ function TeamProjects() {
   const data = useWorkspaceData();
   const team = data.teamsByKey.get(teamKey);
   const tasks = useTasks(team ? { kind: 'team', id: team.id } : null);
+  const latest = useLatestProjectUpdates(workspace.id);
   const [creating, setCreating] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const today = useToday();
@@ -100,6 +102,7 @@ function TeamProjects() {
                 <th className="px-4 py-2 font-normal">Name</th>
                 <th className="hidden px-2 py-2 font-normal md:table-cell">Lead</th>
                 <th className="hidden px-2 py-2 font-normal md:table-cell">Target</th>
+                <th className="hidden px-2 py-2 font-normal sm:table-cell">Health</th>
                 <th className="px-4 py-2 text-right font-normal">Progress</th>
               </tr>
             </thead>
@@ -108,6 +111,7 @@ function TeamProjects() {
                 const count = counts.get(project.id) ?? { done: 0, total: 0 };
                 const progress = progressOf(count);
                 const lead = project.leadId ? data.membersById.get(project.leadId) : undefined;
+                const health = latest.data?.get(project.id)?.health;
                 return (
                   <tr
                     key={project.id}
@@ -137,6 +141,13 @@ function TeamProjects() {
                     </td>
                     <td className="hidden px-2 py-2.5 text-fg-muted tabular md:table-cell">
                       {project.targetDate ? formatDueDate(project.targetDate, today) : '—'}
+                    </td>
+                    <td className="hidden px-2 py-2.5 sm:table-cell">
+                      {health ? (
+                        <HealthBadge health={health} />
+                      ) : (
+                        <span className="text-xs text-fg-subtle">No updates</span>
+                      )}
                     </td>
                     <td
                       className="px-4 py-2.5"

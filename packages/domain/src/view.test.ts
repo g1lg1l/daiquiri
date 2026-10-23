@@ -33,6 +33,7 @@ const task = (overrides: Partial<Task>): Task => ({
   dueDate: null,
   estimate: null,
   cycleId: null,
+  milestoneId: null,
   sortKey: `a${seq}`,
   completedAt: null,
   canceledAt: null,
@@ -174,5 +175,40 @@ describe('saved view configs', () => {
 
   it('accepts a saved view id in the URL and rejects anything else', () => {
     expect(viewSearchSchema.parse({ view: 'not-a-uuid' }).view).toBeUndefined();
+  });
+});
+
+describe('grouping by milestone', () => {
+  it('keeps every milestone in order and adds "No milestone" only when used', () => {
+    const milestones = [
+      {
+        id: 'm2',
+        workspaceId: 'w',
+        teamId: 't',
+        projectId: 'p',
+        name: 'GA',
+        targetDate: null,
+        sortKey: 'a2',
+      },
+      {
+        id: 'm1',
+        workspaceId: 'w',
+        teamId: 't',
+        projectId: 'p',
+        name: 'Beta',
+        targetDate: null,
+        sortKey: 'a1',
+      },
+    ];
+    const tasks = [task({ id: 'x', milestoneId: 'm2' }), task({ id: 'y', milestoneId: null })];
+    const groups = groupTasks(tasks, 'milestone', { ...context, milestones });
+    expect(groups.map((g) => [g.label, g.tasks.length])).toEqual([
+      ['Beta', 0],
+      ['GA', 1],
+      ['No milestone', 1],
+    ]);
+    expect(
+      groupTasks([tasks[0]!], 'milestone', { ...context, milestones }).map((g) => g.label),
+    ).toEqual(['Beta', 'GA']);
   });
 });
