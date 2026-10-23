@@ -206,7 +206,7 @@ Resolved by the owner: **licence** is AGPL-3.0-only (2026-10-22), so hosted fork
 
 Still open:
 
-1. **Demo Supabase project.** The hosted project and its keys must be created by the owner. CI uses repository variables and secrets that are not yet set.
+1. **Migrations to the demo from CI.** The demo project `daiquiri-demo` (eu-west-1, Free plan) runs every migration, and Pages deploys on each push with the `DEMO_SUPABASE_URL`, `DEMO_SUPABASE_KEY` and `SUPABASE_PROJECT_REF` variables. The manual migrate job in `demo-backend.yml` also needs a `SUPABASE_ACCESS_TOKEN` secret: use a dedicated token, never a personal one with full account access. Until then, push migrations with the linked CLI (`supabase db push`).
 2. **Email delivery for self-hosters.** SMTP is optional. Without it, magic links and invitations fall back to copyable links. This is acceptable and documented.
 3. **TanStack DB adoption point.** Re-evaluate when the core reaches 1.0.
 4. **Multiple assignees in reporting.** Workload counts a task once for each assignee. This is to be confirmed with real usage.
