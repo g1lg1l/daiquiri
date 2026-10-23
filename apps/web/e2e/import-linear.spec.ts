@@ -79,11 +79,16 @@ test('import a Linear team, with sub-issues and comments', async ({ page }) => {
     });
   });
 
-  await page.goto(`/${slug}/team/ENG/import`);
-  await page.locator('label', { hasText: 'Linear' }).click();
+  // Found from the workspace menu, explained in settings, and opened on the chosen source.
+  await page.goto(`/${slug}`);
+  await page.getByRole('button', { name: /^Workspace menu/ }).click();
+  await page.getByRole('menuitem', { name: 'Import tasks' }).click();
+  await expect(page.getByRole('heading', { name: 'Import', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Import from Linear' }).click();
+  await expect(page.getByRole('radio', { name: 'Linear' })).toBeChecked();
   await page.getByLabel('Linear personal api key').fill('lin_api_e2e');
   await page.getByRole('button', { name: 'Connect' }).click();
-  await expect(page.getByLabel('Team to import')).toHaveValue('t1');
+  await expect(page.getByLabel('Team to import')).toHaveText('App (APP)');
   await page.getByRole('button', { name: 'Read tasks' }).click();
 
   const review = page.getByRole('region', { name: 'Review' });
@@ -91,8 +96,8 @@ test('import a Linear team, with sub-issues and comments', async ({ page }) => {
     '3 tasks from App (APP), 1 of them sub-tasks, with 1 comments',
   );
   // "QA" has no namesake here: it maps to the first in-progress status.
-  await expect(review.getByLabel('Status for QA')).toHaveValue(
-    await review.getByLabel('Status for In Progress').inputValue(),
+  await expect(review.getByLabel('Status for QA')).toHaveText(
+    (await review.getByLabel('Status for In Progress').textContent()) ?? '',
   );
   await expect(review).toContainText('Not members here, left unassigned: Ghost');
   await expect(review.getByLabel(/Create 1 projects \(Payments\)/)).toBeChecked();

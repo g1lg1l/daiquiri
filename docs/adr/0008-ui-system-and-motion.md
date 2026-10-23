@@ -1,6 +1,6 @@
 # ADR-0008 — UI system, theming and motion
 
-- Status: Accepted · Date: 2026-10-22
+- Status: Accepted · Date: 2026-10-22 · Toasts, motion loading and avatars amended by [ADR-0016](0016-ui-components-motion-i18n.md)
 
 ## Context
 

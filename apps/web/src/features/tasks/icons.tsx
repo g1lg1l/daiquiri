@@ -1,5 +1,6 @@
 import type { Priority, StatusCategory } from '@daiq/domain';
 import { cn } from '@daiq/ui';
+import { useState } from 'react';
 
 const statusColor: Record<StatusCategory, string> = {
   triage: 'text-status-triage',
@@ -19,10 +20,18 @@ export function StatusIcon({
   className?: string;
 }) {
   const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6 } as const;
+  // Completing a task pops its icon; icons that load completed stay still.
+  const [shown, setShown] = useState(category);
+  const [pop, setPop] = useState(false);
+  if (shown !== category) {
+    setShown(category);
+    setPop(category === 'completed');
+  }
   return (
     <svg
       viewBox="0 0 16 16"
-      className={cn('size-3.5 shrink-0', statusColor[category], className)}
+      className={cn('size-3.5 shrink-0', statusColor[category], pop && 'animate-pop', className)}
+      onAnimationEnd={() => setPop(false)}
       aria-hidden
     >
       {category === 'backlog' && <circle cx="8" cy="8" r="6" {...common} strokeDasharray="2.2 2" />}

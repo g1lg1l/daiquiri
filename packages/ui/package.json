@@ -17,14 +17,17 @@
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
+    "@blobatar/react": "catalog:",
     "@fontsource-variable/jetbrains-mono": "catalog:",
     "@fontsource-variable/mona-sans": "catalog:",
+    "blobatar": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "catalog:",
     "lucide-react": "catalog:",
     "motion": "catalog:",
-    "sonner": "catalog:",
+    "react-day-picker": "catalog:",
+    "sileo": "catalog:",
     "tailwind-merge": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:"

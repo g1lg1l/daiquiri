@@ -9,11 +9,12 @@ export const DialogClose = DialogPrimitive.Close;
 export function DialogContent({ className, children, ...props }: DialogPrimitive.Popup.Props) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-scrim duration-150 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+      <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-scrim transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
       <DialogPrimitive.Popup
         className={cn(
           'fixed top-[18vh] left-1/2 z-50 flex w-[min(100%-2rem,32rem)] -translate-x-1/2 flex-col gap-4 rounded-xl border border-border bg-overlay p-5 text-fg shadow-popover outline-none',
-          'duration-180 data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-top-1 data-open:zoom-in-[0.97] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.98]',
+          'transition-[opacity,scale,translate,filter] duration-320 ease-(--ease-spring) data-starting-style:translate-y-3 data-starting-style:scale-94 data-starting-style:opacity-0 data-starting-style:blur-[3px]',
+          'data-ending-style:scale-97 data-ending-style:opacity-0 data-ending-style:duration-140 data-ending-style:ease-(--ease-out)',
           className,
         )}
         {...props}

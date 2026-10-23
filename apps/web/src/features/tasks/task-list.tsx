@@ -9,6 +9,7 @@ import {
   type TaskGroup,
 } from '@daiq/domain';
 import { Avatar, Button, cn, Shortcut, Tooltip } from '@daiq/ui';
+import { Link } from '@tanstack/react-router';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   ChevronDownIcon,
@@ -37,6 +38,8 @@ import type { ComposerDefaults } from './composer';
 import { PriorityIcon, StatusIcon } from './icons';
 import { LABEL_COLOR } from './label-colors';
 import { useTaskActions } from './task-actions';
+import { TaskContextMenu } from './task-context-menu';
+import { TaskId } from './task-id';
 import { useIdentifier } from './use-identifier';
 
 type Row =
@@ -70,6 +73,7 @@ export function TaskList({
   onCreate,
   label,
 }: TaskListProps) {
+  const { workspace } = useWorkspace();
   const actions = useTaskActions();
   const identifier = useIdentifier();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -218,6 +222,10 @@ export function TaskList({
     cycle: () => actions.openPicker('cycle', targets()),
     assignMe: () => actions.toggleAssignMe(targets()),
     remove: () => actions.remove(targets()),
+    copyId: () => {
+      const [task] = targets();
+      if (task) actions.copyId(task);
+    },
     copyLink: () => {
       const [task] = targets();
       if (task) actions.copyLink(task);
@@ -271,98 +279,115 @@ export function TaskList({
           onDelete={() => actions.remove(targets())}
         />
       )}
-      <div
-        ref={scrollRef}
-        role="treegrid"
-        aria-label={label}
-        aria-multiselectable="true"
-        aria-rowcount={rows.length}
-        tabIndex={focusedId ? -1 : 0}
-        onFocus={(event) => {
-          // Tabbing into the grid lands on the first (or last focused) row.
-          if (event.target === event.currentTarget) {
-            const first = focusedId ?? taskRows[0]?.task.id;
-            if (first) focusTask(first);
-          }
-        }}
-        className="@container/list min-h-0 flex-1 overflow-y-auto pb-24 outline-none scrollbar-thin"
-        onKeyDown={(event) => {
-          if (event.key === 'Escape' && selected.size > 0) {
-            event.stopPropagation();
-            setSelected(new Set());
-          }
-          if (event.key === 'ArrowDown' && !event.metaKey && !event.ctrlKey) {
-            event.preventDefault();
-            move(1, event.shiftKey);
-          }
-          if (event.key === 'ArrowUp' && !event.metaKey && !event.ctrlKey) {
-            event.preventDefault();
-            move(-1, event.shiftKey);
-          }
-          // Treegrid pattern: Home/End jump to the first/last row (not while typing).
-          const typing =
-            event.target instanceof HTMLElement &&
-            event.target.closest('input, textarea, [contenteditable="true"]');
-          if ((event.key === 'Home' || event.key === 'End') && !typing) {
-            const target = event.key === 'Home' ? taskRows[0] : taskRows.at(-1);
-            if (target) {
-              event.preventDefault();
-              focusTask(target.task.id);
-            }
-          }
-        }}
+      <TaskContextMenu
+        onOpen={onOpen}
+        tasksFor={(id) =>
+          selected.has(id)
+            ? [...selected].flatMap((s) => tasksById.get(s) ?? [])
+            : [tasksById.get(id)].filter((task) => task !== undefined)
+        }
       >
-        <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-          {virtualizer.getVirtualItems().map((item) => {
-            const row = rows[item.index];
-            if (!row) return null;
-            return (
-              <div
-                key={row.kind === 'task' ? row.task.id : `h-${row.key}`}
-                data-index={item.index}
-                className="absolute inset-x-0"
-                style={{ transform: `translateY(${item.start}px)`, height: item.size }}
-              >
-                {row.kind === 'header' ? (
-                  <GroupHeader
-                    group={row.group}
-                    level={row.level}
-                    collapsed={row.collapsed}
-                    rowIndex={item.index + 1}
-                    onToggle={() => toggleGroup(row.key)}
-                    onCreate={() => onCreate(composerDefaults(row.group))}
-                  />
-                ) : (
-                  <TaskRow
-                    task={row.task}
-                    depth={row.depth}
-                    rowIndex={item.index + 1}
-                    identifier={identifier(row.task)}
-                    focused={focusedId === row.task.id}
-                    selected={selected.has(row.task.id)}
-                    peeked={peekId === row.task.id}
-                    today={today}
-                    onClick={onRowClick}
-                    onOpen={onOpen}
-                    onFocus={setFocusedId}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-        {taskRows.length === 0 && (
-          <div className="flex flex-col items-start gap-2 px-6 py-16 text-[13px] text-fg-muted">
-            <p className="font-medium text-fg">No tasks here</p>
-            <p className="flex items-center gap-1.5">
-              Press <Shortcut keys={SHORTCUTS.create.keys} /> to create one, or adjust the filters.
-            </p>
+        <div
+          ref={scrollRef}
+          role="treegrid"
+          aria-label={label}
+          aria-multiselectable="true"
+          aria-rowcount={rows.length}
+          tabIndex={focusedId ? -1 : 0}
+          onFocus={(event) => {
+            // Tabbing into the grid lands on the first (or last focused) row.
+            if (event.target === event.currentTarget) {
+              const first = focusedId ?? taskRows[0]?.task.id;
+              if (first) focusTask(first);
+            }
+          }}
+          className="@container/list min-h-0 flex-1 overflow-y-auto pb-24 outline-none scrollbar-thin"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && selected.size > 0) {
+              event.stopPropagation();
+              setSelected(new Set());
+            }
+            if (event.key === 'ArrowDown' && !event.metaKey && !event.ctrlKey) {
+              event.preventDefault();
+              move(1, event.shiftKey);
+            }
+            if (event.key === 'ArrowUp' && !event.metaKey && !event.ctrlKey) {
+              event.preventDefault();
+              move(-1, event.shiftKey);
+            }
+            // Treegrid pattern: Home/End jump to the first/last row (not while typing).
+            const typing =
+              event.target instanceof HTMLElement &&
+              event.target.closest('input, textarea, [contenteditable="true"]');
+            if ((event.key === 'Home' || event.key === 'End') && !typing) {
+              const target = event.key === 'Home' ? taskRows[0] : taskRows.at(-1);
+              if (target) {
+                event.preventDefault();
+                focusTask(target.task.id);
+              }
+            }
+          }}
+        >
+          <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+            {virtualizer.getVirtualItems().map((item) => {
+              const row = rows[item.index];
+              if (!row) return null;
+              return (
+                <div
+                  key={row.kind === 'task' ? row.task.id : `h-${row.key}`}
+                  data-index={item.index}
+                  className="absolute inset-x-0"
+                  style={{ transform: `translateY(${item.start}px)`, height: item.size }}
+                >
+                  {row.kind === 'header' ? (
+                    <GroupHeader
+                      group={row.group}
+                      level={row.level}
+                      collapsed={row.collapsed}
+                      rowIndex={item.index + 1}
+                      onToggle={() => toggleGroup(row.key)}
+                      onCreate={() => onCreate(composerDefaults(row.group))}
+                    />
+                  ) : (
+                    <TaskRow
+                      task={row.task}
+                      depth={row.depth}
+                      rowIndex={item.index + 1}
+                      identifier={identifier(row.task)}
+                      focused={focusedId === row.task.id}
+                      selected={selected.has(row.task.id)}
+                      peeked={peekId === row.task.id}
+                      today={today}
+                      onClick={onRowClick}
+                      onOpen={onOpen}
+                      onFocus={setFocusedId}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
-        )}
-      </div>
-      <div aria-live="polite" className="sr-only">
-        {announcement}
-      </div>
+          {taskRows.length === 0 && (
+            <div className="flex flex-col items-start gap-2 px-6 py-16 text-[13px] text-fg-muted">
+              <p className="font-medium text-fg">No tasks here</p>
+              <p className="flex items-center gap-1.5">
+                Press <Shortcut keys={SHORTCUTS.create.keys} /> to create one, or adjust the
+                filters.
+              </p>
+              <Link
+                to="/$workspace/settings/import"
+                params={{ workspace: workspace.slug }}
+                className="text-accent-text underline-offset-4 hover:underline"
+              >
+                Import tasks from Linear, Asana, ClickUp or a CSV file
+              </Link>
+            </div>
+          )}
+        </div>
+        <div aria-live="polite" className="sr-only">
+          {announcement}
+        </div>
+      </TaskContextMenu>
     </div>
   );
 }
@@ -510,11 +535,8 @@ const TaskRow = memo(function TaskRow({
           }}
         />
       </div>
-      <div
-        role="gridcell"
-        className="hidden w-16 shrink-0 text-xs text-fg-subtle tabular @md/list:block"
-      >
-        {identifier}
+      <div role="gridcell" className="hidden w-16 shrink-0 @md/list:block">
+        <TaskId identifier={identifier} />
       </div>
       <div role="gridcell" className="flex items-center" style={{ marginLeft: depth * 20 }}>
         <PickerPopover

@@ -75,6 +75,7 @@ import { SaveTemplateDialog } from '../templates/save-template-dialog';
 import { TimeTracking } from '../time/time-tracking';
 import { RecurrenceEditor } from './recurrence-editor';
 import { DateField, useTaskActions } from './task-actions';
+import { TaskId } from './task-id';
 import { useIdentifier } from './use-identifier';
 import { useToday } from '../../lib/use-today';
 
@@ -198,6 +199,7 @@ function TaskDetailBody({
       project: () => actions.openPicker('project', [task]),
       estimate: () => actions.openPicker('estimate', [task]),
       cycle: () => actions.openPicker('cycle', [task]),
+      copyId: () => actions.copyId(task),
       copyLink: () => actions.copyLink(task),
       subscribe: () => subscription.toggle.mutate(!subscription.subscribed),
       subtask: () =>
@@ -263,6 +265,13 @@ function TaskDetailBody({
         label: 'Add sub-task',
         shortcut: SHORTCUTS.subtask.keys,
         run: () => composer({ teamId: task.teamId, parentId: task.id }),
+      },
+      {
+        id: 'task-id',
+        group: ident,
+        label: `Copy ID (${ident})`,
+        shortcut: SHORTCUTS.copyId.keys,
+        run: () => actions.copyId(task),
       },
       {
         id: 'task-link',
@@ -545,7 +554,7 @@ function TaskDetailBody({
             </>
           )}
           <span aria-hidden>›</span>
-          <span className="text-fg tabular">{ident}</span>
+          <TaskId identifier={ident} tabbable className="text-fg" />
         </nav>
         <div className="ml-auto flex items-center gap-0.5">
           <Tooltip
@@ -756,7 +765,9 @@ function SubTasks({ task }: { task: TaskDetailModel }) {
                 className="flex h-8 items-center gap-2 rounded-md px-1.5 text-[13px] hover:bg-surface-muted"
               >
                 {childStatus && <StatusIcon category={childStatus.category} />}
-                <span className="w-14 text-xs text-fg-subtle tabular">{identifier(child)}</span>
+                <span className="w-14 font-mono text-xs text-fg-subtle tabular">
+                  {identifier(child)}
+                </span>
                 <span
                   className={cn(
                     'truncate',
@@ -864,7 +875,9 @@ function Relations({ task }: { task: TaskDetailModel }) {
                   params={{ workspace: workspace.slug, identifier: identifier(other) }}
                   className="flex min-w-0 flex-1 items-center gap-2"
                 >
-                  <span className="text-xs text-fg-subtle tabular">{identifier(other)}</span>
+                  <span className="font-mono text-xs text-fg-subtle tabular">
+                    {identifier(other)}
+                  </span>
                   <span className="truncate">{other.title}</span>
                 </Link>
               ) : (

@@ -17,6 +17,7 @@ import {
   FieldError,
   Input,
   Label,
+  Select,
 } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { FolderIcon, PlusIcon } from 'lucide-react';
@@ -31,6 +32,7 @@ import {
   progressOf,
 } from '../../../../features/projects/project-status';
 import { ViewHeader } from '../../../../features/shell/view-header';
+import { DateField } from '../../../../features/tasks/task-actions';
 import { useWorkspace, useWorkspaceData } from '../../../../features/workspace/workspace-context';
 import { formString } from '../../../../lib/forms';
 import { newId } from '../../../../lib/ids';
@@ -186,6 +188,25 @@ function TeamProjects() {
   );
 }
 
+/** A date picker that submits with its form under `name`. */
+function FormDate({
+  name,
+  label,
+  defaultValue = null,
+}: {
+  name: string;
+  label: string;
+  defaultValue?: string | null;
+}) {
+  const [date, setDate] = useState(defaultValue);
+  return (
+    <>
+      <DateField label={label} value={date} onChange={setDate} variant="secondary" />
+      <input type="hidden" name={name} value={date ?? ''} />
+    </>
+  );
+}
+
 function NewProjectDialog({
   teamId,
   open,
@@ -219,6 +240,10 @@ function NewProjectDialog({
               onError: (e: Error) => setError(e.message),
             };
             if (templateId) {
+              if (!formString(form, 'start')) {
+                setError('Choose a start date.');
+                return;
+              }
               createFromTemplate.mutate(
                 {
                   templateId,
@@ -246,21 +271,18 @@ function NewProjectDialog({
           {templates.length > 0 && (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="project-template">Template</Label>
-              <select
+              <Select
                 id="project-template"
                 value={templateId}
-                onChange={(event) => setTemplateId(event.target.value)}
-                className="h-8 rounded-md border border-border bg-surface px-2 text-[13px]"
-              >
-                <option value="">No template</option>
-                {templates.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.counts.milestones}{' '}
-                    {t.counts.milestones === 1 ? 'milestone' : 'milestones'}, {t.counts.tasks}{' '}
-                    {t.counts.tasks === 1 ? 'task' : 'tasks'})
-                  </option>
-                ))}
-              </select>
+                onValueChange={setTemplateId}
+                options={[
+                  { value: '', label: 'No template' },
+                  ...templates.map((t) => ({
+                    value: t.id,
+                    label: `${t.name} (${t.counts.milestones} ${t.counts.milestones === 1 ? 'milestone' : 'milestones'}, ${t.counts.tasks} ${t.counts.tasks === 1 ? 'task' : 'tasks'})`,
+                  })),
+                ]}
+              />
             </div>
           )}
           <div className="flex flex-col gap-1.5">
@@ -276,8 +298,8 @@ function NewProjectDialog({
           </div>
           {templateId ? (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="project-start">Start date</Label>
-              <Input id="project-start" name="start" type="date" defaultValue={today} required />
+              <span className="text-[13px] font-medium">Start date</span>
+              <FormDate name="start" label="Start date" defaultValue={today} />
               <p className="text-xs text-fg-subtle">
                 Milestones and task dates keep their distance from the start.
               </p>
@@ -286,22 +308,19 @@ function NewProjectDialog({
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="project-status">Status</Label>
-                <select
+                <Select
                   id="project-status"
                   name="status"
                   defaultValue="planned"
-                  className="h-8 rounded-md border border-border bg-surface px-2 text-[13px]"
-                >
-                  {PROJECT_STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {PROJECT_STATUS_LABEL[s]}
-                    </option>
-                  ))}
-                </select>
+                  options={PROJECT_STATUSES.map((s) => ({
+                    value: s,
+                    label: PROJECT_STATUS_LABEL[s],
+                  }))}
+                />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="project-target">Target date</Label>
-                <Input id="project-target" name="target" type="date" />
+                <span className="text-[13px] font-medium">Target date</span>
+                <FormDate name="target" label="Target date" />
               </div>
             </div>
           )}

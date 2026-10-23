@@ -1,6 +1,6 @@
 import { useTeamFieldActions, useUpdateTeam } from '@daiq/data';
 import { can, FIELD_KIND_LABEL, type EstimateScale } from '@daiq/domain';
-import { buttonVariants, Input, Label, Textarea } from '@daiq/ui';
+import { buttonVariants, Input, Label, Select, Textarea } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ChevronLeftIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -13,13 +13,10 @@ export const Route = createFileRoute('/$workspace/settings/teams_/$teamKey')({
 });
 
 const WEEKDAYS = Array.from({ length: 7 }, (_, day) => ({
-  value: day,
+  value: String(day),
   // 2023-01-01 was a Sunday: day 0.
   label: new Date(2023, 0, 1 + day).toLocaleDateString(undefined, { weekday: 'long' }),
 }));
-
-const select =
-  'h-8 rounded-md border border-border bg-surface px-2 text-[13px] disabled:opacity-60';
 
 function Module({
   title,
@@ -149,21 +146,18 @@ function TeamSettings() {
         >
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="estimate-scale">Scale</Label>
-            <select
+            <Select
               id="estimate-scale"
-              className={select}
               value={team.estimateScale}
               disabled={!canEdit}
-              onChange={(event) =>
-                save({ estimateScale: event.target.value === 'hours' ? 'hours' : 'points' })
+              onValueChange={(value) =>
+                save({ estimateScale: value === 'hours' ? 'hours' : 'points' })
               }
-            >
-              {(['points', 'hours'] satisfies EstimateScale[]).map((scale) => (
-                <option key={scale} value={scale}>
-                  {scale === 'points' ? 'Story points (1, 2, 3, 5, 8, 13)' : 'Hours'}
-                </option>
-              ))}
-            </select>
+              options={(['points', 'hours'] satisfies EstimateScale[]).map((scale) => ({
+                value: scale,
+                label: scale === 'points' ? 'Story points (1, 2, 3, 5, 8, 13)' : 'Hours',
+              }))}
+            />
           </div>
         </Module>
         <Module
@@ -175,35 +169,26 @@ function TeamSettings() {
         >
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="cycle-length">Length</Label>
-            <select
+            <Select
               id="cycle-length"
-              className={select}
-              value={team.cycleWeeks}
+              value={String(team.cycleWeeks)}
               disabled={!canEdit}
-              onChange={(event) => save({ cycleWeeks: Number(event.target.value) })}
-            >
-              {[1, 2, 3, 4].map((weeks) => (
-                <option key={weeks} value={weeks}>
-                  {weeks === 1 ? '1 week' : `${weeks} weeks`}
-                </option>
-              ))}
-            </select>
+              onValueChange={(value) => save({ cycleWeeks: Number(value) })}
+              options={[1, 2, 3, 4].map((weeks) => ({
+                value: String(weeks),
+                label: weeks === 1 ? '1 week' : `${weeks} weeks`,
+              }))}
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="cycle-start">Starts on</Label>
-            <select
+            <Select
               id="cycle-start"
-              className={select}
-              value={team.cycleStartWeekday}
+              value={String(team.cycleStartWeekday)}
               disabled={!canEdit}
-              onChange={(event) => save({ cycleStartWeekday: Number(event.target.value) })}
-            >
-              {WEEKDAYS.map((day) => (
-                <option key={day.value} value={day.value}>
-                  {day.label}
-                </option>
-              ))}
-            </select>
+              onValueChange={(value) => save({ cycleStartWeekday: Number(value) })}
+              options={WEEKDAYS}
+            />
           </div>
           <p className="w-full text-xs text-fg-subtle">
             Changes apply to cycles scheduled from now on.
@@ -269,7 +254,7 @@ function TeamSettings() {
         <div>
           <h3 className="text-[13px] font-medium">Import tasks</h3>
           <p className="text-xs text-fg-muted">
-            From a CSV file: an export from Linear, Asana, ClickUp or a spreadsheet.
+            Straight from Linear, Asana or ClickUp, or from a CSV file.
           </p>
         </div>
         <Link
@@ -277,7 +262,7 @@ function TeamSettings() {
           params={{ workspace: workspace.slug, teamKey: team.key }}
           className={buttonVariants({ size: 'sm' })}
         >
-          Import CSV
+          Import tasks
         </Link>
       </div>
 

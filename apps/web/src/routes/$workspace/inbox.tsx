@@ -181,7 +181,7 @@ function Inbox() {
                   <span className="flex shrink-0 flex-col items-end gap-1 text-[11px] text-fg-subtle">
                     <time dateTime={notification.createdAt}>{timeAgo(notification.createdAt)}</time>
                     {task && (
-                      <span className="tabular">
+                      <span className="font-mono tabular">
                         {identifier({ teamId: task.teamId, number: task.number })}
                       </span>
                     )}

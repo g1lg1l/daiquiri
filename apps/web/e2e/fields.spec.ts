@@ -8,7 +8,8 @@ test('define a custom field, turn it on for a team, set, group and filter by it'
 
   await page.goto(`/${slug}/settings/fields`);
   await page.getByLabel('New field').fill('Severity');
-  await page.getByLabel('Type').selectOption('select');
+  await page.getByLabel('Type').click();
+  await page.getByRole('option', { name: 'Select', exact: true }).click();
   await page.getByLabel('Options, one per line').fill('Minor\nMajor\nCritical');
   await page.getByRole('button', { name: 'Add field' }).click();
   await expect(page.getByText('Not used by any team')).toBeVisible();

@@ -5,6 +5,7 @@ FROM node:24-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json ./
+COPY patches patches
 COPY apps/web/package.json apps/web/
 COPY packages/domain/package.json packages/domain/
 COPY packages/data/package.json packages/data/

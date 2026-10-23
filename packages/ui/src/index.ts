@@ -15,6 +15,8 @@ export {
   CommandItem,
   CommandList,
 } from './components/command';
+export { DatePicker, InlineCalendar } from './components/date-picker';
+export type { DatePickerProps } from './components/date-picker';
 export {
   Dialog,
   DialogClose,
@@ -27,6 +29,9 @@ export {
 export { FieldError, Input, Label, Textarea } from './components/input';
 export { Kbd, Shortcut } from './components/kbd';
 export {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuTrigger,
   Menu,
   MenuCheckboxItem,
   MenuContent,
@@ -41,6 +46,9 @@ export {
   MenuTrigger,
 } from './components/menu';
 export { Separator, Skeleton, Spinner, VisuallyHidden } from './components/misc';
+export { Select } from './components/select';
+export type { SelectOption, SelectProps } from './components/select';
 export { Popover, PopoverClose, PopoverContent, PopoverTrigger } from './components/popover';
 export { Toaster, toast } from './components/toaster';
+export type { ToastOptions } from './components/toaster';
 export { Tooltip, TooltipProvider } from './components/tooltip';

@@ -5,7 +5,7 @@ import {
   useUpdateProfile,
 } from '@daiq/data';
 import { isNotificationLevel, type NotificationLevel } from '@daiq/domain';
-import { Button, Input, Label, toast, useTheme, type ThemePreference } from '@daiq/ui';
+import { Button, Input, Label, Select, toast, useTheme, type ThemePreference } from '@daiq/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import {
@@ -56,21 +56,14 @@ function NotificationLevels() {
             <label htmlFor={`notify-${team.id}`} className="flex-1">
               {team.name}
             </label>
-            <select
+            <Select
               id={`notify-${team.id}`}
               value={settings.data?.find((s) => s.teamId === team.id)?.level ?? 'all'}
-              onChange={(event) => {
-                const level = event.target.value;
+              onValueChange={(level) => {
                 if (isNotificationLevel(level)) setLevel.mutate({ teamId: team.id, level });
               }}
-              className="h-8 rounded-md border border-border bg-surface px-2 text-[13px]"
-            >
-              {LEVELS.map((level) => (
-                <option key={level.value} value={level.value}>
-                  {level.label}
-                </option>
-              ))}
-            </select>
+              options={LEVELS}
+            />
           </li>
         ))}
       </ul>

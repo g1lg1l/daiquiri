@@ -44,6 +44,7 @@ import {
   SparklesIcon,
   UserPlusIcon,
   UsersIcon,
+  UploadIcon,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Wordmark } from '../../components/wordmark';
@@ -244,7 +245,7 @@ function WorkspaceMenu() {
           />
         }
       >
-        <Avatar name={workspace.name} size="sm" className="rounded-[5px]" />
+        <Avatar name={workspace.name} size="sm" square />
         <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">{workspace.name}</span>
         <ChevronDownIcon className="size-3.5 text-fg-subtle" />
       </MenuTrigger>
@@ -258,7 +259,7 @@ function WorkspaceMenu() {
           <MenuLabel>Workspaces</MenuLabel>
           {workspaces.data?.map((w) => (
             <MenuRadioItem key={w.id} value={w.slug}>
-              <Avatar name={w.name} size="xs" className="rounded-[4px]" />
+              <Avatar name={w.name} size="xs" square />
               {w.name}
             </MenuRadioItem>
           ))}
@@ -276,6 +277,16 @@ function WorkspaceMenu() {
           }
         >
           <UserPlusIcon /> Invite people
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            void navigate({
+              to: '/$workspace/settings/import',
+              params: { workspace: workspace.slug },
+            })
+          }
+        >
+          <UploadIcon /> Import tasks
         </MenuItem>
         <MenuItem
           shortcut={SHORTCUTS.goSettings.keys}

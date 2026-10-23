@@ -4,6 +4,7 @@ import { Avatar, Button, FieldError, Input, Label } from '@daiq/ui';
 import { PlayIcon, PlusIcon, SquareIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { useToday } from '../../lib/use-today';
+import { DateField } from '../tasks/task-actions';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { useElapsed } from './use-elapsed';
 
@@ -73,6 +74,10 @@ export function TimeTracking({ task }: { task: Task }) {
               setError('Enter a duration between 1 minute and 24 hours, like 1h 30m or 45m.');
               return;
             }
+            if (date > today) {
+              setError('Pick today or an earlier day.');
+              return;
+            }
             // Today's entries end now; earlier days at the end of a working day.
             const end = date === today ? new Date() : new Date(`${date}T17:00:00`);
             actions.add.mutate(
@@ -105,13 +110,12 @@ export function TimeTracking({ task }: { task: Task }) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="time-date">Date</Label>
-            <Input
-              id="time-date"
-              type="date"
+            <span className="text-[13px] font-medium">Date</span>
+            <DateField
+              label="Date"
               value={date}
-              max={today}
-              onChange={(event) => setDate(event.target.value || today)}
+              onChange={(value) => setDate(value ?? today)}
+              variant="secondary"
             />
           </div>
           <div className="flex min-w-40 flex-1 flex-col gap-1.5">

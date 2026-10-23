@@ -14,6 +14,7 @@ const SECTIONS = [
   { to: '/$workspace/settings/labels', label: 'Labels', exact: false },
   { to: '/$workspace/settings/fields', label: 'Fields', exact: false },
   { to: '/$workspace/settings/templates', label: 'Templates', exact: false },
+  { to: '/$workspace/settings/import', label: 'Import', exact: false },
   { to: '/$workspace/settings/webhooks', label: 'Webhooks', exact: false },
   { to: '/$workspace/settings/trash', label: 'Trash', exact: false },
   { to: '/$workspace/settings/preferences', label: 'Preferences', exact: false },

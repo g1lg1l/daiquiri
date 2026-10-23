@@ -18,7 +18,7 @@ import {
   type RichDocument,
   type Team,
 } from '@daiq/domain';
-import { Button, FieldError, Input, Label } from '@daiq/ui';
+import { Button, FieldError, Input, Label, Select } from '@daiq/ui';
 import { Link } from '@tanstack/react-router';
 import { ExternalLinkIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -26,7 +26,6 @@ import { newId } from '../../lib/ids';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import type { Scope, Source } from './sources';
 
-const select = 'h-8 rounded-md border border-border bg-surface px-2 text-[13px]';
 const DEFAULT = '';
 const statusKey = (task: Pick<ExternalTask, 'status' | 'category'>) =>
   `${task.status ?? ''}\u0000${task.category ?? ''}`;
@@ -226,6 +225,9 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
     );
   }
 
+  // The select has no option groups, so name the group when there are several.
+  const grouped = step.kind === 'scope' && new Set(step.scopes.map((s) => s.group)).size > 1;
+
   return (
     <div className="flex flex-col gap-4">
       {step.kind === 'token' && (
@@ -305,24 +307,15 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
         >
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="import-scope">{source.scopeLabel} to import</Label>
-            <select
+            <Select
               id="import-scope"
-              className={select}
               value={scopeId}
-              onChange={(e) => setScopeId(e.target.value)}
-            >
-              {[...new Set(step.scopes.map((s) => s.group))].map((group) => (
-                <optgroup key={group} label={group}>
-                  {step.scopes
-                    .filter((s) => s.group === group)
-                    .map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                </optgroup>
-              ))}
-            </select>
+              onValueChange={setScopeId}
+              options={step.scopes.map((s) => ({
+                value: s.id,
+                label: grouped ? `${s.group} · ${s.name}` : s.name,
+              }))}
+            />
           </div>
           <label className="flex items-center gap-2 text-[13px]">
             <input
@@ -355,19 +348,15 @@ export function ServiceImport({ source, team }: { source: Source; team: Team }) 
                   {entry.status ?? (entry.category === 'completed' ? 'Completed' : 'No status')}{' '}
                   <span className="text-xs text-fg-subtle">({entry.count})</span>
                 </span>
-                <select
-                  className={select}
+                <Select
                   aria-label={`Status for ${entry.status ?? 'tasks without a status'}`}
                   value={statusMap[key] ?? DEFAULT}
-                  onChange={(event) => setStatusMap({ ...statusMap, [key]: event.target.value })}
-                >
-                  <option value={DEFAULT}>{team.name}’s default</option>
-                  {team.statuses.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+                  onValueChange={(value) => setStatusMap({ ...statusMap, [key]: value })}
+                  options={[
+                    { value: DEFAULT, label: `${team.name}’s default` },
+                    ...team.statuses.map((s) => ({ value: s.id, label: s.name })),
+                  ]}
+                />
               </label>
             ))}
           </fieldset>

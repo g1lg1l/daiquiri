@@ -1,10 +1,11 @@
 import { toDaiqError, usePublicForm, useSubmitForm } from '@daiq/data';
 import { PRIORITY_LABEL, isPriority, type CustomField } from '@daiq/domain';
-import { Button, FieldError, Input, Label, Skeleton, Textarea } from '@daiq/ui';
+import { Button, FieldError, Input, Label, Select, Skeleton, Textarea } from '@daiq/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { CheckCircle2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { Wordmark } from '../components/wordmark';
+import { DateField } from '../features/tasks/task-actions';
 
 import { formString } from '../lib/forms';
 
@@ -12,7 +13,6 @@ import { formString } from '../lib/forms';
 export const Route = createFileRoute('/f/$slug')({ component: IntakeForm });
 
 const PRIORITY_CHOICES = [1, 2, 3, 4, 0] as const;
-const input = 'h-9 rounded-md border border-border bg-surface px-2 text-[13px]';
 
 /** A custom field's answer, typed for the database; undefined when left empty. */
 function fieldValue(field: CustomField, form: FormData): unknown {
@@ -37,6 +37,16 @@ function fieldValue(field: CustomField, form: FormData): unknown {
     default:
       return field.kind satisfies never;
   }
+}
+
+function DateInput({ name, label }: { name: string; label: string }) {
+  const [date, setDate] = useState<string | null>(null);
+  return (
+    <>
+      <DateField label={label} value={date} onChange={setDate} variant="secondary" />
+      <input type="hidden" name={name} value={date ?? ''} />
+    </>
+  );
 }
 
 function FieldInput({ field }: { field: CustomField }) {
@@ -64,18 +74,23 @@ function FieldInput({ field }: { field: CustomField }) {
       return (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor={id}>{field.name}</Label>
-          <select id={id} name={id} className={input} defaultValue="">
-            <option value="">Choose…</option>
-            {field.options.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.name}
-              </option>
-            ))}
-          </select>
+          <Select
+            id={id}
+            name={id}
+            defaultValue={null}
+            placeholder="Choose…"
+            options={field.options.map((option) => ({ value: option.id, label: option.name }))}
+          />
+        </div>
+      );
+    case 'date':
+      return (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[13px] font-medium">{field.name}</span>
+          <DateInput name={id} label={field.name} />
         </div>
       );
     case 'number':
-    case 'date':
     case 'url':
     case 'text':
     case 'person':
@@ -85,15 +100,7 @@ function FieldInput({ field }: { field: CustomField }) {
           <Input
             id={id}
             name={id}
-            type={
-              field.kind === 'number'
-                ? 'number'
-                : field.kind === 'date'
-                  ? 'date'
-                  : field.kind === 'url'
-                    ? 'url'
-                    : 'text'
-            }
+            type={field.kind === 'number' ? 'number' : field.kind === 'url' ? 'url' : 'text'}
             {...(field.kind === 'number' && { step: 'any' })}
           />
         </div>
@@ -192,13 +199,15 @@ function IntakeForm() {
               {data.askPriority && (
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="priority">How urgent is it?</Label>
-                  <select id="priority" name="priority" className={input} defaultValue="0">
-                    {PRIORITY_CHOICES.map((p) => (
-                      <option key={p} value={p}>
-                        {isPriority(p) ? PRIORITY_LABEL[p] : p}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    id="priority"
+                    name="priority"
+                    defaultValue="0"
+                    options={PRIORITY_CHOICES.map((p) => ({
+                      value: String(p),
+                      label: isPriority(p) ? PRIORITY_LABEL[p] : String(p),
+                    }))}
+                  />
                 </div>
               )}
               {data.fields.map((field) => (

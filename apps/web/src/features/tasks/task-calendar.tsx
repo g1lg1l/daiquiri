@@ -194,6 +194,8 @@ export function TaskCalendar({
     dueDate: () => actions.openPicker('dueDate', target()),
     assignMe: () => actions.toggleAssignMe(target()),
     remove: () => actions.remove(target()),
+    copyId: () => focusedTask && actions.copyId(focusedTask),
+    copyLink: () => focusedTask && actions.copyLink(focusedTask),
   });
 
   const chip = (task: Task) => (

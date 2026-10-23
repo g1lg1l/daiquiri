@@ -1,6 +1,6 @@
 import { useInvitations, useMemberActions, useMemberEmails, useMembers } from '@daiq/data';
 import { can, invitableRoles, WORKSPACE_ROLES, type WorkspaceRole } from '@daiq/domain';
-import { Avatar, Button, FieldError, Input, Label, toast } from '@daiq/ui';
+import { Avatar, Button, FieldError, Input, Label, Select, toast } from '@daiq/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useWorkspace } from '../../../features/workspace/workspace-context';
@@ -75,18 +75,12 @@ function MembersSettings() {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="invite-role">Role</Label>
-              <select
+              <Select
                 id="invite-role"
                 name="role"
                 defaultValue="member"
-                className="h-8 rounded-md border border-border bg-surface px-2 text-[13px]"
-              >
-                {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {ROLE_LABEL[role]}
-                  </option>
-                ))}
-              </select>
+                options={roles.map((role) => ({ value: role, label: ROLE_LABEL[role] }))}
+              />
             </div>
             <Button type="submit" variant="primary" size="md" disabled={actions.invite.isPending}>
               Create invitation
@@ -141,23 +135,19 @@ function MembersSettings() {
                   </span>
                 </div>
                 {editable ? (
-                  <select
+                  <Select
                     aria-label={`Role of ${member.displayName}`}
+                    size="sm"
+                    className="text-xs"
                     value={member.role}
-                    onChange={(e) => {
-                      const role = WORKSPACE_ROLES.find((r) => r === e.target.value);
+                    onValueChange={(value) => {
+                      const role = WORKSPACE_ROLES.find((r) => r === value);
                       if (role) actions.setRole.mutate({ userId: member.id, role });
                     }}
-                    className="h-7 rounded-md border border-border bg-surface px-1.5 text-xs"
-                  >
-                    {WORKSPACE_ROLES.filter((r) => r !== 'owner' || workspace.role === 'owner').map(
-                      (role) => (
-                        <option key={role} value={role}>
-                          {ROLE_LABEL[role]}
-                        </option>
-                      ),
-                    )}
-                  </select>
+                    options={WORKSPACE_ROLES.filter(
+                      (r) => r !== 'owner' || workspace.role === 'owner',
+                    ).map((role) => ({ value: role, label: ROLE_LABEL[role] }))}
+                  />
                 ) : (
                   <span className="text-xs text-fg-muted">{ROLE_LABEL[member.role]}</span>
                 )}

@@ -104,7 +104,8 @@ Daiq shortcuts follow four rules so users can predict them:
 | `Mod D`         | Duplicate                                                          |
 | `Mod Backspace` | Delete (undoable)                                                  |
 | `Mod Shift O`   | Add subtask                                                        |
-| `Mod .`         | Copy task link; `Mod Shift .` copies identifier                    |
+| `Mod .`         | Copy the task's identifier (also: click any identifier)            |
+| `Mod Shift L`   | Copy the task's link                                               |
 
 ## Relations (`R` then…)
 

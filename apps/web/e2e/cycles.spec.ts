@@ -8,7 +8,7 @@ test('estimate tasks and plan them into cycles', async ({ page }) => {
   await page.goto(`/${slug}/settings/teams/ENG`);
   await page.getByLabel('Estimates').check();
   await page.getByLabel('Cycles').check();
-  await expect(page.getByLabel('Length')).toHaveValue('2');
+  await expect(page.getByLabel('Length')).toHaveText('2 weeks');
 
   // The database schedules the current cycle and three upcoming ones.
   const sidebar = page.getByRole('navigation', { name: 'Workspace' });

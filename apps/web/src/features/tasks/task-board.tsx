@@ -357,6 +357,8 @@ export function TaskBoard({
     cycle: () => actions.openPicker('cycle', target()),
     assignMe: () => actions.toggleAssignMe(target()),
     remove: () => actions.remove(target()),
+    copyId: () => focusedTask && actions.copyId(focusedTask),
+    copyLink: () => focusedTask && actions.copyLink(focusedTask),
     moveUp: () => reorder(-1),
     moveDown: () => reorder(1),
   });
@@ -588,7 +590,7 @@ const Card = memo(function Card({
       )}
       <div className="flex items-center gap-1.5 text-xs text-fg-subtle">
         {status && <StatusIcon category={status.category} className="size-3" />}
-        <span className="tabular">{identifier}</span>
+        <span className="font-mono tabular">{identifier}</span>
         {task.recurring && <RepeatIcon role="img" aria-label="Repeats" className="size-3" />}
       </div>
       <p className={cn('line-clamp-2 leading-snug', closed && 'text-fg-muted')}>{task.title}</p>

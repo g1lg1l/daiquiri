@@ -18,17 +18,10 @@ import {
   type TaskDetail,
   type TaskPatch,
 } from '@daiq/domain';
-import { Button, cn, CommandDialog, toast } from '@daiq/ui';
+import { Button, cn, CommandDialog, DatePicker, InlineCalendar, toast } from '@daiq/ui';
 import { CalendarIcon, XIcon } from 'lucide-react';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { copyText } from '../../lib/clipboard';
 import { newId } from '../../lib/ids';
 import { useToday } from '../../lib/use-today';
 import {
@@ -57,6 +50,7 @@ interface TaskActions {
   setLabels: (tasks: Task[], labelIds: string[]) => void;
   toggleAssignMe: (tasks: Task[]) => void;
   remove: (tasks: Task[]) => void;
+  copyId: (task: Task) => void;
   copyLink: (task: Task) => void;
 }
 
@@ -204,14 +198,17 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
     [deleteTasks, restoreTasks, identifier],
   );
 
+  const copyId = useCallback(
+    (task: Task) => copyText(identifier(task), `Copied ${identifier(task)}`),
+    [identifier],
+  );
+
   const copyLink = useCallback(
-    (task: Task) => {
-      const url = `${window.location.origin}${import.meta.env.BASE_URL}${workspace.slug}/task/${identifier(task)}`;
-      navigator.clipboard
-        .writeText(url)
-        .then(() => toast('Link copied', { id: 'copy' }))
-        .catch(() => toast.error('Your browser blocked clipboard access.'));
-    },
+    (task: Task) =>
+      copyText(
+        `${window.location.origin}${import.meta.env.BASE_URL}${workspace.slug}/task/${identifier(task)}`,
+        'Link copied',
+      ),
     [workspace.slug, identifier],
   );
 
@@ -221,11 +218,11 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
       if (!team) return;
       // Estimates and cycles are team modules: say how to turn them on instead of doing nothing.
       if (kind === 'estimate' && !team.estimatesEnabled) {
-        toast(`Estimates are off for ${team.name}. Turn them on in the team's settings.`);
+        toast.info(`Estimates are off for ${team.name}. Turn them on in the team's settings.`);
         return;
       }
       if (kind === 'cycle' && !team.cyclesEnabled) {
-        toast(`Cycles are off for ${team.name}. Turn them on in the team's settings.`);
+        toast.info(`Cycles are off for ${team.name}. Turn them on in the team's settings.`);
         return;
       }
       setPicker({ kind, tasks });
@@ -242,9 +239,20 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
       setLabels,
       toggleAssignMe,
       remove,
+      copyId,
       copyLink,
     }),
-    [openPicker, update, setStatus, setAssignees, setLabels, toggleAssignMe, remove, copyLink],
+    [
+      openPicker,
+      update,
+      setStatus,
+      setAssignees,
+      setLabels,
+      toggleAssignMe,
+      remove,
+      copyId,
+      copyLink,
+    ],
   );
 
   const close = () => setPicker(null);
@@ -400,6 +408,17 @@ export function TaskActionsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/** The quick dates offered by every date picker. */
+function useQuickDates() {
+  const today = useToday();
+  return [
+    { label: 'Today', value: today },
+    { label: 'Tomorrow', value: addDays(today, 1) },
+    { label: 'Next week', value: addDays(startOfWeek(today), 7) },
+    { label: 'In two weeks', value: addDays(today, 14) },
+  ];
+}
+
 function DueDatePicker({
   value,
   onChange,
@@ -407,31 +426,26 @@ function DueDatePicker({
   value: string | null;
   onChange: (date: string | null) => void;
 }) {
-  const today = useToday();
-  const nextMonday = addDays(startOfWeek(today), 7);
-  const quick = [
-    { label: 'Today', date: today },
-    { label: 'Tomorrow', date: addDays(today, 1) },
-    { label: 'Next week', date: nextMonday },
-    { label: 'In two weeks', date: addDays(today, 14) },
-  ];
+  const quick = useQuickDates();
   return (
-    <PickerList
-      options={[
-        ...quick.map((q) => ({ value: q.date, label: q.label, hint: q.date })),
-        ...(value ? [{ value: NO_VALUE, label: 'Remove due date' }] : []),
-      ]}
-      selected={value ? [value] : []}
-      placeholder="Pick a date…"
-      onSelect={([date]) => onChange(date === NO_VALUE || !date ? null : date)}
-    />
+    <>
+      <PickerList
+        options={[
+          ...quick.map((q) => ({ value: q.value, label: q.label, hint: q.value })),
+          ...(value ? [{ value: NO_VALUE, label: 'Remove due date' }] : []),
+        ]}
+        selected={value ? [value] : []}
+        placeholder="Pick a date…"
+        onSelect={([date]) => onChange(date === NO_VALUE || !date ? null : date)}
+      />
+      <div className="flex justify-center border-t border-border p-2">
+        <InlineCalendar value={value} onChange={onChange} />
+      </div>
+    </>
   );
 }
 
-/**
- * Date property: a button showing the formatted date that opens the browser's
- * native date picker (no date-picker library; keyboard accessible via the button).
- */
+/** Date property: a button showing the date that opens a calendar with quick picks. */
 export function DateField({
   label,
   value,
@@ -444,33 +458,25 @@ export function DateField({
   variant?: 'ghost' | 'secondary';
 }) {
   const today = useToday();
-  const input = useRef<HTMLInputElement>(null);
+  const quick = useQuickDates();
+  const shown = value ? formatDueDate(value, today) : label;
   return (
     <span className="relative inline-flex items-center gap-0.5">
-      <Button
-        type="button"
-        variant={variant}
-        size="sm"
-        className={cn(variant === 'ghost' && 'h-7 px-1.5 font-normal', !value && 'text-fg-subtle')}
-        onClick={() => {
-          const element = input.current;
-          if (!element) return;
-          if (typeof element.showPicker === 'function') element.showPicker();
-          else element.focus();
-        }}
-      >
-        <CalendarIcon />
-        {value ? formatDueDate(value, today) : label}
-      </Button>
-      <input
-        ref={input}
-        type="date"
-        tabIndex={-1}
-        aria-label={label}
-        className="pointer-events-none absolute inset-0 size-full opacity-0"
-        value={value ?? ''}
-        onChange={(event) => onChange(event.target.value || null)}
-      />
+      <DatePicker value={value} onChange={onChange} label={label} quickPicks={quick}>
+        <Button
+          type="button"
+          variant={variant}
+          size="sm"
+          aria-label={value ? `${label}: ${shown}` : label}
+          className={cn(
+            variant === 'ghost' && 'h-7 px-1.5 font-normal',
+            !value && 'text-fg-subtle',
+          )}
+        >
+          <CalendarIcon />
+          {shown}
+        </Button>
+      </DatePicker>
       {value && (
         <Button
           type="button"

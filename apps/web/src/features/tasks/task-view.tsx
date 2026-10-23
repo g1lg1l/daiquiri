@@ -32,6 +32,7 @@ import {
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
 import { useComposer, type ComposerDefaults } from './composer';
 import type { BoardLane } from './task-board';
+import { TaskContextMenu } from './task-context-menu';
 import { TaskList } from './task-list';
 import { TaskPeek } from './task-peek';
 import { useIdentifier } from './use-identifier';
@@ -95,6 +96,7 @@ export function TaskView({
     : (allowedGroups[0] ?? 'none');
   const order = search.order ?? defaults.order;
 
+  const tasksWithId = (id: string) => (tasks ?? []).filter((task) => task.id === id);
   const visible = useMemo<Task[]>(() => {
     if (!tasks) return [];
     // Insights need the whole history, not just recently completed work.
@@ -254,42 +256,48 @@ export function TaskView({
             <TaskInsights tasks={visible} />
           </Suspense>
         ) : layout === 'timeline' ? (
-          <Suspense fallback={null}>
-            <TaskTimeline
-              groups={groups}
-              showGroupHeaders={group !== 'none'}
-              peekId={peekTask?.id}
-              onOpen={onOpen}
-            />
-          </Suspense>
+          <TaskContextMenu onOpen={onOpen} tasksFor={tasksWithId}>
+            <Suspense fallback={null}>
+              <TaskTimeline
+                groups={groups}
+                showGroupHeaders={group !== 'none'}
+                peekId={peekTask?.id}
+                onOpen={onOpen}
+              />
+            </Suspense>
+          </TaskContextMenu>
         ) : layout === 'calendar' ? (
-          <Suspense fallback={null}>
-            <TaskCalendar
-              tasks={visible}
-              month={search.month}
-              setSearch={setSearch}
-              peekId={peekTask?.id}
-              onOpen={onOpen}
-              onCreate={composer}
-              composerDefaults={composerDefaults}
-            />
-          </Suspense>
+          <TaskContextMenu onOpen={onOpen} tasksFor={tasksWithId}>
+            <Suspense fallback={null}>
+              <TaskCalendar
+                tasks={visible}
+                month={search.month}
+                setSearch={setSearch}
+                peekId={peekTask?.id}
+                onOpen={onOpen}
+                onCreate={composer}
+                composerDefaults={composerDefaults}
+              />
+            </Suspense>
+          </TaskContextMenu>
         ) : layout === 'board' ? (
-          <Suspense fallback={null}>
-            <TaskBoard
-              groups={groups}
-              {...(group === 'field' && search.groupField
-                ? { groupField: data.fieldsById.get(search.groupField) }
-                : {})}
-              groupBy={group}
-              canReorder={order === 'manual'}
-              peekId={peekTask?.id}
-              onOpen={onOpen}
-              composerDefaults={groupDefaults}
-              onCreate={composer}
-              {...(lanes && subgroup && { lanes, laneBy: subgroup })}
-            />
-          </Suspense>
+          <TaskContextMenu onOpen={onOpen} tasksFor={tasksWithId}>
+            <Suspense fallback={null}>
+              <TaskBoard
+                groups={groups}
+                {...(group === 'field' && search.groupField
+                  ? { groupField: data.fieldsById.get(search.groupField) }
+                  : {})}
+                groupBy={group}
+                canReorder={order === 'manual'}
+                peekId={peekTask?.id}
+                onOpen={onOpen}
+                composerDefaults={groupDefaults}
+                onCreate={composer}
+                {...(lanes && subgroup && { lanes, laneBy: subgroup })}
+              />
+            </Suspense>
+          </TaskContextMenu>
         ) : (
           <TaskList
             label={label}

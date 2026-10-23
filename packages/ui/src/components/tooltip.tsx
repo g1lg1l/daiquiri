@@ -22,8 +22,7 @@ export function Tooltip({ children, label, shortcut, side = 'bottom' }: TooltipP
         <TooltipPrimitive.Positioner side={side} sideOffset={6} className="z-50">
           <TooltipPrimitive.Popup
             className={cn(
-              'flex origin-(--transform-origin) items-center gap-2 rounded-md bg-fg px-2 py-1 text-xs text-fg-inverted shadow-popover',
-              'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
+              'flex popup-motion items-center gap-2 rounded-md bg-fg px-2 py-1 text-xs text-fg-inverted shadow-popover',
               '[&_kbd]:border-transparent [&_kbd]:bg-fg-inverted/15 [&_kbd]:text-fg-inverted',
             )}
           >

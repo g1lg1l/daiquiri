@@ -20,7 +20,8 @@ test('make a task repeat, change the rule and stop it', async ({ page }) => {
   await expect(page.getByText(/^Next task on /)).toBeVisible();
   await page.getByText('After completion').click();
   await page.getByRole('spinbutton', { name: 'After' }).fill('3');
-  await page.getByLabel('Unit').selectOption('day');
+  await page.getByLabel('Unit').click();
+  await page.getByRole('option', { name: 'days', exact: true }).click();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('button', { name: '3 days after completion' })).toBeVisible();
 

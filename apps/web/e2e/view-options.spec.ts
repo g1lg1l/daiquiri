@@ -42,8 +42,9 @@ test('mute a team in notification preferences', async ({ page }) => {
   const { slug } = await signUpWithWorkspace(page);
   await page.goto(`/${slug}/settings/preferences`);
   const engineering = page.getByLabel('Engineering');
-  await expect(engineering).toHaveValue('all');
-  await engineering.selectOption('mute');
+  await expect(engineering).toHaveText('All activity');
+  await engineering.click();
+  await page.getByRole('option', { name: 'Nothing' }).click();
   await page.reload();
-  await expect(page.getByLabel('Engineering')).toHaveValue('mute');
+  await expect(page.getByLabel('Engineering')).toHaveText('Nothing');
 });

@@ -14,13 +14,13 @@ import {
   type ImportTarget,
   type Team,
 } from '@daiq/domain';
-import { Button, cn, FieldError, Label } from '@daiq/ui';
+import { Button, cn, FieldError, Label, Select } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { UploadIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { NotFoundPanel } from '../../../../components/not-found-panel';
 import { ServiceImport } from '../../../../features/import/service-import';
-import { SOURCES, type Source } from '../../../../features/import/sources';
+import { SOURCES } from '../../../../features/import/sources';
 import { ViewHeader } from '../../../../features/shell/view-header';
 import {
   useWorkspace,
@@ -29,13 +29,18 @@ import {
 } from '../../../../features/workspace/workspace-context';
 import { newId } from '../../../../lib/ids';
 
+const FROM = ['csv', ...SOURCES.map((s) => s.id)] as const;
+type From = (typeof FROM)[number];
+const isFrom = (value: unknown): value is From => FROM.some((f) => f === value);
+
 export const Route = createFileRoute('/$workspace/team/$teamKey/import')({
+  validateSearch: (search: Record<string, unknown>): { from?: From } =>
+    isFrom(search.from) ? { from: search.from } : {},
   component: ImportTasks,
 });
 
 const MAX_ROWS = 10_000;
 const rowsName = (count: number) => (count === 1 ? '1 row names' : `${count} rows name`);
-const select = 'h-8 rounded-md border border-border bg-surface px-2 text-[13px]';
 type Mapping = Partial<Record<ImportTarget, number>>;
 
 interface Plan {
@@ -105,13 +110,14 @@ function plan(rows: string[][], mapping: Mapping, team: Team, data: WorkspaceDat
 
 function ImportTasks() {
   const { teamKey } = Route.useParams();
+  const search = Route.useSearch();
   const { workspace } = useWorkspace();
   const data = useWorkspaceData();
   const team = data.teamsByKey.get(teamKey);
   const tasks = useTasks(team ? { kind: 'team', id: team.id } : null);
   const importTasks = useImportTasks(team?.id ?? '');
   const createLabel = useCreateLabel(workspace.id);
-  const [from, setFrom] = useState<'csv' | Source['id']>('csv');
+  const [from, setFrom] = useState<From>(search.from ?? 'csv');
   const [fileName, setFileName] = useState<string | null>(null);
   const [table, setTable] = useState<string[][]>([]);
   const [mapping, setMapping] = useState<Mapping>({});
@@ -192,7 +198,18 @@ function ImportTasks() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <ViewHeader title="Import tasks" icon={<UploadIcon className="size-4 text-fg-muted" />} />
+      <ViewHeader
+        title={`Import into ${team.name}`}
+        icon={<UploadIcon className="size-4 text-fg-muted" />}
+      >
+        <Link
+          to="/$workspace/settings/import"
+          params={{ workspace: workspace.slug }}
+          className="text-[13px] text-fg-muted hover:text-fg"
+        >
+          How importing works
+        </Link>
+      </ViewHeader>
       <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex max-w-3xl flex-col gap-5 p-4 md:p-6">
           <fieldset className="flex flex-wrap gap-1 self-start rounded-md border border-border p-0.5 text-[13px]">
@@ -263,28 +280,25 @@ function ImportTasks() {
                           className="flex items-center justify-between gap-3 text-[13px]"
                         >
                           {IMPORT_TARGET_LABEL[target]}
-                          <select
-                            className={select}
-                            value={mapping[target] ?? ''}
-                            onChange={(event) =>
+                          <Select
+                            value={String(mapping[target] ?? '')}
+                            onValueChange={(value) =>
                               setMapping({
                                 ...mapping,
-                                [target]:
-                                  event.target.value === ''
-                                    ? undefined
-                                    : Number(event.target.value),
+                                [target]: value === '' ? undefined : Number(value),
                               })
                             }
-                          >
-                            <option value="">
-                              {target === 'title' ? 'Choose a column' : 'Don’t import'}
-                            </option>
-                            {columns.map((column) => (
-                              <option key={column.index} value={column.index}>
-                                {column.name || `Column ${column.index + 1}`}
-                              </option>
-                            ))}
-                          </select>
+                            options={[
+                              {
+                                value: '',
+                                label: target === 'title' ? 'Choose a column' : 'Don’t import',
+                              },
+                              ...columns.map((column) => ({
+                                value: String(column.index),
+                                label: column.name || `Column ${column.index + 1}`,
+                              })),
+                            ]}
+                          />
                         </label>
                       ))}
                     </div>

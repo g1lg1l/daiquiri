@@ -24,8 +24,7 @@ export function PopoverContent({
       >
         <PopoverPrimitive.Popup
           className={cn(
-            'origin-(--transform-origin) rounded-lg border border-border bg-overlay text-fg shadow-popover outline-none',
-            'duration-120 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.97]',
+            'popup-motion rounded-lg border border-border bg-overlay text-fg shadow-popover outline-none',
             className,
           )}
           {...props}

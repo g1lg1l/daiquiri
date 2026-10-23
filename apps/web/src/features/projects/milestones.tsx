@@ -26,6 +26,7 @@ import { DiamondIcon, MoreHorizontalIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { formString } from '../../lib/forms';
 import { newId } from '../../lib/ids';
+import { DateField } from '../tasks/task-actions';
 import { pushUndo } from '../undo/undo';
 import { useWorkspaceData } from '../workspace/workspace-context';
 
@@ -40,6 +41,7 @@ function MilestoneForm({
   submitLabel: string;
   onSubmit: (values: { name: string; targetDate: string | null }) => void;
 }) {
+  const [targetDate, setTargetDate] = useState(initial?.targetDate ?? null);
   return (
     <form
       className="flex w-64 flex-col gap-3"
@@ -47,7 +49,7 @@ function MilestoneForm({
         event.preventDefault();
         const form = new FormData(event.currentTarget);
         const name = formString(form, 'name').trim();
-        if (name) onSubmit({ name, targetDate: formString(form, 'target') || null });
+        if (name) onSubmit({ name, targetDate });
       }}
     >
       <div className="flex flex-col gap-1.5">
@@ -63,12 +65,12 @@ function MilestoneForm({
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="milestone-target">Target date</Label>
-        <Input
-          id="milestone-target"
-          name="target"
-          type="date"
-          defaultValue={initial?.targetDate ?? ''}
+        <span className="text-[13px] font-medium">Target date</span>
+        <DateField
+          label="Target date"
+          value={targetDate}
+          onChange={setTargetDate}
+          variant="secondary"
         />
       </div>
       <Button type="submit" variant="primary" size="sm">

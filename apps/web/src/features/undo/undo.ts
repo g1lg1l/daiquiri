@@ -18,7 +18,10 @@ export function pushUndo(entry: UndoEntry, options: { toast?: string } = {}): vo
   stack.push(entry);
   if (stack.length > MAX_ENTRIES) stack.shift();
   if (options.toast) {
-    toast(options.toast, { action: { label: 'Undo', onClick: () => void runUndo(entry) } });
+    toast(options.toast, {
+      id: 'undo',
+      action: { label: 'Undo', onClick: () => void runUndo(entry) },
+    });
   }
 }
 
@@ -37,5 +40,5 @@ async function runUndo(entry: UndoEntry): Promise<void> {
 export function undoLast(): void {
   const entry = stack.at(-1);
   if (entry) void runUndo(entry);
-  else toast('Nothing to undo', { id: 'undo' });
+  else toast.info('Nothing to undo', { id: 'undo' });
 }

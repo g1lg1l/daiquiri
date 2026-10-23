@@ -24,6 +24,7 @@ import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as WorkspaceProjectProjectIdRouteImport } from './routes/$workspace/project/$projectId'
 import { Route as WorkspaceSettingsIndexRouteImport } from './routes/$workspace/settings/index'
 import { Route as WorkspaceSettingsFieldsRouteImport } from './routes/$workspace/settings/fields'
+import { Route as WorkspaceSettingsImportRouteImport } from './routes/$workspace/settings/import'
 import { Route as WorkspaceSettingsLabelsRouteImport } from './routes/$workspace/settings/labels'
 import { Route as WorkspaceSettingsMembersRouteImport } from './routes/$workspace/settings/members'
 import { Route as WorkspaceSettingsPreferencesRouteImport } from './routes/$workspace/settings/preferences'
@@ -115,6 +116,11 @@ const WorkspaceSettingsIndexRoute = WorkspaceSettingsIndexRouteImport.update({
 const WorkspaceSettingsFieldsRoute = WorkspaceSettingsFieldsRouteImport.update({
   id: '/fields',
   path: '/fields',
+  getParentRoute: () => WorkspaceSettingsRouteRoute,
+} as any)
+const WorkspaceSettingsImportRoute = WorkspaceSettingsImportRouteImport.update({
+  id: '/import',
+  path: '/import',
   getParentRoute: () => WorkspaceSettingsRouteRoute,
 } as any)
 const WorkspaceSettingsLabelsRoute = WorkspaceSettingsLabelsRouteImport.update({
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/$workspace/': typeof WorkspaceIndexRoute
   '/$workspace/project/$projectId': typeof WorkspaceProjectProjectIdRoute
   '/$workspace/settings/fields': typeof WorkspaceSettingsFieldsRoute
+  '/$workspace/settings/import': typeof WorkspaceSettingsImportRoute
   '/$workspace/settings/labels': typeof WorkspaceSettingsLabelsRoute
   '/$workspace/settings/members': typeof WorkspaceSettingsMembersRoute
   '/$workspace/settings/preferences': typeof WorkspaceSettingsPreferencesRoute
@@ -256,6 +263,7 @@ export interface FileRoutesByTo {
   '/$workspace': typeof WorkspaceIndexRoute
   '/$workspace/project/$projectId': typeof WorkspaceProjectProjectIdRoute
   '/$workspace/settings/fields': typeof WorkspaceSettingsFieldsRoute
+  '/$workspace/settings/import': typeof WorkspaceSettingsImportRoute
   '/$workspace/settings/labels': typeof WorkspaceSettingsLabelsRoute
   '/$workspace/settings/members': typeof WorkspaceSettingsMembersRoute
   '/$workspace/settings/preferences': typeof WorkspaceSettingsPreferencesRoute
@@ -290,6 +298,7 @@ export interface FileRoutesById {
   '/$workspace/': typeof WorkspaceIndexRoute
   '/$workspace/project/$projectId': typeof WorkspaceProjectProjectIdRoute
   '/$workspace/settings/fields': typeof WorkspaceSettingsFieldsRoute
+  '/$workspace/settings/import': typeof WorkspaceSettingsImportRoute
   '/$workspace/settings/labels': typeof WorkspaceSettingsLabelsRoute
   '/$workspace/settings/members': typeof WorkspaceSettingsMembersRoute
   '/$workspace/settings/preferences': typeof WorkspaceSettingsPreferencesRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/$workspace/'
     | '/$workspace/project/$projectId'
     | '/$workspace/settings/fields'
+    | '/$workspace/settings/import'
     | '/$workspace/settings/labels'
     | '/$workspace/settings/members'
     | '/$workspace/settings/preferences'
@@ -356,6 +366,7 @@ export interface FileRouteTypes {
     | '/$workspace'
     | '/$workspace/project/$projectId'
     | '/$workspace/settings/fields'
+    | '/$workspace/settings/import'
     | '/$workspace/settings/labels'
     | '/$workspace/settings/members'
     | '/$workspace/settings/preferences'
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/$workspace/'
     | '/$workspace/project/$projectId'
     | '/$workspace/settings/fields'
+    | '/$workspace/settings/import'
     | '/$workspace/settings/labels'
     | '/$workspace/settings/members'
     | '/$workspace/settings/preferences'
@@ -526,6 +538,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceSettingsFieldsRouteImport
       parentRoute: typeof WorkspaceSettingsRouteRoute
     }
+    '/$workspace/settings/import': {
+      id: '/$workspace/settings/import'
+      path: '/import'
+      fullPath: '/$workspace/settings/import'
+      preLoaderRoute: typeof WorkspaceSettingsImportRouteImport
+      parentRoute: typeof WorkspaceSettingsRouteRoute
+    }
     '/$workspace/settings/labels': {
       id: '/$workspace/settings/labels'
       path: '/labels'
@@ -643,6 +662,7 @@ declare module '@tanstack/react-router' {
 
 interface WorkspaceSettingsRouteRouteChildren {
   WorkspaceSettingsFieldsRoute: typeof WorkspaceSettingsFieldsRoute
+  WorkspaceSettingsImportRoute: typeof WorkspaceSettingsImportRoute
   WorkspaceSettingsLabelsRoute: typeof WorkspaceSettingsLabelsRoute
   WorkspaceSettingsMembersRoute: typeof WorkspaceSettingsMembersRoute
   WorkspaceSettingsPreferencesRoute: typeof WorkspaceSettingsPreferencesRoute
@@ -657,6 +677,7 @@ interface WorkspaceSettingsRouteRouteChildren {
 const WorkspaceSettingsRouteRouteChildren: WorkspaceSettingsRouteRouteChildren =
   {
     WorkspaceSettingsFieldsRoute: WorkspaceSettingsFieldsRoute,
+    WorkspaceSettingsImportRoute: WorkspaceSettingsImportRoute,
     WorkspaceSettingsLabelsRoute: WorkspaceSettingsLabelsRoute,
     WorkspaceSettingsMembersRoute: WorkspaceSettingsMembersRoute,
     WorkspaceSettingsPreferencesRoute: WorkspaceSettingsPreferencesRoute,

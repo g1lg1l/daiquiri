@@ -6,7 +6,7 @@ import {
   viewSearchSchema,
   type ProjectStatus,
 } from '@daiq/domain';
-import { Avatar, Button, cn } from '@daiq/ui';
+import { Avatar, Button, cn, Select } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArchiveIcon, ArchiveRestoreIcon, LayoutTemplateIcon, UserIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -33,10 +33,13 @@ import { useSetSearch } from '../../../features/views/use-set-search';
 import { useWorkspace, useWorkspaceData } from '../../../features/workspace/workspace-context';
 
 // Monday first; 2023-01-01 was a Sunday.
-const WEEKDAYS = [1, 2, 3, 4, 5, 6, 0].map((value) => ({
-  value,
-  label: new Date(2023, 0, 1 + value).toLocaleDateString('en', { weekday: 'long' }),
-}));
+const REMINDER_DAYS = [
+  { value: '', label: 'Off' },
+  ...[1, 2, 3, 4, 5, 6, 0].map((day) => ({
+    value: String(day),
+    label: `${new Date(2023, 0, 1 + day).toLocaleDateString('en', { weekday: 'long' })}s`,
+  })),
+];
 
 export const Route = createFileRoute('/$workspace/project/$projectId')({
   validateSearch: viewSearchSchema.extend({
@@ -195,25 +198,19 @@ function ProjectPage() {
           {counts.done}/{counts.total} done
         </span>
       </span>
-      <label className="flex items-center gap-1">
+      <label htmlFor="update-reminder" className="flex items-center gap-1">
         Update reminder
-        <select
+        <Select
+          id="update-reminder"
           aria-label="Remind the lead to post an update"
-          value={project.updateReminderDay ?? ''}
-          onChange={(event) =>
-            update({
-              updateReminderDay: event.target.value === '' ? null : Number(event.target.value),
-            })
+          size="sm"
+          value={String(project.updateReminderDay ?? '')}
+          onValueChange={(value) =>
+            update({ updateReminderDay: value === '' ? null : Number(value) })
           }
-          className="h-6 rounded-md border border-transparent bg-transparent px-1 text-xs hover:border-border"
-        >
-          <option value="">Off</option>
-          {WEEKDAYS.map((day) => (
-            <option key={day.value} value={day.value}>
-              {day.label}s
-            </option>
-          ))}
-        </select>
+          options={REMINDER_DAYS}
+          className="h-6 border-transparent bg-transparent pl-1 text-xs shadow-none hover:border-border"
+        />
       </label>
       {workspace.role !== 'guest' && (
         <>

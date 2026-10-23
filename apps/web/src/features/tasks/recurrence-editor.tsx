@@ -7,7 +7,16 @@ import {
   type RecurrenceRule,
   type Task,
 } from '@daiq/domain';
-import { Button, cn, Input, Label, Popover, PopoverContent, PopoverTrigger } from '@daiq/ui';
+import {
+  Button,
+  cn,
+  Input,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+} from '@daiq/ui';
 import { RepeatIcon } from 'lucide-react';
 import { useState } from 'react';
 
@@ -27,8 +36,6 @@ const formatDay = (iso: string) =>
     month: 'short',
     day: 'numeric',
   });
-
-const select = 'h-8 rounded-md border border-border bg-surface px-2 text-[13px]';
 
 /** The task's "Repeat" property: shows the rule and edits it in a popover (feature spec §3.7). */
 export function RecurrenceEditor({
@@ -114,21 +121,18 @@ export function RecurrenceEditor({
                 }
               />
             </div>
-            <select
+            <Select
               aria-label="Unit"
-              className={cn(select, 'flex-1')}
+              className="flex-1"
               value={draft.unit}
-              onChange={(event) => {
-                const unit = event.target.value;
+              onValueChange={(unit) => {
                 if (isRecurrenceUnit(unit)) setDraft({ ...draft, unit });
               }}
-            >
-              {RECURRENCE_UNITS.map((unit) => (
-                <option key={unit} value={unit}>
-                  {draft.every === 1 ? unit : `${unit}s`}
-                </option>
-              ))}
-            </select>
+              options={RECURRENCE_UNITS.map((unit) => ({
+                value: unit,
+                label: draft.every === 1 ? unit : `${unit}s`,
+              }))}
+            />
           </div>
 
           {weekly && (

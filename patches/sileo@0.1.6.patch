@@ -1,0 +1,50 @@
+diff --git a/dist/index.js b/dist/index.js
+index 79aa792998ed2f8917d4b46725af2b0bbab692e0..f05961ed58d60710a74ae7f6d1b0bd49ec9183d0 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -582,9 +582,8 @@ const GooeyDefs = /*#__PURE__*/ react.memo(function GooeyDefs({ filterId, blur,
+         exiting,
+         onDismiss
+     ]);
+-    /* --------------------------------- Render --------------------------------- */ return /*#__PURE__*/ jsxRuntime.jsxs("button", {
++    /* --------------------------------- Render --------------------------------- */ return /*#__PURE__*/ jsxRuntime.jsxs("div", {
+         ref: buttonRef,
+-        type: "button",
+         "data-sileo-toast": true,
+         "data-ready": ready,
+         "data-expanded": open,
+@@ -704,8 +703,7 @@ const GooeyDefs = /*#__PURE__*/ react.memo(function GooeyDefs({ filterId, blur,
+                     children: [
+                         view.description,
+                         view.button && // biome-ignore lint/a11y/useValidAnchor: cannot use button inside a button
+-                        /*#__PURE__*/ jsxRuntime.jsx("a", {
+-                            href: "#",
++                        /*#__PURE__*/ jsxRuntime.jsx("button", {
+                             type: "button",
+                             "data-sileo-button": true,
+                             "data-state": view.state,
+diff --git a/dist/index.mjs b/dist/index.mjs
+index f687f84725d587b4c539fccb2f86568a9c18294d..94dff07b0b50aac9e41f599286f3b3249a227f6c 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -580,9 +580,8 @@ const GooeyDefs = /*#__PURE__*/ memo(function GooeyDefs({ filterId, blur, width,
+         exiting,
+         onDismiss
+     ]);
+-    /* --------------------------------- Render --------------------------------- */ return /*#__PURE__*/ jsxs("button", {
++    /* --------------------------------- Render --------------------------------- */ return /*#__PURE__*/ jsxs("div", {
+         ref: buttonRef,
+-        type: "button",
+         "data-sileo-toast": true,
+         "data-ready": ready,
+         "data-expanded": open,
+@@ -702,8 +701,7 @@ const GooeyDefs = /*#__PURE__*/ memo(function GooeyDefs({ filterId, blur, width,
+                     children: [
+                         view.description,
+                         view.button && // biome-ignore lint/a11y/useValidAnchor: cannot use button inside a button
+-                        /*#__PURE__*/ jsx("a", {
+-                            href: "#",
++                        /*#__PURE__*/ jsx("button", {
+                             type: "button",
+                             "data-sileo-button": true,
+                             "data-state": view.state,

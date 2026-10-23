@@ -26,8 +26,10 @@ import {
   SettingsIcon,
   SunIcon,
   TagIcon,
+  UploadIcon,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
+import { copyText } from '../../lib/clipboard';
 import { SHORTCUTS } from '../shortcuts/registry';
 import { useComposer } from '../tasks/composer';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
@@ -154,6 +156,14 @@ function Palette({
     run: () => void navigate({ to: '/$workspace/settings', params: { workspace: ws } }),
   });
   add({
+    id: 'import',
+    group: 'Go to',
+    label: 'Import tasks',
+    icon: <UploadIcon />,
+    keywords: ['linear', 'asana', 'clickup', 'csv'],
+    run: () => void navigate({ to: '/$workspace/settings/import', params: { workspace: ws } }),
+  });
+  add({
     id: 'theme-light',
     group: 'Preferences',
     label: 'Use light theme',
@@ -199,7 +209,19 @@ function Palette({
   const hasServerResults = (search.data?.length ?? 0) > 0 && deferredQuery.trim().length >= 2;
 
   return (
-    <Command loop>
+    <Command
+      loop
+      onKeyDown={(event) => {
+        // Mod+. copies the highlighted task's identifier, as it does in lists.
+        if (!(event.metaKey || event.ctrlKey) || event.key !== '.') return;
+        const ident = event.currentTarget.querySelector<HTMLElement>(
+          '[cmdk-item][data-selected="true"][data-ident]',
+        )?.dataset.ident;
+        if (!ident) return;
+        event.preventDefault();
+        copyText(ident, `Copied ${ident}`);
+      }}
+    >
       <CommandInput
         value={query}
         onValueChange={setQuery}
@@ -228,8 +250,11 @@ function Palette({
               <CommandItem
                 key={item.id}
                 value={`recent ${item.title} ${item.subtitle ?? ''}`}
+                data-ident={item.kind === 'task' ? item.subtitle : undefined}
                 icon={item.kind === 'task' ? <ClockIcon /> : <FolderIcon />}
-                trailing={<span className="text-xs text-fg-subtle tabular">{item.subtitle}</span>}
+                trailing={
+                  <span className="font-mono text-xs text-fg-subtle tabular">{item.subtitle}</span>
+                }
                 onSelect={() =>
                   run(() =>
                     item.kind === 'task' && item.subtitle
@@ -253,6 +278,7 @@ function Palette({
                 key={`${result.kind}-${result.id}`}
                 forceMount
                 value={`result ${result.kind} ${result.id}`}
+                data-ident={result.kind === 'task' ? result.subtitle : undefined}
                 icon={
                   result.kind === 'task' ? (
                     <ListTodoIcon />
@@ -266,7 +292,9 @@ function Palette({
                 }
                 trailing={
                   result.subtitle ? (
-                    <span className="text-xs text-fg-subtle tabular">{result.subtitle}</span>
+                    <span className="font-mono text-xs text-fg-subtle tabular">
+                      {result.subtitle}
+                    </span>
                   ) : null
                 }
                 onSelect={() =>

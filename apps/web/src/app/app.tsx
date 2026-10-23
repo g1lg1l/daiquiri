@@ -6,6 +6,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { RouterProvider } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { Splash } from '../components/splash';
+import { m } from '../i18n';
 import { createAppRouter } from '../router';
 import { persister, persistOptions } from './persistence';
 import { createQueryClient } from './query-client';
@@ -61,7 +62,7 @@ export function App({ client, config }: { client: DaiqClient; config: RuntimeCon
             <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
               <AppRouter config={config} />
               <UnsavedChangesGuard />
-              <Toaster />
+              <Toaster labels={m.common.toast} />
             </PersistQueryClientProvider>
           </AuthProvider>
         </DataProvider>

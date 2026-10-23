@@ -140,6 +140,8 @@ export function TaskTimeline({ groups, showGroupHeaders, peekId, onOpen }: TaskT
     assignee: () => actions.openPicker('assignee', target()),
     dueDate: () => actions.openPicker('dueDate', target()),
     remove: () => actions.remove(target()),
+    copyId: () => focusedTask && actions.copyId(focusedTask),
+    copyLink: () => focusedTask && actions.copyLink(focusedTask),
   });
 
   const onBarKeyDown = (event: KeyboardEvent, task: Task) => {

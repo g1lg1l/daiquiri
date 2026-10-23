@@ -17,6 +17,7 @@ import {
   FieldError,
   Input,
   Label,
+  Select,
   Textarea,
 } from '@daiq/ui';
 import { createFileRoute } from '@tanstack/react-router';
@@ -97,21 +98,15 @@ function FieldsSettings() {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="field-kind">Type</Label>
-              <select
+              <Select
                 id="field-kind"
                 value={kind}
-                onChange={(event) => {
-                  const next = CUSTOM_FIELD_KINDS.find((k) => k === event.target.value);
+                onValueChange={(value) => {
+                  const next = CUSTOM_FIELD_KINDS.find((k) => k === value);
                   if (next) setKind(next);
                 }}
-                className="h-8 rounded-md border border-border bg-surface px-2 text-[13px]"
-              >
-                {CUSTOM_FIELD_KINDS.map((k) => (
-                  <option key={k} value={k}>
-                    {FIELD_KIND_LABEL[k]}
-                  </option>
-                ))}
-              </select>
+                options={CUSTOM_FIELD_KINDS.map((k) => ({ value: k, label: FIELD_KIND_LABEL[k] }))}
+              />
             </div>
             <Button type="submit" variant="primary">
               Add field

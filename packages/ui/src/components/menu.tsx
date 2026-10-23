@@ -1,3 +1,4 @@
+import { ContextMenu as ContextMenuPrimitive } from '@base-ui/react/context-menu';
 import { Menu as MenuPrimitive } from '@base-ui/react/menu';
 import { CheckIcon, ChevronRightIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
@@ -11,6 +12,11 @@ export const MenuSub = MenuPrimitive.SubmenuRoot;
 
 const itemClass =
   'relative flex h-8 cursor-default items-center gap-2 rounded-md px-2 text-[13px] outline-none select-none data-highlighted:bg-surface-muted data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-fg-muted';
+
+// Menus grow less and without overshoot: items moving under a resting
+// pointer would hand its hover (and a submenu) to the item next to them.
+const popupClass =
+  'max-h-(--available-height) min-w-48 overflow-y-auto rounded-lg border border-border bg-overlay p-1 text-fg shadow-popover outline-none [--popup-ease:var(--ease-out)] [--popup-scale:0.97]';
 
 type PositionProps = Pick<MenuPrimitive.Positioner.Props, 'align' | 'side' | 'sideOffset'>;
 
@@ -30,15 +36,34 @@ export function MenuContent({
         className="z-50 outline-none"
       >
         <MenuPrimitive.Popup
+          // Submenus (opened sideways) only fade in: if their items moved while a
+          // pointer heads for them, it would land on a sibling and switch submenus.
           className={cn(
-            'max-h-(--available-height) min-w-48 origin-(--transform-origin) overflow-y-auto rounded-lg border border-border bg-overlay p-1 text-fg shadow-popover outline-none',
-            'duration-120 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97] data-closed:animate-out data-closed:fade-out-0',
+            popupClass,
+            side === 'right' ? 'popup-fade' : 'popup-motion stagger-items',
             className,
           )}
           {...props}
         />
       </MenuPrimitive.Positioner>
     </MenuPrimitive.Portal>
+  );
+}
+
+export const ContextMenu = ContextMenuPrimitive.Root;
+export const ContextMenuTrigger = ContextMenuPrimitive.Trigger;
+
+/** Opens at the pointer on right-click or long-press; takes the same items as `MenuContent`. */
+export function ContextMenuContent({ className, ...props }: MenuPrimitive.Popup.Props) {
+  return (
+    <ContextMenuPrimitive.Portal>
+      <ContextMenuPrimitive.Positioner className="z-50 outline-none">
+        <ContextMenuPrimitive.Popup
+          className={cn(popupClass, 'popup-motion stagger-items', className)}
+          {...props}
+        />
+      </ContextMenuPrimitive.Positioner>
+    </ContextMenuPrimitive.Portal>
   );
 }
 

@@ -27,7 +27,8 @@ test('a stranger sends a public form and the team finds it in Triage', async ({
   await expect(stranger.getByRole('heading', { name: 'Report a bug' })).toBeVisible();
   await stranger.getByLabel('Subject').fill('Checkout button does nothing');
   await stranger.getByLabel('Details').fill('Clicked pay twice.\nNothing happened.');
-  await stranger.getByLabel('How urgent is it?').selectOption({ label: 'Urgent' });
+  await stranger.getByLabel('How urgent is it?').click();
+  await stranger.getByRole('option', { name: 'Urgent' }).click();
   await stranger.getByLabel('Your email').fill('customer@example.com');
   await stranger.getByRole('button', { name: 'Send' }).click();
   await expect(stranger.getByRole('heading', { name: 'Thanks, we have it' })).toBeVisible();

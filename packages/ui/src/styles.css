@@ -140,6 +140,22 @@
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.3, 0, 0, 1.15);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* A light spring (about 8% overshoot) as a CSS easing curve. */
+  --ease-spring: linear(
+    0,
+    0.04 1.6%,
+    0.16 3.4%,
+    0.53 8.6%,
+    0.83 13.4%,
+    0.96 16.6%,
+    1.05 20.6%,
+    1.08 24%,
+    1.07 28.6%,
+    1.02 36%,
+    0.99 44%,
+    1
+  );
   --animate-duration-fast: 120ms;
 }
 
@@ -213,6 +229,99 @@
       transition-duration: 1ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+/*
+ * Motion. Popups grow out of their anchor on a spring and leave quickly;
+ * menu items arrive in a short stagger; small confirmations pop. The
+ * reduced-motion rule above shortens all of it to an instant change.
+ */
+@utility popup-motion {
+  transform-origin: var(--transform-origin);
+  transition:
+    opacity 140ms var(--ease-out),
+    scale 320ms var(--popup-ease, var(--ease-spring)),
+    translate 320ms var(--popup-ease, var(--ease-spring)),
+    filter 160ms var(--ease-out);
+
+  &[data-starting-style] {
+    opacity: 0;
+    scale: var(--popup-scale, 0.9);
+    filter: blur(3px);
+  }
+  &[data-starting-style][data-side='bottom'] {
+    translate: 0 -6px;
+  }
+  &[data-starting-style][data-side='top'] {
+    translate: 0 6px;
+  }
+  &[data-ending-style] {
+    opacity: 0;
+    scale: 0.96;
+    filter: blur(2px);
+    transition-duration: 110ms;
+    transition-timing-function: var(--ease-out);
+  }
+}
+
+/* Submenus only fade: anything that moves under a pointer heading into them misdirects it. */
+@utility popup-fade {
+  transition: opacity 120ms var(--ease-out);
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+  }
+}
+
+@utility stagger-items {
+  & > :is([role='menuitem'], [role='menuitemcheckbox'], [role='menuitemradio'], [role='option']),
+  & > [role='group'] > * {
+    animation: item-in 220ms var(--ease-out) both;
+    /* sibling-index() where supported (Chromium); elsewhere all at once. */
+    animation-delay: calc(min(sibling-index(), 10) * 14ms);
+  }
+}
+
+@utility animate-pop {
+  animation: pop 360ms var(--ease-spring);
+}
+
+@utility month-in-from-left {
+  animation: month-slide 280ms var(--ease-out) both;
+  --month-from: -14px;
+}
+@utility month-in-from-right {
+  animation: month-slide 280ms var(--ease-out) both;
+  --month-from: 14px;
+}
+@utility month-out-to-left {
+  animation: month-slide 180ms var(--ease-out) reverse both;
+  --month-from: -14px;
+}
+@utility month-out-to-right {
+  animation: month-slide 180ms var(--ease-out) reverse both;
+  --month-from: 14px;
+}
+
+@keyframes month-slide {
+  from {
+    opacity: 0;
+    translate: var(--month-from) 0;
+  }
+}
+
+/* Opacity only: items must not move under the pointer while a menu opens. */
+@keyframes item-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pop {
+  40% {
+    scale: 1.28;
   }
 }
 

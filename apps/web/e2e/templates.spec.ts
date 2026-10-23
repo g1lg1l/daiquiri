@@ -45,7 +45,8 @@ test('save a task and a project as templates and use them', async ({ page }) => 
 
   await page.goto(`/${slug}/team/ENG/projects`);
   await page.getByRole('button', { name: 'New project' }).click();
-  await page.getByLabel('Template').selectOption({ label: 'Launch plan (1 milestone, 0 tasks)' });
+  await page.getByLabel('Template').click();
+  await page.getByRole('option', { name: 'Launch plan (1 milestone, 0 tasks)' }).click();
   await page.getByRole('dialog').getByLabel('Name').fill('Launch 2');
   await page.getByRole('button', { name: 'Create project' }).click();
   await page.getByRole('link', { name: /Launch 2/ }).click();

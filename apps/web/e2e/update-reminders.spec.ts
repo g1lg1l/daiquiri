@@ -10,9 +10,10 @@ test('turn on weekly update reminders for a project', async ({ page }) => {
   await page.getByRole('link', { name: /Launch/ }).click();
 
   const reminder = page.getByLabel('Remind the lead to post an update');
-  await expect(reminder).toHaveValue('');
-  await reminder.selectOption({ label: 'Fridays' });
+  await expect(reminder).toHaveText('Off');
+  await reminder.click();
+  await page.getByRole('option', { name: 'Fridays' }).click();
   // Stored, not just optimistic.
   await page.reload();
-  await expect(page.getByLabel('Remind the lead to post an update')).toHaveValue('5');
+  await expect(page.getByLabel('Remind the lead to post an update')).toHaveText('Fridays');
 });
