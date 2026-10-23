@@ -4,9 +4,9 @@ import { useEffect, useEffectEvent } from 'react';
 import type { DaiqClient } from './client';
 import { pendingWrites, removeTasks } from './cache';
 import { useDaiqClient } from './context';
-import { unwrapMaybe } from './errors';
+import { unwrap } from './errors';
 import { keys } from './keys';
-import { refreshTask } from './tasks';
+import { refreshTasks } from './tasks';
 
 /** Thin event broadcast by database triggers (ADR-0007). */
 interface ChangeEvent {
@@ -31,65 +31,127 @@ function isChangeEvent(payload: unknown): payload is ChangeEvent {
   );
 }
 
-function hasId(data: unknown, id: string): boolean {
-  return typeof data === 'object' && data !== null && 'id' in data && data.id === id;
+/** Above this many changed tasks in one batch, refetching the visible lists once is cheaper. */
+const BULK_TASK_EVENTS = 300;
+
+function hasIdIn(data: unknown, ids: ReadonlySet<string>): boolean {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'id' in data &&
+    typeof data.id === 'string' &&
+    ids.has(data.id)
+  );
 }
 
-async function applyEvent(
+/** True for `[prefix, id]` keys whose id is in `ids` (comments, activity, relations). */
+const keyFor =
+  (prefix: string, ids: ReadonlySet<string>) =>
+  ({ queryKey }: { queryKey: readonly unknown[] }) =>
+    queryKey[0] === prefix && typeof queryKey[1] === 'string' && ids.has(queryKey[1]);
+
+async function applyTaskEvents(
+  client: DaiqClient,
+  queryClient: QueryClient,
+  events: readonly ChangeEvent[],
+): Promise<void> {
+  // Our own optimistic writes are already in the cache.
+  const relevant = events.filter((event) => !pendingWrites.has(event.id));
+  if (relevant.length === 0) return;
+  const deleted = new Set(relevant.filter((e) => e.op === 'delete').map((e) => e.id));
+  const changed = relevant.filter((e) => e.op !== 'delete').map((e) => e.id);
+  if (deleted.size > 0) removeTasks(queryClient, deleted);
+  if (changed.length > BULK_TASK_EVENTS) {
+    await queryClient.invalidateQueries({ queryKey: keys.allTasks() });
+  } else if (changed.length > 0) {
+    await refreshTasks(client, queryClient, changed);
+  }
+  const ids = new Set(relevant.map((e) => e.id));
+  await Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: keys.allTaskDetails(),
+      predicate: (query) => hasIdIn(query.state.data, ids),
+    }),
+    queryClient.invalidateQueries({ predicate: keyFor('activity', ids) }),
+    queryClient.invalidateQueries({ queryKey: ['relations'] }),
+  ]);
+}
+
+async function applyCommentEvents(
+  client: DaiqClient,
+  queryClient: QueryClient,
+  events: readonly ChangeEvent[],
+): Promise<void> {
+  const rows = unwrap(
+    await client
+      .from('comments')
+      .select('task_id')
+      .in(
+        'id',
+        events.map((e) => e.id),
+      ),
+  );
+  const taskIds = new Set(rows.map((row) => row.task_id));
+  if (taskIds.size === 0) return;
+  await Promise.all([
+    queryClient.invalidateQueries({ predicate: keyFor('comments', taskIds) }),
+    queryClient.invalidateQueries({ predicate: keyFor('activity', taskIds) }),
+  ]);
+}
+
+/**
+ * Applies one coalesced batch: task changes are fetched in bulk (or the lists
+ * refetched once for imports), every other entity invalidates its query once.
+ */
+async function applyEvents(
   client: DaiqClient,
   queryClient: QueryClient,
   workspaceId: string,
-  event: ChangeEvent,
+  events: readonly ChangeEvent[],
 ): Promise<void> {
-  switch (event.entity) {
-    case 'task':
-      if (pendingWrites.has(event.id)) return;
-      if (event.op === 'delete') removeTasks(queryClient, new Set([event.id]));
-      else await refreshTask(client, queryClient, event.id);
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: keys.allTaskDetails(),
-          predicate: (query) => hasId(query.state.data, event.id),
-        }),
-        queryClient.invalidateQueries({ queryKey: keys.activity(event.id) }),
-        queryClient.invalidateQueries({ queryKey: ['relations'] }),
-      ]);
-      return;
-    case 'comment': {
-      const row = unwrapMaybe(
-        await client.from('comments').select('task_id').eq('id', event.id).maybeSingle(),
-      );
-      if (row) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: keys.comments(row.task_id) }),
-          queryClient.invalidateQueries({ queryKey: keys.activity(row.task_id) }),
-        ]);
-      }
-      return;
-    }
-    case 'project':
-      await queryClient.invalidateQueries({ queryKey: keys.projects(workspaceId) });
-      return;
-    case 'label':
-      await queryClient.invalidateQueries({ queryKey: keys.labels(workspaceId) });
-      return;
-    case 'team':
-    case 'status':
-      await queryClient.invalidateQueries({ queryKey: keys.teams(workspaceId) });
-      return;
-    case 'workspace_member':
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: keys.members(workspaceId) }),
-        queryClient.invalidateQueries({ queryKey: keys.teams(workspaceId) }),
-        queryClient.invalidateQueries({ queryKey: keys.workspaces() }),
-      ]);
-      return;
-    case 'notification':
-      await queryClient.invalidateQueries({ queryKey: keys.notifications(workspaceId) });
-      return;
-    default:
-      return;
+  const byEntity = new Map<string, ChangeEvent[]>();
+  for (const event of events) {
+    byEntity.set(event.entity, [...(byEntity.get(event.entity) ?? []), event]);
   }
+  const invalidate = (queryKey: readonly unknown[]) => queryClient.invalidateQueries({ queryKey });
+  const work: Promise<unknown>[] = [];
+  for (const [entity, batch] of byEntity) {
+    switch (entity) {
+      case 'task':
+        work.push(applyTaskEvents(client, queryClient, batch));
+        break;
+      case 'task_bulk':
+        // An import or bulk edit: the database sent one event per team instead of per task.
+        work.push(invalidate(keys.allTasks()));
+        break;
+      case 'comment':
+        work.push(applyCommentEvents(client, queryClient, batch));
+        break;
+      case 'project':
+        work.push(invalidate(keys.projects(workspaceId)));
+        break;
+      case 'label':
+        work.push(invalidate(keys.labels(workspaceId)));
+        break;
+      case 'team':
+      case 'status':
+        work.push(invalidate(keys.teams(workspaceId)));
+        break;
+      case 'workspace_member':
+        work.push(
+          invalidate(keys.members(workspaceId)),
+          invalidate(keys.teams(workspaceId)),
+          invalidate(keys.workspaces()),
+        );
+        break;
+      case 'notification':
+        work.push(invalidate(keys.notifications(workspaceId)));
+        break;
+      default:
+        break;
+    }
+  }
+  await Promise.all(work);
 }
 
 /**
@@ -126,10 +188,14 @@ export function useRealtimeSync(options: {
       timer = undefined;
       const events = [...queue.values()];
       queue.clear();
-      for (const event of events) {
-        applyEvent(client, queryClient, workspaceId, event).catch(reportError);
-      }
+      applyEvents(client, queryClient, workspaceId, events).catch(reportError);
     };
+
+    // Data fetched (or restored from the persisted cache) before every channel
+    // was listening may have missed events: refetch it once all are subscribed.
+    const listeningSince = Date.now();
+    const subscribed = new Set<string>();
+    let caughtUp = false;
 
     const channels = topics.map((topic) => {
       let subscribedBefore = false;
@@ -145,6 +211,13 @@ export function useRealtimeSync(options: {
           // After a reconnect we may have missed events: refresh what is on screen.
           if (subscribedBefore) void queryClient.invalidateQueries();
           subscribedBefore = true;
+          subscribed.add(topic);
+          if (!caughtUp && subscribed.size === topics.length) {
+            caughtUp = true;
+            void queryClient.invalidateQueries({
+              predicate: (query) => query.state.dataUpdatedAt < listeningSince,
+            });
+          }
         });
     });
 

@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import type { Task } from '@daiq/domain';
-import { findTask, patchTask, removeTasks, snapshotTasks, upsertTask } from './cache';
+import { findTask, patchTask, removeTasks, snapshotTasks, upsertTask, upsertTasks } from './cache';
 import { keys } from './keys';
 
 const task = (overrides: Partial<Task> = {}): Task => ({
@@ -79,5 +79,23 @@ describe('task cache patchers', () => {
     client.setQueryData(keys.taskDetail('team-a', 1), { ...task(), description: null });
     patchTask(client, 't1', { title: 'Renamed' });
     expect(client.getQueryData<Task>(keys.taskDetail('team-a', 1))?.title).toBe('Renamed');
+  });
+
+  it('applies a batch with one write per list', () => {
+    const client = setup();
+    const writes: unknown[] = [];
+    const unsubscribe = client.getQueryCache().subscribe((event) => {
+      if (event.type === 'updated' && event.action.type === 'success')
+        writes.push(event.query.queryKey);
+    });
+    const batch = Array.from({ length: 500 }, (_, i) =>
+      task({ id: `n${i}`, number: i + 2, title: `New ${i}` }),
+    );
+    upsertTasks(client, [task({ title: 'Renamed' }), ...batch]);
+    unsubscribe();
+    expect(list(client, keys.tasks({ kind: 'team', id: 'team-a' }))).toHaveLength(501);
+    expect(findTask(client, 't1')?.title).toBe('Renamed');
+    expect(list(client, keys.tasks({ kind: 'team', id: 'team-b' }))).toHaveLength(0);
+    expect(writes).toHaveLength(1);
   });
 });

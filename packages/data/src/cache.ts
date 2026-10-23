@@ -27,23 +27,40 @@ export function taskBelongsTo(key: QueryKey, task: Task): boolean {
   }
 }
 
-export function upsertTask(queryClient: QueryClient, task: Task): void {
+/**
+ * Puts fresh copies of tasks into every cached list they belong to (and out of
+ * the ones they left), with one cache write per list however many tasks change.
+ */
+export function upsertTasks(queryClient: QueryClient, tasks: readonly Task[]): void {
+  if (tasks.length === 0) return;
   for (const [key, list] of queryClient.getQueriesData<Task[]>({ queryKey: keys.allTasks() })) {
     if (!list) continue;
-    const index = list.findIndex((t) => t.id === task.id);
-    const member = taskBelongsTo(key, task);
-    if (index >= 0 && member) {
-      const merged = { ...list[index], ...task };
-      queryClient.setQueryData(key, list.with(index, merged));
-    } else if (index >= 0) {
-      queryClient.setQueryData(key, list.toSpliced(index, 1));
-    } else if (member) {
-      queryClient.setQueryData(key, [...list, task]);
+    const incoming = new Map(tasks.map((task) => [task.id, task]));
+    let changed = false;
+    const next = list.flatMap((current) => {
+      const task = incoming.get(current.id);
+      if (!task) return [current];
+      incoming.delete(current.id);
+      changed = true;
+      return taskBelongsTo(key, task) ? [{ ...current, ...task }] : [];
+    });
+    for (const task of incoming.values()) {
+      if (taskBelongsTo(key, task)) {
+        next.push(task);
+        changed = true;
+      }
     }
+    if (changed) queryClient.setQueryData(key, next);
   }
-  queryClient.setQueriesData<TaskDetail>({ queryKey: keys.allTaskDetails() }, (detail) =>
-    detail?.id === task.id ? { ...detail, ...task } : detail,
-  );
+  const byId = new Map(tasks.map((task) => [task.id, task]));
+  queryClient.setQueriesData<TaskDetail>({ queryKey: keys.allTaskDetails() }, (detail) => {
+    const task = detail ? byId.get(detail.id) : undefined;
+    return detail && task ? { ...detail, ...task } : detail;
+  });
+}
+
+export function upsertTask(queryClient: QueryClient, task: Task): void {
+  upsertTasks(queryClient, [task]);
 }
 
 export function patchTask(queryClient: QueryClient, id: string, patch: Partial<TaskDetail>): void {

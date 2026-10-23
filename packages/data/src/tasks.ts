@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Priority, RichDocument, Task, TaskDetail, TaskPatch } from '@daiq/domain';
-import { patchTask, pendingWrites, removeTasks, snapshotTasks, upsertTask } from './cache';
+import {
+  patchTask,
+  pendingWrites,
+  removeTasks,
+  snapshotTasks,
+  upsertTask,
+  upsertTasks,
+} from './cache';
 import { useDaiqClient } from './context';
 import { ensureOk, unwrap, unwrapMaybe } from './errors';
 import { fetchAll } from './fetch-all';
@@ -95,16 +102,38 @@ export function useTaskDetail(teamId: string | undefined, number: number | undef
 }
 
 /** Re-reads one task (RLS-checked) and patches every cache; used by realtime. */
+/** Ids per request: keeps the `in.(…)` filter well under URL length limits. */
+const REFRESH_CHUNK = 150;
+
+/** Re-reads tasks from the server into every cached list; ids no longer visible are removed. */
+export async function refreshTasks(
+  client: ReturnType<typeof useDaiqClient>,
+  queryClient: ReturnType<typeof useQueryClient>,
+  ids: readonly string[],
+) {
+  const chunks = Array.from({ length: Math.ceil(ids.length / REFRESH_CHUNK) }, (_, i) =>
+    ids.slice(i * REFRESH_CHUNK, (i + 1) * REFRESH_CHUNK),
+  );
+  const rows = (
+    await Promise.all(
+      chunks.map(async (chunk) =>
+        unwrap(await client.from('tasks').select(TASK_COLUMNS).in('id', chunk)),
+      ),
+    )
+  ).flat();
+  const tasks = rows.map(toTask);
+  upsertTasks(queryClient, tasks);
+  const found = new Set(tasks.map((task) => task.id));
+  const gone = new Set(ids.filter((id) => !found.has(id)));
+  if (gone.size > 0) removeTasks(queryClient, gone);
+}
+
 export async function refreshTask(
   client: ReturnType<typeof useDaiqClient>,
   queryClient: ReturnType<typeof useQueryClient>,
   id: string,
 ) {
-  const row = unwrapMaybe(
-    await client.from('tasks').select(TASK_COLUMNS).eq('id', id).maybeSingle(),
-  );
-  if (row) upsertTask(queryClient, toTask(row));
-  else removeTasks(queryClient, new Set([id]));
+  await refreshTasks(client, queryClient, [id]);
 }
 
 export interface NewTask {
@@ -205,7 +234,7 @@ export function useUpdateTasks() {
       return { restore };
     },
     onError: (_error, _input, context) => context?.restore(),
-    onSuccess: (tasks) => tasks.forEach((task) => upsertTask(queryClient, task)),
+    onSuccess: (tasks) => upsertTasks(queryClient, tasks),
     onSettled: (_data, _error, { ids }) => pendingWrites.end(ids),
   });
 }
