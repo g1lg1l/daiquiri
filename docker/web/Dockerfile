@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # Daiq web: build the static SPA, serve it with unprivileged nginx (ADR-0012).
 
-FROM node:24-alpine AS build
+FROM node:25-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json ./
