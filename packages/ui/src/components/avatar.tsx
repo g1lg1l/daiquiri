@@ -8,8 +8,12 @@ const sizes = {
   lg: 'size-8 text-xs',
 };
 
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/);
+/** First letters of the first and last words, skipping words like "(demo)". */
+export function initials(name: string): string {
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter((part) => /^[\p{L}\p{N}]/u.test(part));
   const first = parts[0]?.[0] ?? '?';
   const last = parts.length > 1 ? (parts.at(-1)?.[0] ?? '') : '';
   return (first + last).toUpperCase();
