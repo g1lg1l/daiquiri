@@ -333,3 +333,21 @@ export interface SearchResult {
   subtitle: string | null;
   rank: number;
 }
+
+export const TEMPLATE_KINDS = ['task', 'project'] as const;
+export type TemplateKind = (typeof TEMPLATE_KINDS)[number];
+export const isTemplateKind = (value: string): value is TemplateKind =>
+  TEMPLATE_KINDS.some((kind) => kind === value);
+
+/** A saved task (with sub-tasks) or project (with milestones and tasks); feature spec §3.8. */
+export interface Template {
+  id: string;
+  workspaceId: string;
+  teamId: string;
+  kind: TemplateKind;
+  name: string;
+  createdBy: string | null;
+  createdAt: string;
+  /** What it creates besides the task or project itself. */
+  counts: { subtasks: number; milestones: number; tasks: number };
+}

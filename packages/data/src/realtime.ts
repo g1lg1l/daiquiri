@@ -149,6 +149,9 @@ async function applyEvents(
       case 'milestone':
         work.push(invalidate(['milestones']));
         break;
+      case 'template':
+        work.push(invalidate(keys.templates(workspaceId)));
+        break;
       case 'project_update':
         work.push(invalidate(['project-updates']));
         break;

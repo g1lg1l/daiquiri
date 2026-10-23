@@ -38,6 +38,7 @@ import {
   ExpandIcon,
   FolderIcon,
   GaugeIcon,
+  LayoutTemplateIcon,
   LinkIcon,
   MoreHorizontalIcon,
   PlusIcon,
@@ -70,6 +71,7 @@ import { FieldEditor } from './field-editors';
 import { useComposer } from './composer';
 import { PriorityIcon, StatusIcon } from './icons';
 import { LABEL_COLOR } from './label-colors';
+import { SaveTemplateDialog } from '../templates/save-template-dialog';
 import { RecurrenceEditor } from './recurrence-editor';
 import { DateField, useTaskActions } from './task-actions';
 import { useIdentifier } from './use-identifier';
@@ -159,6 +161,7 @@ function TaskDetailBody({
   const cycle = task.cycleId ? cycles.data?.find((c) => c.id === task.cycleId) : undefined;
   const today = useToday();
   const ident = identifier(task);
+  const [savingTemplate, setSavingTemplate] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [syncedTitle, setSyncedTitle] = useState(task.title);
   // Adopt remote renames (realtime, undo) without an effect.
@@ -583,6 +586,11 @@ function TaskDetailBody({
               >
                 <PlusIcon /> Add sub-task
               </MenuItem>
+              {workspace.role !== 'guest' && (
+                <MenuItem onClick={() => setSavingTemplate(true)}>
+                  <LayoutTemplateIcon /> Save as template
+                </MenuItem>
+              )}
               <MenuItem
                 destructive
                 shortcut={SHORTCUTS.remove.keys}
@@ -595,6 +603,13 @@ function TaskDetailBody({
               </MenuItem>
             </MenuContent>
           </Menu>
+          <SaveTemplateDialog
+            kind="task"
+            sourceId={task.id}
+            defaultName={task.title}
+            open={savingTemplate}
+            onOpenChange={setSavingTemplate}
+          />
           {mode === 'peek' && (
             <>
               <Tooltip label="Open full page" shortcut={SHORTCUTS.open.keys}>

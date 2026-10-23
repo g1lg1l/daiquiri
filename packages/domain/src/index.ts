@@ -41,6 +41,8 @@ export {
   isProjectHealth,
   isRichDocument,
   isSearchResultKind,
+  isTemplateKind,
+  TEMPLATE_KINDS,
 } from './model';
 export type {
   ActivityEntry,
@@ -74,6 +76,8 @@ export type {
   TaskPatch,
   TaskRelation,
   Team,
+  Template,
+  TemplateKind,
   Workspace,
 } from './model';
 export {

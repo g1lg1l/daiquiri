@@ -1,4 +1,10 @@
-import { useCreateProject, useLatestProjectUpdates, useTasks } from '@daiq/data';
+import {
+  useCreateProject,
+  useLatestProjectUpdates,
+  useTasks,
+  useTemplateActions,
+  useTemplates,
+} from '@daiq/data';
 import { formatDueDate, isClosedCategory, type ProjectStatus } from '@daiq/domain';
 import { useToday } from '../../../../lib/use-today';
 import {
@@ -191,7 +197,13 @@ function NewProjectDialog({
 }) {
   const { workspace, userId } = useWorkspace();
   const createProject = useCreateProject(workspace.id);
+  const { createProject: createFromTemplate } = useTemplateActions(workspace.id);
+  const templates = (useTemplates(workspace.id).data ?? []).filter(
+    (t) => t.kind === 'project' && t.teamId === teamId,
+  );
+  const [templateId, setTemplateId] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const today = useToday();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -202,6 +214,21 @@ function NewProjectDialog({
             event.preventDefault();
             const form = new FormData(event.currentTarget);
             const status = formString(form, 'status');
+            const handlers = {
+              onSuccess: () => onOpenChange(false),
+              onError: (e: Error) => setError(e.message),
+            };
+            if (templateId) {
+              createFromTemplate.mutate(
+                {
+                  templateId,
+                  name: formString(form, 'name').trim(),
+                  startDate: formString(form, 'start') || null,
+                },
+                handlers,
+              );
+              return;
+            }
             createProject.mutate(
               {
                 id: newId(),
@@ -212,10 +239,30 @@ function NewProjectDialog({
                 leadId: userId,
                 targetDate: formString(form, 'target') || null,
               },
-              { onSuccess: () => onOpenChange(false), onError: (e) => setError(e.message) },
+              handlers,
             );
           }}
         >
+          {templates.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="project-template">Template</Label>
+              <select
+                id="project-template"
+                value={templateId}
+                onChange={(event) => setTemplateId(event.target.value)}
+                className="h-8 rounded-md border border-border bg-surface px-2 text-[13px]"
+              >
+                <option value="">No template</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} ({t.counts.milestones}{' '}
+                    {t.counts.milestones === 1 ? 'milestone' : 'milestones'}, {t.counts.tasks}{' '}
+                    {t.counts.tasks === 1 ? 'task' : 'tasks'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="project-name">Name</Label>
             <Input
@@ -227,27 +274,37 @@ function NewProjectDialog({
               placeholder="Launch v2"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          {templateId ? (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="project-status">Status</Label>
-              <select
-                id="project-status"
-                name="status"
-                defaultValue="planned"
-                className="h-8 rounded-md border border-border bg-surface px-2 text-[13px]"
-              >
-                {PROJECT_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {PROJECT_STATUS_LABEL[s]}
-                  </option>
-                ))}
-              </select>
+              <Label htmlFor="project-start">Start date</Label>
+              <Input id="project-start" name="start" type="date" defaultValue={today} required />
+              <p className="text-xs text-fg-subtle">
+                Milestones and task dates keep their distance from the start.
+              </p>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="project-target">Target date</Label>
-              <Input id="project-target" name="target" type="date" />
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="project-status">Status</Label>
+                <select
+                  id="project-status"
+                  name="status"
+                  defaultValue="planned"
+                  className="h-8 rounded-md border border-border bg-surface px-2 text-[13px]"
+                >
+                  {PROJECT_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {PROJECT_STATUS_LABEL[s]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="project-target">Target date</Label>
+                <Input id="project-target" name="target" type="date" />
+              </div>
             </div>
-          </div>
+          )}
           <p className="text-xs text-fg-subtle">
             You’ll be the project lead. You can change it later.
           </p>
@@ -256,7 +313,11 @@ function NewProjectDialog({
             <Button type="button" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" variant="primary" disabled={createProject.isPending}>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={createProject.isPending || createFromTemplate.isPending}
+            >
               Create project
             </Button>
           </DialogFooter>

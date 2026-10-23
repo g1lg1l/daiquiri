@@ -1296,6 +1296,65 @@ export type Database = {
           },
         ];
       };
+      templates: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          kind: string;
+          name: string;
+          payload: NonNullable<Json>;
+          team_id: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          kind: string;
+          name: string;
+          payload: NonNullable<Json>;
+          team_id: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          kind?: string;
+          name?: string;
+          payload?: NonNullable<Json>;
+          team_id?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'templates_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'templates_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'templates_workspace_id_team_id_fkey';
+            columns: ['workspace_id', 'team_id'];
+            isOneToOne: false;
+            referencedRelation: 'teams';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
       views: {
         Row: {
           config: NonNullable<Json>;
@@ -1490,6 +1549,31 @@ export type Database = {
         };
         Returns: string;
       };
+      create_project_from_template: {
+        Args: { name: string; start_date?: string; template_id: string };
+        Returns: {
+          archived_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: Json | null;
+          id: string;
+          lead_id: string | null;
+          name: string;
+          sort_key: string;
+          start_date: string | null;
+          status: Database['public']['Enums']['project_status'];
+          target_date: string | null;
+          team_id: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'projects';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       create_task: {
         Args: {
           assignee_ids?: string[];
@@ -1508,6 +1592,41 @@ export type Database = {
           team_id: string;
           title: string;
         };
+        Returns: {
+          canceled_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+          creator_id: string | null;
+          cycle_id: string | null;
+          deleted_at: string | null;
+          description: Json | null;
+          description_text: string;
+          due_date: string | null;
+          estimate: number | null;
+          id: string;
+          milestone_id: string | null;
+          number: number;
+          parent_id: string | null;
+          priority: number;
+          project_id: string | null;
+          search: unknown;
+          sort_key: string;
+          start_date: string | null;
+          status_id: string;
+          team_id: string;
+          title: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'tasks';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      create_task_from_template: {
+        Args: { project_id?: string; template_id: string };
         Returns: {
           canceled_at: string | null;
           completed_at: string | null;
@@ -1619,6 +1738,46 @@ export type Database = {
       remove_member: { Args: { user_id: string; workspace_id: string }; Returns: undefined };
       restore_tasks: { Args: { task_ids: string[] }; Returns: number };
       revoke_invitation: { Args: { invitation_id: string }; Returns: undefined };
+      save_project_template: {
+        Args: { name: string; project_id: string };
+        Returns: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          kind: string;
+          name: string;
+          payload: NonNullable<Json>;
+          team_id: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'templates';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      save_task_template: {
+        Args: { name: string; task_id: string };
+        Returns: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          kind: string;
+          name: string;
+          payload: NonNullable<Json>;
+          team_id: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'templates';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       search: {
         Args: { max_results?: number; query: string; workspace_id: string };
         Returns: {

@@ -8,8 +8,8 @@ import {
 } from '@daiq/domain';
 import { Avatar, Button, cn } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ArchiveIcon, ArchiveRestoreIcon, UserIcon } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { ArchiveIcon, ArchiveRestoreIcon, LayoutTemplateIcon, UserIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { NotFoundPanel } from '../../../components/not-found-panel';
 import { rememberRecent } from '../../../features/command-palette/recent';
@@ -25,6 +25,7 @@ import {
 } from '../../../features/projects/project-status';
 import { ProjectUpdates } from '../../../features/projects/project-updates';
 import { ViewHeader } from '../../../features/shell/view-header';
+import { SaveTemplateDialog } from '../../../features/templates/save-template-dialog';
 import { DateField } from '../../../features/tasks/task-actions';
 import { TaskView } from '../../../features/tasks/task-view';
 import { FavoriteButton } from '../../../features/views/favorite-button';
@@ -49,6 +50,7 @@ function ProjectPage() {
   const milestones = useMilestones(project?.id);
   const latest = useLatestProjectUpdates(workspace.id).data?.get(projectId);
   const updateProject = useUpdateProject(workspace.id);
+  const [savingTemplate, setSavingTemplate] = useState(false);
   const teamIds = useMemo(() => (project ? [project.teamId] : []), [project]);
   const composerDefaults = useMemo(
     () => (project ? { teamId: project.teamId, projectId: project.id } : {}),
@@ -187,10 +189,29 @@ function ProjectPage() {
           {counts.done}/{counts.total} done
         </span>
       </span>
+      {workspace.role !== 'guest' && (
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto h-6 px-1.5 text-xs"
+            onClick={() => setSavingTemplate(true)}
+          >
+            <LayoutTemplateIcon /> Save as template
+          </Button>
+          <SaveTemplateDialog
+            kind="project"
+            sourceId={project.id}
+            defaultName={project.name}
+            open={savingTemplate}
+            onOpenChange={setSavingTemplate}
+          />
+        </>
+      )}
       <Button
         variant="ghost"
         size="sm"
-        className={cn('ml-auto h-6 px-1.5 text-xs')}
+        className={cn('h-6 px-1.5 text-xs', workspace.role === 'guest' && 'ml-auto')}
         onClick={() => update({ archivedAt: project.archivedAt ? null : new Date().toISOString() })}
       >
         {project.archivedAt ? <ArchiveRestoreIcon /> : <ArchiveIcon />}

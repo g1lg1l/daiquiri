@@ -27,6 +27,7 @@ import { Route as WorkspaceSettingsLabelsRouteImport } from './routes/$workspace
 import { Route as WorkspaceSettingsMembersRouteImport } from './routes/$workspace/settings/members'
 import { Route as WorkspaceSettingsPreferencesRouteImport } from './routes/$workspace/settings/preferences'
 import { Route as WorkspaceSettingsTeamsRouteImport } from './routes/$workspace/settings/teams'
+import { Route as WorkspaceSettingsTemplatesRouteImport } from './routes/$workspace/settings/templates'
 import { Route as WorkspaceTaskIdentifierRouteImport } from './routes/$workspace/task/$identifier'
 import { Route as WorkspaceSettingsTeamsTeamKeyRouteImport } from './routes/$workspace/settings/teams_.$teamKey'
 import { Route as WorkspaceTeamTeamKeyCyclesRouteImport } from './routes/$workspace/team/$teamKey/cycles'
@@ -127,6 +128,12 @@ const WorkspaceSettingsTeamsRoute = WorkspaceSettingsTeamsRouteImport.update({
   path: '/teams',
   getParentRoute: () => WorkspaceSettingsRouteRoute,
 } as any)
+const WorkspaceSettingsTemplatesRoute =
+  WorkspaceSettingsTemplatesRouteImport.update({
+    id: '/templates',
+    path: '/templates',
+    getParentRoute: () => WorkspaceSettingsRouteRoute,
+  } as any)
 const WorkspaceTaskIdentifierRoute = WorkspaceTaskIdentifierRouteImport.update({
   id: '/task/$identifier',
   path: '/task/$identifier',
@@ -181,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/$workspace/settings/members': typeof WorkspaceSettingsMembersRoute
   '/$workspace/settings/preferences': typeof WorkspaceSettingsPreferencesRoute
   '/$workspace/settings/teams': typeof WorkspaceSettingsTeamsRoute
+  '/$workspace/settings/templates': typeof WorkspaceSettingsTemplatesRoute
   '/$workspace/task/$identifier': typeof WorkspaceTaskIdentifierRoute
   '/$workspace/settings/': typeof WorkspaceSettingsIndexRoute
   '/$workspace/settings/teams/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
@@ -205,6 +213,7 @@ export interface FileRoutesByTo {
   '/$workspace/settings/members': typeof WorkspaceSettingsMembersRoute
   '/$workspace/settings/preferences': typeof WorkspaceSettingsPreferencesRoute
   '/$workspace/settings/teams': typeof WorkspaceSettingsTeamsRoute
+  '/$workspace/settings/templates': typeof WorkspaceSettingsTemplatesRoute
   '/$workspace/task/$identifier': typeof WorkspaceTaskIdentifierRoute
   '/$workspace/settings': typeof WorkspaceSettingsIndexRoute
   '/$workspace/settings/teams/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
@@ -232,6 +241,7 @@ export interface FileRoutesById {
   '/$workspace/settings/members': typeof WorkspaceSettingsMembersRoute
   '/$workspace/settings/preferences': typeof WorkspaceSettingsPreferencesRoute
   '/$workspace/settings/teams': typeof WorkspaceSettingsTeamsRoute
+  '/$workspace/settings/templates': typeof WorkspaceSettingsTemplatesRoute
   '/$workspace/task/$identifier': typeof WorkspaceTaskIdentifierRoute
   '/$workspace/settings/': typeof WorkspaceSettingsIndexRoute
   '/$workspace/settings/teams_/$teamKey': typeof WorkspaceSettingsTeamsTeamKeyRoute
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/members'
     | '/$workspace/settings/preferences'
     | '/$workspace/settings/teams'
+    | '/$workspace/settings/templates'
     | '/$workspace/task/$identifier'
     | '/$workspace/settings/'
     | '/$workspace/settings/teams/$teamKey'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/members'
     | '/$workspace/settings/preferences'
     | '/$workspace/settings/teams'
+    | '/$workspace/settings/templates'
     | '/$workspace/task/$identifier'
     | '/$workspace/settings'
     | '/$workspace/settings/teams/$teamKey'
@@ -310,6 +322,7 @@ export interface FileRouteTypes {
     | '/$workspace/settings/members'
     | '/$workspace/settings/preferences'
     | '/$workspace/settings/teams'
+    | '/$workspace/settings/templates'
     | '/$workspace/task/$identifier'
     | '/$workspace/settings/'
     | '/$workspace/settings/teams_/$teamKey'
@@ -457,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceSettingsTeamsRouteImport
       parentRoute: typeof WorkspaceSettingsRouteRoute
     }
+    '/$workspace/settings/templates': {
+      id: '/$workspace/settings/templates'
+      path: '/templates'
+      fullPath: '/$workspace/settings/templates'
+      preLoaderRoute: typeof WorkspaceSettingsTemplatesRouteImport
+      parentRoute: typeof WorkspaceSettingsRouteRoute
+    }
     '/$workspace/task/$identifier': {
       id: '/$workspace/task/$identifier'
       path: '/task/$identifier'
@@ -508,6 +528,7 @@ interface WorkspaceSettingsRouteRouteChildren {
   WorkspaceSettingsMembersRoute: typeof WorkspaceSettingsMembersRoute
   WorkspaceSettingsPreferencesRoute: typeof WorkspaceSettingsPreferencesRoute
   WorkspaceSettingsTeamsRoute: typeof WorkspaceSettingsTeamsRoute
+  WorkspaceSettingsTemplatesRoute: typeof WorkspaceSettingsTemplatesRoute
   WorkspaceSettingsIndexRoute: typeof WorkspaceSettingsIndexRoute
   WorkspaceSettingsTeamsTeamKeyRoute: typeof WorkspaceSettingsTeamsTeamKeyRoute
 }
@@ -519,6 +540,7 @@ const WorkspaceSettingsRouteRouteChildren: WorkspaceSettingsRouteRouteChildren =
     WorkspaceSettingsMembersRoute: WorkspaceSettingsMembersRoute,
     WorkspaceSettingsPreferencesRoute: WorkspaceSettingsPreferencesRoute,
     WorkspaceSettingsTeamsRoute: WorkspaceSettingsTeamsRoute,
+    WorkspaceSettingsTemplatesRoute: WorkspaceSettingsTemplatesRoute,
     WorkspaceSettingsIndexRoute: WorkspaceSettingsIndexRoute,
     WorkspaceSettingsTeamsTeamKeyRoute: WorkspaceSettingsTeamsTeamKeyRoute,
   }

@@ -153,7 +153,7 @@ Start with [ARCHITECTURE.md](ARCHITECTURE.md), then [docs/plan.md](docs/plan.md)
 - [ ] Time tracking
 - [x] File attachments on private storage
 - [x] Recurring tasks, on a schedule or after completion
-- [ ] Task and project templates
+- [x] Task templates (with sub-tasks) and project templates (with milestones and tasks)
 - [ ] Automations with a run log
 - [x] Insights on every view (throughput, burn-up, cycle and lead time, time in status) and CSV/JSON export
 - [ ] Weekly reminders to post a project update

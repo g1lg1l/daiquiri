@@ -1,6 +1,7 @@
-import { keys, useCreateTask } from '@daiq/data';
+import { keys, useCreateTask, useTemplateActions, useTemplates } from '@daiq/data';
 import {
   firstStatusOf,
+  formatIdentifier,
   isPriority,
   PRIORITY_LABEL,
   sortKeyBetween,
@@ -11,7 +12,7 @@ import {
 import { Avatar, Button, Dialog, DialogContent, DialogTitle, Shortcut, toast } from '@daiq/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { FolderIcon, TagIcon, UserIcon } from 'lucide-react';
+import { FolderIcon, LayoutTemplateIcon, TagIcon, UserIcon } from 'lucide-react';
 import {
   createContext,
   useCallback,
@@ -102,6 +103,8 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
   const identifier = useIdentifier();
   const navigate = useNavigate();
   const titleRef = useRef<HTMLTextAreaElement>(null);
+  const templates = useTemplates(workspace.id).data ?? [];
+  const templateActions = useTemplateActions(workspace.id);
 
   const initialTeam = data.teamsById.get(defaults.teamId ?? '') ?? data.myTeams[0] ?? data.teams[0];
   const [teamId, setTeamId] = useState(initialTeam?.id ?? '');
@@ -120,6 +123,27 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
   const [projectId, setProjectId] = useState<string | null>(defaults.projectId ?? null);
   const [dueDate, setDueDate] = useState<string | null>(defaults.dueDate ?? null);
   const [createMore, setCreateMore] = useState(false);
+
+  const taskTemplates = defaults.parentId
+    ? []
+    : templates.filter((t) => t.kind === 'task' && t.teamId === teamId);
+  const fromTemplate = (templateId: string) =>
+    templateActions.createTask.mutate(
+      { templateId, projectId },
+      {
+        onSuccess: (task) => {
+          onClose();
+          if (task.number === null || !team) return;
+          void navigate({
+            to: '/$workspace/task/$identifier',
+            params: {
+              workspace: workspace.slug,
+              identifier: formatIdentifier(team.key, task.number),
+            },
+          });
+        },
+      },
+    );
 
   const lines = title
     .split('\n')
@@ -383,15 +407,42 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
       </div>
 
       <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
-        <label className="flex items-center gap-2 text-xs text-fg-muted">
-          <input
-            type="checkbox"
-            checked={createMore}
-            onChange={(event) => setCreateMore(event.target.checked)}
-            className="accent-(--accent)"
-          />
-          Create more
-        </label>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-xs text-fg-muted">
+            <input
+              type="checkbox"
+              checked={createMore}
+              onChange={(event) => setCreateMore(event.target.checked)}
+              className="accent-(--accent)"
+            />
+            Create more
+          </label>
+          {taskTemplates.length > 0 && (
+            <PickerPopover
+              trigger={
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-1.5 text-xs text-fg-muted"
+                  disabled={templateActions.createTask.isPending}
+                >
+                  <LayoutTemplateIcon /> From template
+                </Button>
+              }
+              options={taskTemplates.map((t) => ({
+                value: t.id,
+                label: t.name,
+                ...(t.counts.subtasks > 0 && {
+                  hint: `${t.counts.subtasks} sub-task${t.counts.subtasks === 1 ? '' : 's'}`,
+                }),
+              }))}
+              selected={[]}
+              placeholder="Create from template…"
+              onSelect={([id]) => id && fromTemplate(id)}
+            />
+          )}
+        </div>
         <Button type="submit" variant="primary" size="sm" disabled={lines.length === 0 || !team}>
           {lines.length > 1 ? `Create ${lines.length} tasks` : 'Create task'}
           <Shortcut
