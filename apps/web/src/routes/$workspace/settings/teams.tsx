@@ -55,7 +55,7 @@ function TeamsSettings() {
               type="checkbox"
               checked={isPrivate}
               onChange={(e) => setIsPrivate(e.target.checked)}
-              className="accent-(--accent)"
+              className="switch"
             />
             {m.settings.teams.private}
           </label>
@@ -70,7 +70,7 @@ function TeamsSettings() {
           {error && <FieldError className="w-full">{error}</FieldError>}
         </form>
       )}
-      <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+      <ul className="flex rise-children flex-col divide-y divide-border card">
         {data.teams.map((team) => {
           const isMember = team.memberIds.includes(userId);
           return (

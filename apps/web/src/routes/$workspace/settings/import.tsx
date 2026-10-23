@@ -57,12 +57,9 @@ function ImportSettings() {
             />
           </div>
 
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid rise-children gap-3 sm:grid-cols-2">
             {cards().map((card) => (
-              <li
-                key={card.from}
-                className="flex flex-col gap-3 rounded-lg border border-border p-4 transition-[border-color,translate] duration-200 hover:-translate-y-0.5 hover:border-border-strong"
-              >
+              <li key={card.from} className="flex lift flex-col gap-3 card spotlight p-4">
                 <div className="flex items-center gap-2">
                   {card.from === 'csv' ? (
                     <FileSpreadsheetIcon aria-hidden className="size-4 text-fg-muted" />

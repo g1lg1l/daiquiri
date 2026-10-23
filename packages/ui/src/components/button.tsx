@@ -4,14 +4,15 @@ import { cn } from '../cn';
 
 export const buttonVariants = cva(
   [
-    'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md text-[13px] font-medium whitespace-nowrap transition-[background-color,color,box-shadow,transform] duration-(--animate-duration-fast) select-none active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
+    'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md text-[13px] font-medium whitespace-nowrap transition-[background-color,color,box-shadow,scale] duration-160 ease-out select-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
     // Default icon size unless the icon sets its own size-* class.
     "[&_svg:not([class*='size-'])]:size-4",
   ],
   {
     variants: {
       variant: {
-        primary: 'bg-accent text-accent-fg shadow-xs hover:bg-accent/88',
+        primary:
+          'bg-accent text-accent-fg shadow-xs inset-shadow-[0_1px_0_oklch(1_0_0/18%)] hover:bg-accent/92 hover:shadow-glow',
         ink: 'bg-fg text-fg-inverted hover:bg-fg/85',
         secondary:
           'border border-border bg-surface text-fg shadow-xs hover:bg-surface-muted aria-expanded:bg-surface-muted',

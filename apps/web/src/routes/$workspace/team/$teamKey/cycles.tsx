@@ -91,7 +91,7 @@ function TeamCycles() {
                     >
                       {section.title}
                     </h2>
-                    <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+                    <ul className="flex rise-children flex-col divide-y divide-border overflow-hidden card">
                       {section.items.map((cycle) => {
                         const count = counts.get(cycle.id) ?? { done: 0, total: 0 };
                         const percent = count.total

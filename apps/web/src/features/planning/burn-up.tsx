@@ -66,7 +66,7 @@ export function BurnUp({
             vectorEffect="non-scaling-stroke"
           />
           {days.length > 0 && (
-            <>
+            <g className="reveal-x">
               <path
                 d={`${line(done)} L ${x(last?.day ?? startsOn)} ${y(0)} L ${x(startsOn)} ${y(0)} Z`}
                 className="fill-accent/15"
@@ -86,7 +86,7 @@ export function BurnUp({
                 vectorEffect="non-scaling-stroke"
                 className="stroke-accent"
               />
-            </>
+            </g>
           )}
         </svg>
       </div>

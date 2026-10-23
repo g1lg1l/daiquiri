@@ -62,6 +62,7 @@ import {
   statusOptions,
 } from '../pickers/options';
 import { PickerPopover } from '../pickers/picker-popover';
+import { useShell } from '../shell/shell-context';
 import { SHORTCUTS } from '../shortcuts/registry';
 import { useShortcuts } from '../shortcuts/use-shortcuts';
 import { useWorkspace, useWorkspaceData } from '../workspace/workspace-context';
@@ -96,10 +97,13 @@ export function TaskDetail({
   identifier,
   mode,
   onClose,
+  leading,
 }: {
   identifier: string;
   mode: 'page' | 'peek';
   onClose?: () => void;
+  /** Shown first in the header, e.g. the button that brings the sidebar back. */
+  leading?: ReactNode;
 }) {
   const query = useTaskByIdentifier(identifier);
   if (query.isPending) {
@@ -120,7 +124,9 @@ export function TaskDetail({
       </div>
     );
   }
-  return <TaskDetailBody task={query.data} mode={mode} {...(onClose && { onClose })} />;
+  return (
+    <TaskDetailBody task={query.data} mode={mode} leading={leading} {...(onClose && { onClose })} />
+  );
 }
 
 function PropertyRow({ label, children }: { label: string; children: ReactNode }) {
@@ -138,12 +144,17 @@ function TaskDetailBody({
   task,
   mode,
   onClose,
+  leading,
 }: {
   task: TaskDetailModel;
   mode: 'page' | 'peek';
   onClose?: () => void;
+  leading?: ReactNode;
 }) {
   const { workspace, userId } = useWorkspace();
+  // On phones the page has no room for a side column: properties go under the title.
+  const { isMobile } = useShell();
+  const inline = mode === 'peek' || isMobile;
   const data = useWorkspaceData();
   const actions = useTaskActions();
   const updateTasks = useUpdateTasks();
@@ -535,6 +546,7 @@ function TaskDetailBody({
       aria-labelledby={`title-${task.id}`}
     >
       <header className="flex h-12 shrink-0 items-center gap-1 border-b border-border px-3">
+        {leading}
         <nav
           aria-label={m.task.breadcrumb}
           className="flex min-w-0 items-center gap-1.5 text-xs text-fg-muted"
@@ -688,7 +700,7 @@ function TaskDetailBody({
               }}
               className="field-sizing-content w-full resize-none bg-transparent text-xl leading-snug font-semibold font-display outline-none focus-visible:outline-none"
             />
-            {mode === 'peek' && properties}
+            {inline && properties}
             <Suspense fallback={<Skeleton className="h-24" />}>
               <RichTextEditor
                 key={task.id}
@@ -710,7 +722,7 @@ function TaskDetailBody({
             <Relations task={task} />
             <ActivityFeed task={task} />
           </div>
-          {mode === 'page' && <aside className="hidden w-64 shrink-0 md:block">{properties}</aside>}
+          {!inline && <aside className="w-64 shrink-0">{properties}</aside>}
         </div>
       </div>
     </article>
@@ -867,7 +879,7 @@ function Relations({ task }: { task: TaskDetailModel }) {
             >
               <span
                 className={cn(
-                  'w-24 text-xs',
+                  'w-24 shrink-0 truncate text-xs',
                   kind === 'blockedBy' ? 'font-medium text-danger' : 'text-fg-subtle',
                 )}
               >
@@ -879,7 +891,7 @@ function Relations({ task }: { task: TaskDetailModel }) {
                   params={{ workspace: workspace.slug, identifier: identifier(other) }}
                   className="flex min-w-0 flex-1 items-center gap-2"
                 >
-                  <span className="font-mono text-xs text-fg-subtle tabular">
+                  <span className="shrink-0 font-mono text-xs whitespace-nowrap text-fg-subtle tabular">
                     {identifier(other)}
                   </span>
                   <span className="truncate">{other.title}</span>

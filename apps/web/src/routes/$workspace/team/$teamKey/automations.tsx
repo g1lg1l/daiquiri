@@ -707,7 +707,7 @@ function TeamAutomations() {
               {canManage ? t.emptyCanManage : t.empty}
             </p>
           )}
-          <ul className="flex flex-col gap-3">
+          <ul className="flex rise-children flex-col gap-3">
             {automations.data?.map((automation) => (
               <li
                 key={automation.id}
@@ -728,7 +728,7 @@ function TeamAutomations() {
                         patch: { enabled: event.target.checked },
                       })
                     }
-                    className="mt-1 accent-(--accent)"
+                    className="switch mt-1"
                   />
                   <div className="min-w-0 flex-1">
                     <p

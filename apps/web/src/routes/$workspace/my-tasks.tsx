@@ -1,6 +1,6 @@
 import { useTasks } from '@daiq/data';
 import { viewSearchSchema, type GroupBy, type ViewDefaults } from '@daiq/domain';
-import { cn } from '@daiq/ui';
+import { cn, GlideThumb } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { CircleUserIcon } from 'lucide-react';
 import { useMemo } from 'react';
@@ -45,7 +45,11 @@ function MyTasks() {
   );
 
   const tabs = (
-    <nav aria-label={m.shell.nav.myTasks} className="mr-2 flex items-center gap-0.5">
+    <nav
+      aria-label={m.shell.nav.myTasks}
+      className="relative isolate mr-2 flex items-center gap-0.5"
+    >
+      <GlideThumb activeKey={tab} className="bg-surface-raised shadow-card" />
       {(['assigned', 'created'] as const).map((value) => (
         <Link
           key={value}
@@ -55,9 +59,10 @@ function MyTasks() {
             tab: value === 'assigned' ? undefined : value,
           })}
           replace
+          data-glide-active={tab === value || undefined}
           className={cn(
-            'rounded-md px-2 py-1 text-xs text-fg-muted hover:bg-surface-muted hover:text-fg',
-            tab === value && 'bg-surface-emphasis font-medium text-fg',
+            'rounded-md px-2 py-1 text-xs text-fg-muted transition-colors hover:text-fg',
+            tab === value && 'font-medium text-fg',
           )}
         >
           {m.shell.myTasks[value]}

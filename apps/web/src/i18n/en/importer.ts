@@ -88,6 +88,8 @@ export const importer = {
     intro: (team: string) =>
       `Bring tasks into ${team} from a CSV file, such as a spreadsheet or an export from another tool. Columns are matched by name; check them before importing.`,
     file: 'CSV file',
+    choose: 'Choose a CSV file',
+    dropHint: 'or drop it here',
     columns: 'Columns',
     chooseColumn: 'Choose a column',
     skip: 'Don’t import',

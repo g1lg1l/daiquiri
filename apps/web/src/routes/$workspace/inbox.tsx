@@ -1,6 +1,6 @@
 import { useNotifications, useUpdateNotifications } from '@daiq/data';
 import { addDays, type Notification } from '@daiq/domain';
-import { Avatar, Button, buttonVariants, cn, Shortcut } from '@daiq/ui';
+import { Avatar, Button, buttonVariants, cn, GlideThumb, Shortcut } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArchiveIcon, CheckCheckIcon, InboxIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -104,17 +104,19 @@ function Inbox() {
         </ViewHeader>
         <nav
           aria-label={m.shell.inbox.sections}
-          className="flex gap-0.5 border-b border-border px-3 py-1.5"
+          className="relative isolate flex gap-0.5 border-b border-border px-3 py-1.5"
         >
+          <GlideThumb activeKey={tab} className="bg-surface-raised shadow-card" />
           {(['inbox', 'snoozed', 'archived'] as const).map((value) => (
             <Link
               key={value}
               to="."
               search={{ tab: value === 'inbox' ? undefined : value }}
               replace
+              data-glide-active={tab === value || undefined}
               className={cn(
-                'rounded-md px-2 py-1 text-xs text-fg-muted hover:bg-surface-muted hover:text-fg',
-                tab === value && 'bg-surface-emphasis font-medium text-fg',
+                'rounded-md px-2 py-1 text-xs text-fg-muted transition-colors hover:text-fg',
+                tab === value && 'font-medium text-fg',
               )}
             >
               {m.shell.inbox.tabs[value]}
@@ -122,7 +124,8 @@ function Inbox() {
           ))}
         </nav>
         <ul
-          className="min-h-0 flex-1 overflow-y-auto scrollbar-thin"
+          key={tab}
+          className="min-h-0 flex-1 rise-children overflow-y-auto scrollbar-thin"
           aria-label={m.shell.inbox.notifications}
         >
           {items.map((notification) => {

@@ -83,6 +83,8 @@ export const importer: typeof source = {
     intro: (team) =>
       `Porta le attività in ${team} da un file CSV, come un foglio di calcolo o un’esportazione da un altro strumento. Le colonne sono abbinate per nome; controllale prima di importare.`,
     file: 'File CSV',
+    choose: 'Scegli un file CSV',
+    dropHint: 'oppure trascinalo qui',
     columns: 'Colonne',
     chooseColumn: 'Scegli una colonna',
     skip: 'Non importare',

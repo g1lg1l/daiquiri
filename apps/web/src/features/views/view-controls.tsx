@@ -24,6 +24,7 @@ import {
   Avatar,
   Button,
   cn,
+  GlideThumb,
   Menu,
   MenuCheckboxItem,
   MenuContent,
@@ -115,8 +116,9 @@ export function LayoutToggle({ layout, setSearch }: { layout: Layout; setSearch:
   const next = layout === 'board' ? 'list' : 'board';
   useShortcuts({ toggleLayout: () => setSearch({ layout: next }) });
   return (
-    <fieldset className="flex rounded-md border border-border p-0.5">
+    <fieldset className="relative isolate flex rounded-md border border-border p-0.5">
       <legend className="sr-only">{m.shell.view.layout}</legend>
+      <GlideThumb activeKey={layout} className="rounded-[5px] bg-surface-raised shadow-card" />
       {LAYOUTS.map((value) => (
         <Tooltip
           key={value}
@@ -125,8 +127,8 @@ export function LayoutToggle({ layout, setSearch }: { layout: Layout; setSearch:
         >
           <label
             className={cn(
-              'flex size-6 cursor-pointer items-center justify-center rounded-[5px] text-fg-subtle hover:text-fg has-focus-visible:outline-2 has-focus-visible:outline-focus [&_svg]:size-3.5',
-              layout === value && 'bg-surface-emphasis text-fg',
+              'flex size-6 cursor-pointer items-center justify-center rounded-[5px] text-fg-subtle transition-[color,scale] duration-160 hover:text-fg active:scale-90 has-focus-visible:outline-2 has-focus-visible:outline-focus [&_svg]:size-3.5',
+              layout === value && 'text-fg',
             )}
           >
             <input

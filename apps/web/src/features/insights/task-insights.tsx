@@ -7,7 +7,7 @@ import {
   type InsightWeek,
   type Task,
 } from '@daiq/domain';
-import { Avatar, Skeleton } from '@daiq/ui';
+import { Avatar, RollingNumber, Skeleton } from '@daiq/ui';
 import { useMemo, type ReactNode } from 'react';
 import { locale, m } from '../../i18n';
 import { useToday } from '../../lib/use-today';
@@ -32,7 +32,7 @@ function Panel({
   return (
     <section
       aria-label={title}
-      className={`flex min-w-0 flex-col gap-3 rounded-lg border border-border p-4 ${className ?? ''}`}
+      className={`flex min-w-0 flex-col gap-3 card spotlight p-4 ${className ?? ''}`}
     >
       <header>
         <h2 className="text-[13px] font-medium">{title}</h2>
@@ -56,18 +56,21 @@ function BarList({ bars, empty }: { bars: readonly Bar[]; empty: string }) {
   const max = Math.max(...bars.map((bar) => bar.value), 1);
   return (
     <ul className="flex flex-col gap-2">
-      {bars.map((bar) => (
+      {bars.map((bar, index) => (
         <li key={bar.key} className="grid grid-cols-[minmax(0,9rem)_1fr_auto] items-center gap-3">
           <span className="flex min-w-0 items-center gap-1.5 truncate text-[13px]">
             {bar.label}
           </span>
           <span aria-hidden className="h-3">
             <span
-              className="block h-full rounded-r-[4px] bg-accent"
-              style={{ width: `${Math.max((bar.value / max) * 100, 1.5)}%` }}
+              className="block h-full grow-x rounded-r-[4px] bg-accent"
+              style={{
+                width: `${Math.max((bar.value / max) * 100, 1.5)}%`,
+                '--delay': `${index * 45}ms`,
+              }}
             />
           </span>
-          <span className="text-right text-xs text-fg-muted tabular">{bar.display}</span>
+          <RollingNumber value={bar.display} className="justify-end text-xs text-fg-muted" />
         </li>
       ))}
     </ul>
@@ -92,19 +95,19 @@ function Throughput({ weeks }: { weeks: readonly InsightWeek[] }) {
           aria-hidden
           className="flex h-36 min-w-0 flex-1 items-end gap-1 border-b border-border"
         >
-          {weeks.map((week) => (
+          {weeks.map((week, index) => (
             <div
               key={week.week}
               title={m.shell.insights.week(shortDate(week.week), week.created, week.completed)}
               className="flex h-full flex-1 items-end justify-center gap-0.5 hover:bg-surface-muted"
             >
               <span
-                className="w-full max-w-3 rounded-t-[4px] bg-border-strong"
-                style={{ height: height(week.created) }}
+                className="w-full max-w-3 grow-y rounded-t-[4px] bg-border-strong"
+                style={{ height: height(week.created), '--delay': `${index * 35}ms` }}
               />
               <span
-                className="w-full max-w-3 rounded-t-[4px] bg-accent"
-                style={{ height: height(week.completed) }}
+                className="w-full max-w-3 grow-y rounded-t-[4px] bg-accent"
+                style={{ height: height(week.completed), '--delay': `${index * 35 + 60}ms` }}
               />
             </div>
           ))}
@@ -149,9 +152,15 @@ function Throughput({ weeks }: { weeks: readonly InsightWeek[] }) {
 
 function Stat({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {
   return (
-    <div className="flex min-w-0 flex-col gap-0.5 rounded-lg border border-border px-4 py-3">
+    <div className="flex min-w-0 lift flex-col gap-0.5 card spotlight px-4 py-3">
       <dt className="text-xs text-fg-muted">{label}</dt>
-      <dd className="text-2xl font-semibold">{value}</dd>
+      <dd className="text-2xl font-semibold font-display">
+        {typeof value === 'number' || typeof value === 'string' ? (
+          <RollingNumber value={value} />
+        ) : (
+          value
+        )}
+      </dd>
       {hint && <dd className="text-xs text-fg-subtle">{hint}</dd>}
     </div>
   );
@@ -184,7 +193,7 @@ export function TaskInsights({ tasks }: { tasks: readonly Task[] }) {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4 md:p-6">
-        <dl className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        <dl className="grid rise-children grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
           <Stat label={m.shell.insights.open} value={summary.open} />
           <Stat
             label={m.shell.insights.overdue}
@@ -218,7 +227,7 @@ export function TaskInsights({ tasks }: { tasks: readonly Task[] }) {
           />
         </dl>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid rise-children gap-4 lg:grid-cols-2">
           <Panel title={m.shell.insights.throughput} description={m.shell.insights.throughputHint}>
             <Throughput weeks={weeks} />
           </Panel>
@@ -238,7 +247,7 @@ export function TaskInsights({ tasks }: { tasks: readonly Task[] }) {
           </Panel>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid rise-children gap-4 lg:grid-cols-3">
           <Panel title={m.shell.insights.status}>
             <BarList
               empty={m.shell.insights.noTasks}

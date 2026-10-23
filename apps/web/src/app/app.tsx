@@ -1,6 +1,6 @@
 import { AuthProvider, DataProvider, useAuth, type DaiqClient } from '@daiq/data';
 import type { RuntimeConfig } from '@daiq/domain';
-import { ThemeProvider, Toaster, TooltipProvider } from '@daiq/ui';
+import { installPointerEffects, ThemeProvider, Toaster, TooltipProvider } from '@daiq/ui';
 import { useIsMutating, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { RouterProvider } from '@tanstack/react-router';
@@ -54,6 +54,7 @@ function UnsavedChangesGuard() {
 
 export function App({ client, config }: { client: DaiqClient; config: RuntimeConfig }) {
   const [queryClient] = useState<QueryClient>(createQueryClient);
+  useEffect(() => installPointerEffects(), []);
   return (
     <ThemeProvider>
       <TooltipProvider delay={450}>

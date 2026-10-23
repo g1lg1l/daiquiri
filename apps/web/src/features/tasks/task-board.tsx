@@ -26,7 +26,7 @@ import {
   type TaskGroup,
   type TaskPatch,
 } from '@daiq/domain';
-import { Avatar, Button, cn, Tooltip } from '@daiq/ui';
+import { Avatar, Button, cn, RollingNumber, Tooltip } from '@daiq/ui';
 import { PaperclipIcon, PlusIcon, RepeatIcon } from 'lucide-react';
 import {
   memo,
@@ -483,7 +483,7 @@ function Column({
         {group.category && <StatusIcon category={group.category} />}
         {isPriority(groupPriority) && <PriorityIcon priority={groupPriority} />}
         <h2 className="truncate text-[13px] font-medium">{group.label}</h2>
-        <span className="text-xs text-fg-subtle tabular">{count}</span>
+        <RollingNumber value={count} className="text-xs text-fg-subtle" />
         <Tooltip label={m.tasks.createIn(group.label)}>
           <Button
             variant="ghost"
@@ -499,7 +499,7 @@ function Column({
       <div
         ref={ref}
         className={cn(
-          'flex min-h-16 flex-1 flex-col gap-1.5 overflow-y-auto rounded-b-xl px-2 pb-2 transition-colors scrollbar-thin',
+          'flex min-h-16 flex-1 rise-children flex-col gap-1.5 overflow-y-auto rounded-b-xl px-2 pb-2 transition-colors scrollbar-thin',
           over && 'bg-accent-subtle/40',
         )}
       >
@@ -583,7 +583,7 @@ const Card = memo(function Card({
       onClick={() => onOpen(task, 'peek')}
       onFocus={onFocus}
       className={cn(
-        'relative flex cursor-grab flex-col gap-1.5 rounded-lg border border-border bg-surface p-2.5 text-[13px] shadow-xs transition-[opacity,box-shadow] duration-150 outline-none active:cursor-grabbing',
+        'relative flex lift cursor-grab flex-col gap-1.5 rounded-lg border border-border bg-overlay spotlight p-2.5 text-[13px] shadow-card outline-none active:cursor-grabbing',
         'hover:border-border-strong focus-visible:ring-2 focus-visible:ring-focus',
         dragging && 'opacity-40',
         peeked && 'border-focus',

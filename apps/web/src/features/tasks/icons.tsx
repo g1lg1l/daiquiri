@@ -31,7 +31,7 @@ export function StatusIcon({
     <svg
       viewBox="0 0 16 16"
       className={cn('size-3.5 shrink-0', statusColor[category], pop && 'animate-pop', className)}
-      onAnimationEnd={() => setPop(false)}
+      onAnimationEnd={(event) => event.target === event.currentTarget && setPop(false)}
       aria-hidden
     >
       {category === 'backlog' && <circle cx="8" cy="8" r="6" {...common} strokeDasharray="2.2 2" />}
@@ -53,6 +53,8 @@ export function StatusIcon({
           <circle cx="8" cy="8" r="6.8" fill="currentColor" />
           <path
             d="m5.2 8.2 1.9 1.9 3.8-3.9"
+            pathLength={1}
+            className={pop ? 'draw-in [--delay:100ms] [animation-duration:240ms]' : undefined}
             fill="none"
             stroke="var(--surface)"
             strokeWidth="1.7"

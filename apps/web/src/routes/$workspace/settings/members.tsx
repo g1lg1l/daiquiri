@@ -107,7 +107,7 @@ function MembersSettings() {
             )}
           </form>
         )}
-        <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+        <ul className="flex rise-children flex-col divide-y divide-border card">
           {members.data?.map((member) => {
             const editable =
               member.id !== userId &&

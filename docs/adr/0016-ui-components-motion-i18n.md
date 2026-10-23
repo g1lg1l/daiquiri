@@ -25,7 +25,16 @@ Three component sources were evaluated for the shared basics:
   - popovers, selects, tooltips and dialogs scale from their anchor on a spring written as CSS `linear()` easing; the month grid slides when the month changes;
   - menus grow less (from 97%) and without overshoot, and submenus only fade: an item moving under a resting pointer would hand its hover, and its submenu, to the item next to it;
   - menu items arrive in a short opacity stagger (`sibling-index()`, where supported);
-  - completing a task, picking a date or option and copying an identifier get a small pop;
+  - completing a task pops its status icon and draws its check; picking a date or option and copying an identifier pop;
+  - shared vocabulary in `packages/ui/src/styles.css`: `--ease-out` `cubic-bezier(.23,1,.32,1)`, `--ease-spring` (a `linear()` overshoot), presses scale to 97% in 160 ms, exits run about two thirds of their entrance;
+  - each new screen settles in (`swap-in`: blur 4 px and 4 px rise, 420 ms), and cards, rows and sections rise one after another (`rise-children`, 50 ms apart);
+  - cards are raised surfaces (`card`: two-layer shadow, a top highlight in the dark) that lift on hover and give on press (`lift`), with a soft light following the pointer (`spotlight`);
+  - the current item of the sidebar, settings, tabs and segmented controls sits on one pill that glides between items rubber-band style: the leading edge leaves first, the trailing edge catches up with a little overshoot (`GlideThumb`, which finds the active item itself, so the controls keep their native semantics);
+  - counts and figures roll like an odometer when they appear or change (`RollingNumber`: CSS `@starting-style` and a spring transition; screen readers and copy get the plain number);
+  - on/off settings are switches drawn over native checkboxes: the knob stretches while pressed and lands on a spring;
+  - bars grow from their baseline, the burn-up chart wipes in, and pressing anything interactive throws a short burst of sparks (one shared canvas, only while sparks are alive);
+  - the sign-in screen has a fading dot grid and a headline that comes into focus word by word;
+  - every effect is written here, mostly in CSS; nothing is copied from React Bits or RareUI (see the table above);
   - `prefers-reduced-motion` turns all of it into instant changes;
   - `motion` (Motion for React) is loaded only by the lazy toast chunk, which needs it. Animated list and board reordering (View Transitions) is left for later.
 - **Toasts**: Sileo behind the same `toast()` facade (message, description, action, id), so call sites do not change. The toaster and Motion load after first paint; toasts raised before then are queued. Sileo 0.1.6 is patched (`patches/sileo@0.1.6.patch`) so the toast is not a `<button>` wrapping a link: its action is a real button, and an action toast stays open for its whole life so the action is reachable. Its title and button use the inverted ink for AA contrast.

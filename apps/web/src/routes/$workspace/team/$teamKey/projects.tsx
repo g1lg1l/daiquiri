@@ -80,7 +80,7 @@ function TeamProjects() {
             type="checkbox"
             checked={showArchived}
             onChange={(e) => setShowArchived(e.target.checked)}
-            className="accent-(--accent)"
+            className="switch"
           />
           {t.showArchived}
         </label>
@@ -109,7 +109,7 @@ function TeamProjects() {
                 <th className="px-4 py-2 text-right font-normal">{t.columns.progress}</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="rise-children">
               {projects.map((project) => {
                 const count = counts.get(project.id) ?? { done: 0, total: 0 };
                 const progress = progressOf(count);

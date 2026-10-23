@@ -409,7 +409,7 @@ function Composer({ defaults, onClose }: { defaults: ComposerDefaults; onClose: 
               type="checkbox"
               checked={createMore}
               onChange={(event) => setCreateMore(event.target.checked)}
-              className="accent-(--accent)"
+              className="switch"
             />
             {m.task.composer.createMore}
           </label>

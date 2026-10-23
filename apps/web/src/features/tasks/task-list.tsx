@@ -8,7 +8,7 @@ import {
   type Task,
   type TaskGroup,
 } from '@daiq/domain';
-import { Avatar, Button, cn, Shortcut, Tooltip } from '@daiq/ui';
+import { Avatar, Button, cn, RollingNumber, Shortcut, Tooltip } from '@daiq/ui';
 import { Link } from '@tanstack/react-router';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
@@ -438,7 +438,7 @@ function GroupHeader({
         {group.category && <StatusIcon category={group.category} />}
         {isPriority(groupPriority) && <PriorityIcon priority={groupPriority} />}
         <span className="truncate text-[13px] font-medium">{group.label}</span>
-        <span className="text-xs text-fg-subtle tabular">{group.tasks.length}</span>
+        <RollingNumber value={group.tasks.length} className="text-xs text-fg-subtle" />
       </div>
       <div role="gridcell">
         <Tooltip label={m.tasks.createIn(group.label)}>

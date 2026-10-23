@@ -16,7 +16,7 @@ import {
   type Task,
 } from '@daiq/domain';
 import { Button, cn, Tooltip } from '@daiq/ui';
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, PanelRightIcon, PlusIcon } from 'lucide-react';
 import {
   useEffect,
   useEffectEvent,
@@ -81,6 +81,8 @@ export function TaskCalendar({
   const identifier = useIdentifier();
   const rootRef = useRef<HTMLDivElement>(null);
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  // The undated tray takes a fifth of the width: open by default only on wide screens.
+  const [trayOpen, setTrayOpen] = useState(() => window.matchMedia('(min-width: 1280px)').matches);
   const { dayLabel, monthLabel, weekdayLabel } = useMemo(
     () => ({
       dayLabel: new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }),
@@ -246,6 +248,19 @@ export function TaskCalendar({
           <ChevronRightIcon />
         </Button>
       </Tooltip>
+      {!isMobile && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="ml-1"
+          aria-pressed={trayOpen}
+          onClick={() => setTrayOpen(!trayOpen)}
+        >
+          <PanelRightIcon />
+          {m.tasks.calendar.trayTitle}
+          <span className="text-fg-subtle tabular">{undated.length}</span>
+        </Button>
+      )}
     </div>
   );
 
@@ -341,9 +356,11 @@ export function TaskCalendar({
           })}
         </ol>
       </section>
-      <aside className="w-60 shrink-0 overflow-y-auto border-l border-border bg-surface-subtle scrollbar-thin">
-        {tray}
-      </aside>
+      {trayOpen && (
+        <aside className="w-60 shrink-0 animate-in overflow-y-auto border-l border-border bg-surface-subtle duration-200 fade-in-0 scrollbar-thin slide-in-from-right-4">
+          {tray}
+        </aside>
+      )}
     </div>
   );
 }

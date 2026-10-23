@@ -237,7 +237,7 @@ function TeamForms() {
               {t.empty}
             </p>
           )}
-          <ul className="flex flex-col gap-3">
+          <ul className="flex rise-children flex-col gap-3">
             {forms.data?.map((form) => (
               <li
                 key={form.id}
@@ -254,7 +254,7 @@ function TeamForms() {
                   onChange={(event) =>
                     actions.update.mutate({ id: form.id, patch: { enabled: event.target.checked } })
                   }
-                  className="mt-1 accent-(--accent)"
+                  className="switch mt-1"
                 />
                 <div className="min-w-0 flex-1">
                   <p className={cn('text-[13px] font-medium', !form.enabled && 'text-fg-muted')}>

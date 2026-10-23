@@ -14,7 +14,7 @@ import {
   type ImportTarget,
   type Team,
 } from '@daiq/domain';
-import { Button, cn, FieldError, Label, Select } from '@daiq/ui';
+import { Button, cn, FieldError, GlideThumb, Label, Select } from '@daiq/ui';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { UploadIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -122,6 +122,7 @@ function ImportTasks() {
   const createLabel = useCreateLabel(workspace.id);
   const [from, setFrom] = useState<From>(search.from ?? 'csv');
   const [fileName, setFileName] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [table, setTable] = useState<string[][]>([]);
   const [mapping, setMapping] = useState<Mapping>({});
   const [createLabels, setCreateLabels] = useState(true);
@@ -215,14 +216,15 @@ function ImportTasks() {
       </ViewHeader>
       <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto flex max-w-3xl flex-col gap-5 p-4 md:p-6">
-          <fieldset className="flex flex-wrap gap-1 self-start rounded-md border border-border p-0.5 text-[13px]">
+          <fieldset className="relative isolate flex flex-wrap gap-1 self-start rounded-md border border-border p-0.5 text-[13px]">
             <legend className="sr-only">{m.importer.csv.from}</legend>
+            <GlideThumb activeKey={from} className="rounded-[5px] bg-surface-raised shadow-card" />
             {[{ id: 'csv' as const, name: 'CSV' }, ...SOURCES].map((option) => (
               <label
                 key={option.id}
                 className={cn(
-                  'cursor-pointer rounded-[5px] px-3 py-1 text-fg-muted has-focus-visible:outline-2 has-focus-visible:outline-focus',
-                  from === option.id && 'bg-surface-emphasis text-fg',
+                  'cursor-pointer rounded-[5px] px-3 py-1 text-fg-muted transition-[color,scale] duration-160 active:scale-95 has-focus-visible:outline-2 has-focus-visible:outline-focus',
+                  from === option.id && 'text-fg',
                 )}
               >
                 <input
@@ -260,13 +262,38 @@ function ImportTasks() {
               <p className="text-[13px] text-fg-muted">{m.importer.csv.intro(team.name)}</p>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="import-file">{m.importer.csv.file}</Label>
-                <input
-                  id="import-file"
-                  type="file"
-                  accept=".csv,text/csv"
-                  className="text-[13px] file:mr-3 file:rounded-md file:border file:border-border file:bg-surface-muted file:px-3 file:py-1.5 file:text-[13px] file:text-fg"
-                  onChange={(event) => void read(event.target.files?.[0])}
-                />
+                {/* The browser's file button is unstyled and speaks the browser's language: a drop zone instead. */}
+                {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- dropping is a pointer shortcut; the file input inside is the accessible control */}
+                <label
+                  className={cn(
+                    'group flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-dashed border-border-strong px-6 py-8 text-center text-[13px] transition-[background-color,border-color,scale] duration-200 hover:border-accent hover:bg-accent-subtle/40 active:scale-[0.99] has-focus-visible:outline-2 has-focus-visible:outline-focus',
+                    dragging && 'scale-[1.01] border-accent bg-accent-subtle/60',
+                  )}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    setDragging(true);
+                  }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    setDragging(false);
+                    void read(event.dataTransfer.files[0]);
+                  }}
+                >
+                  <UploadIcon
+                    aria-hidden
+                    className="size-5 text-fg-muted transition-transform duration-300 ease-(--ease-spring) group-hover:-translate-y-0.5"
+                  />
+                  <span className="font-medium">{fileName ?? m.importer.csv.choose}</span>
+                  <span className="text-xs text-fg-muted">{m.importer.csv.dropHint}</span>
+                  <input
+                    id="import-file"
+                    type="file"
+                    accept=".csv,text/csv"
+                    className="sr-only"
+                    onChange={(event) => void read(event.target.files?.[0])}
+                  />
+                </label>
               </div>
 
               {fileName && result && (

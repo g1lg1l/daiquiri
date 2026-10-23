@@ -11,6 +11,7 @@ import {
   Avatar,
   Button,
   cn,
+  GlideThumb,
   Menu,
   MenuContent,
   MenuItem,
@@ -21,11 +22,12 @@ import {
   MenuSub,
   MenuSubTrigger,
   MenuTrigger,
+  RollingNumber,
   Shortcut,
   Tooltip,
   useTheme,
 } from '@daiq/ui';
-import { Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { Link, useLocation, useNavigate, useSearch } from '@tanstack/react-router';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
@@ -59,7 +61,9 @@ import { useShell } from './shell-context';
 
 const navItem =
   'flex h-7 items-center gap-2 rounded-md px-2 text-[13px] text-fg-muted transition-colors hover:bg-surface-muted hover:text-fg [&_svg]:size-4 [&_svg]:shrink-0';
-const activeNavItem = 'bg-surface-emphasis text-fg font-medium hover:bg-surface-emphasis';
+// The pill under the current item is a GlideThumb, so it can travel between items.
+const activeNavItem = 'text-fg font-medium hover:bg-transparent';
+const navThumb = 'bg-surface-raised shadow-card';
 
 function NavLink({
   to,
@@ -324,6 +328,7 @@ function WorkspaceMenu() {
 
 export function Sidebar() {
   const { workspace, userId } = useWorkspace();
+  const href = useLocation({ select: (location) => location.href });
   const data = useWorkspaceData();
   const notifications = useNotifications(workspace.id);
   const composer = useComposer();
@@ -407,7 +412,8 @@ export function Sidebar() {
 
       <RunningTimer />
 
-      <ul className="flex flex-col gap-px">
+      <ul className="relative isolate flex flex-col gap-px">
+        <GlideThumb activeKey={href} className={navThumb} />
         <li>
           <NavLink
             to="/$workspace/inbox"
@@ -415,8 +421,8 @@ export function Sidebar() {
             icon={<InboxIcon />}
             trailing={
               unread > 0 ? (
-                <span className="rounded-full bg-accent px-1.5 text-[11px] leading-[18px] font-semibold text-accent-fg tabular">
-                  {unread}
+                <span className="rounded-full bg-accent px-1.5 text-[11px] leading-[18px] font-semibold text-accent-fg">
+                  <RollingNumber value={unread} />
                   <span className="sr-only"> {m.shell.sidebar.unread}</span>
                 </span>
               ) : null
@@ -432,7 +438,8 @@ export function Sidebar() {
         </li>
       </ul>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
+      <div className="relative isolate flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto scrollbar-thin">
+        <GlideThumb activeKey={href} className={navThumb} />
         {favoriteItems.length > 0 && (
           <>
             <h2 className="px-2 pt-2 text-[11px] font-medium text-fg-subtle">

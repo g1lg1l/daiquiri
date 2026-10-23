@@ -47,7 +47,7 @@ function Module({
           disabled={disabled}
           onChange={(event) => onToggle(event.target.checked)}
           aria-describedby={`module-${title}-description`}
-          className="mt-1 accent-(--accent)"
+          className="switch mt-1"
         />
         <div>
           <label htmlFor={`module-${title}`} className="block text-[13px] font-medium">

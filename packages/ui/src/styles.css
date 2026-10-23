@@ -25,6 +25,8 @@
   --surface-muted: oklch(0.949 0.009 120);
   --surface-emphasis: oklch(0.921 0.013 122);
   --overlay: oklch(0.998 0.002 115);
+  /* The raised pill under the current item of a list (sidebar, tabs). */
+  --surface-raised: oklch(0.998 0.002 115);
 
   --fg: oklch(0.25 0.022 145);
   --fg-muted: oklch(0.47 0.02 142);
@@ -55,6 +57,12 @@
 
   --shadow-popover:
     0 1px 2px oklch(0.25 0.03 145 / 6%), 0 10px 28px -8px oklch(0.25 0.03 145 / 16%);
+  /* Cards: a contact shadow plus a long soft one; hover lifts both. */
+  --shadow-card: 0 1px 2px oklch(0.25 0.03 145 / 5%), 0 8px 24px -14px oklch(0.25 0.03 145 / 14%);
+  --shadow-card-hover:
+    0 2px 4px oklch(0.25 0.03 145 / 6%), 0 18px 40px -20px oklch(0.25 0.03 145 / 22%);
+  --glow-accent: 0 8px 24px -10px color-mix(in oklch, var(--accent) 70%, transparent);
+  --spark: var(--accent);
   --scrim: oklch(0.25 0.03 145 / 16%);
 }
 
@@ -66,6 +74,7 @@
   --surface-muted: oklch(0.262 0.017 150);
   --surface-emphasis: oklch(0.302 0.02 148);
   --overlay: oklch(0.245 0.016 152);
+  --surface-raised: oklch(0.285 0.018 150);
 
   --fg: oklch(0.95 0.012 118);
   --fg-muted: oklch(0.77 0.016 128);
@@ -95,6 +104,14 @@
   --priority-urgent: oklch(0.72 0.18 38);
 
   --shadow-popover: 0 0 0 1px oklch(1 0 0 / 5%), 0 14px 36px -10px oklch(0.1 0.02 150 / 65%);
+  /* In the dark a top highlight does what the contact shadow does in the light. */
+  --shadow-card:
+    inset 0 1px 0 oklch(1 0 0 / 5%), 0 1px 2px oklch(0.1 0.02 150 / 40%),
+    0 10px 28px -14px oklch(0.1 0.02 150 / 70%);
+  --shadow-card-hover:
+    inset 0 1px 0 oklch(1 0 0 / 7%), 0 2px 4px oklch(0.1 0.02 150 / 45%),
+    0 20px 44px -18px oklch(0.1 0.02 150 / 80%);
+  --glow-accent: 0 8px 26px -10px color-mix(in oklch, var(--accent) 55%, transparent);
   --scrim: oklch(0.1 0.02 150 / 50%);
 }
 
@@ -107,6 +124,7 @@
   --color-surface-muted: var(--surface-muted);
   --color-surface-emphasis: var(--surface-emphasis);
   --color-overlay: var(--overlay);
+  --color-surface-raised: var(--surface-raised);
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
   --color-fg-subtle: var(--fg-subtle);
@@ -132,6 +150,9 @@
   --color-scrim: var(--scrim);
 
   --shadow-popover: var(--shadow-popover);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-glow: var(--glow-accent);
 
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -140,7 +161,8 @@
 
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.3, 0, 0, 1.15);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   /* A light spring (about 8% overshoot) as a CSS easing curve. */
   --ease-spring: linear(
     0,
@@ -325,6 +347,60 @@
   }
 }
 
+/* A new screen settles in: a short blur-and-rise on its first frame. */
+@utility swap-in {
+  animation: swap-in 420ms var(--ease-out) backwards;
+}
+
+/* Interactive cards: lift on hover, give a little on press. */
+@utility lift {
+  transition:
+    translate 200ms var(--ease-out),
+    scale 160ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    border-color 150ms var(--ease-out);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      translate: 0 -2px;
+      box-shadow: var(--shadow-card-hover);
+    }
+  }
+  &:active {
+    scale: 0.985;
+  }
+}
+
+/* Children rise in one after another (cards, rows, sections) when they mount. */
+@utility rise-children {
+  & > * {
+    animation:
+      rise-fade 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards,
+      rise-move 760ms var(--ease-spring) backwards;
+    animation-delay: calc(min(sibling-index() - 1, 12) * 50ms);
+  }
+}
+
+@keyframes swap-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    translate: 0 4px;
+  }
+}
+
+@keyframes rise-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise-move {
+  from {
+    translate: 0 14px;
+    scale: 0.97;
+  }
+}
+
 @utility tabular {
   font-variant-numeric: tabular-nums;
 }
@@ -338,4 +414,166 @@
 @utility scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
+}
+
+/* RollingNumber: a one-character window over a 0–9 column. */
+@utility roll-window {
+  display: inline-block;
+  height: 1lh;
+  overflow: hidden;
+  mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent);
+}
+
+@utility roll-column {
+  display: block;
+  translate: 0 calc(var(--digit) * -10%);
+
+  &::before {
+    content: '0\a 1\a 2\a 3\a 4\a 5\a 6\a 7\a 8\a 9';
+    white-space: pre;
+  }
+  transition: translate 900ms var(--ease-spring) var(--delay, 0ms);
+
+  @starting-style {
+    translate: 0 0;
+  }
+}
+
+/* A checkbox drawn as a switch; the knob stretches while pressed and lands on a spring. */
+@utility switch {
+  appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 32px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--border-strong);
+  cursor: pointer;
+  transition: background-color 220ms var(--ease-out);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    background: oklch(1 0 0);
+    box-shadow:
+      0 1px 2px oklch(0 0 0 / 22%),
+      0 2px 6px -1px oklch(0 0 0 / 18%);
+    transition:
+      translate 460ms var(--ease-spring),
+      width 160ms var(--ease-out);
+  }
+  &:checked {
+    background: var(--accent);
+  }
+  &:checked::before {
+    translate: 14px 0;
+  }
+  &:active::before {
+    width: 19px;
+  }
+  &:checked:active::before {
+    translate: 9px 0;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+/* A soft light that follows the pointer across a card (coordinates set by installPointerEffects). */
+@utility spotlight {
+  background-image: radial-gradient(
+    240px circle at var(--spot-x, -999px) var(--spot-y, -999px),
+    color-mix(in oklch, var(--fg) 6%, transparent),
+    transparent 70%
+  );
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+/* Bars grow from their baseline when they appear and spring to new values. */
+@utility grow-x {
+  transform-origin: left;
+  transition:
+    scale 900ms var(--ease-spring) var(--delay, 0ms),
+    width 600ms var(--ease-out);
+
+  @starting-style {
+    scale: 0 1;
+  }
+}
+
+@utility grow-y {
+  transform-origin: bottom;
+  transition:
+    scale 900ms var(--ease-spring) var(--delay, 0ms),
+    height 600ms var(--ease-out);
+
+  @starting-style {
+    scale: 1 0;
+  }
+}
+
+/* An SVG path that draws itself (needs pathLength="1"). */
+@utility draw-in {
+  stroke-dasharray: 1;
+  animation: draw 1100ms var(--ease-out) var(--delay, 0ms) backwards;
+}
+
+/* Raised content cards: the surface every panel, tile and card shares. */
+@utility card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background-color: var(--overlay);
+  box-shadow: var(--shadow-card);
+}
+
+/* Charts wipe in from the left the first time they render. */
+@utility reveal-x {
+  animation: reveal-x 1100ms var(--ease-out) backwards;
+}
+
+@keyframes reveal-x {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+/* Words come into focus one after another (headlines). Set --i on each word. */
+@utility focus-word {
+  display: inline-block;
+  animation: focus-word 760ms var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms + 120ms);
+}
+
+@keyframes focus-word {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    translate: 0 10px;
+  }
+}
+
+/* A dot grid that fades out toward the edges; behind signed-out screens. */
+@utility dot-grid {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--fg) 14%, transparent) 1px,
+    transparent 1.5px
+  );
+  background-size: 18px 18px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
 }

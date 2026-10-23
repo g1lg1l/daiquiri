@@ -9,7 +9,7 @@ export const DialogClose = DialogPrimitive.Close;
 export function DialogContent({ className, children, ...props }: DialogPrimitive.Popup.Props) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-scrim transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+      <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-scrim backdrop-blur-[3px] transition-[opacity,backdrop-filter] duration-200 data-ending-style:opacity-0 data-ending-style:backdrop-blur-none data-starting-style:opacity-0 data-starting-style:backdrop-blur-none" />
       <DialogPrimitive.Popup
         className={cn(
           'fixed top-[18vh] left-1/2 z-50 flex w-[min(100%-2rem,32rem)] -translate-x-1/2 flex-col gap-4 rounded-xl border border-border bg-overlay p-5 text-fg shadow-popover outline-none',

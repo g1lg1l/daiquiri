@@ -241,7 +241,7 @@ function Webhooks() {
                 onChange={(event) =>
                   actions.update.mutate({ id: hook.id, patch: { enabled: event.target.checked } })
                 }
-                className="mt-1 accent-(--accent)"
+                className="switch mt-1"
               />
               <div className="min-w-0 flex-1">
                 <p className={cn('text-[13px] font-medium', !hook.enabled && 'text-fg-muted')}>

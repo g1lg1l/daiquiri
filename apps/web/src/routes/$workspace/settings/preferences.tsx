@@ -166,7 +166,7 @@ function Preferences() {
                 // The choice still applies for this session.
               }
             }}
-            className="mt-0.5 accent-(--accent)"
+            className="switch mt-0.5"
           />
           <span>
             {m.settings.preferences.shortcuts}

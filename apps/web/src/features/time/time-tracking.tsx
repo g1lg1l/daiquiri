@@ -38,17 +38,17 @@ export function TimeTracking({ task }: { task: Task }) {
 
   return (
     <section aria-labelledby="time-heading" className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <h2 id="time-heading" className="text-[13px] font-semibold">
           {m.task.time.heading}
         </h2>
         <span
-          className="text-xs text-fg-muted tabular"
+          className="text-xs whitespace-nowrap text-fg-muted tabular"
           aria-label={m.task.time.total(formatDuration(total))}
         >
           {total > 0 ? formatDuration(total) : m.task.time.none}
         </span>
-        <span className="ml-auto flex gap-1">
+        <span className="ml-auto flex shrink-0 gap-1">
           {runningHere ? (
             <Button size="sm" onClick={() => timer.stop.mutate()}>
               <SquareIcon className="fill-current" /> {m.task.time.stop}

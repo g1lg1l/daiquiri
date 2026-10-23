@@ -160,7 +160,7 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
             type="checkbox"
             checked={showActivity}
             onChange={(e) => setShowActivity(e.target.checked)}
-            className="accent-(--accent)"
+            className="switch"
           />
           {m.task.activity.showChanges}
         </label>
@@ -182,9 +182,9 @@ export function ActivityFeed({ task }: { task: TaskDetail }) {
                 className="flex items-center gap-2 pl-1 text-xs text-fg-muted"
               >
                 <Avatar name={actor} size="xs" />
-                <span>{Children.toArray(parts)}</span>
+                <span className="min-w-0">{Children.toArray(parts)}</span>
                 <Tooltip label={formatDateTime(item.at)}>
-                  <time dateTime={item.at} className="text-fg-subtle">
+                  <time dateTime={item.at} className="shrink-0 whitespace-nowrap text-fg-subtle">
                     {timeAgo(item.at)}
                   </time>
                 </Tooltip>

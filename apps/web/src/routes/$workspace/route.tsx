@@ -1,6 +1,13 @@
 import { useRealtimeSync, useWorkspaces } from '@daiq/data';
 import { cn } from '@daiq/ui';
-import { createFileRoute, Link, Outlet, useNavigate, useParams } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useMatches,
+  useNavigate,
+  useParams,
+} from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Splash } from '../../components/splash';
 import { PaletteProvider, usePalette } from '../../features/command-palette/palette';
@@ -82,6 +89,11 @@ function Shell() {
   const navigate = useNavigate();
   const params = useParams({ strict: false });
   const ws = workspace.slug;
+  // The screen under the workspace layout: settings sections share one, tasks each have theirs.
+  const screen = useMatches({
+    select: (matches) =>
+      matches[matches.findIndex((match) => match.routeId === '/$workspace') + 1]?.pathname,
+  });
   const currentTeam = (params.teamKey && data.teamsByKey.get(params.teamKey)) || data.myTeams[0];
 
   // Realtime: workspace + user topics, plus every team the user belongs to (bounded).
@@ -144,7 +156,10 @@ function Shell() {
         <Sidebar />
       </div>
       <main id="main" className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <Outlet />
+        {/* Keyed by the screen (not its search params), so each new screen settles in once. */}
+        <div key={screen} className="flex min-h-0 min-w-0 flex-1 swap-in flex-col">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

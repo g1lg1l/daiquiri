@@ -70,7 +70,7 @@ function LabelsSettings() {
           {m.common.create}
         </Button>
       </form>
-      <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+      <ul className="flex rise-children flex-col divide-y divide-border card">
         {data.labels.map((label) => (
           <li key={label.id} className="flex items-center gap-3 px-3 py-1.5 text-[13px]">
             {canManage ? (
